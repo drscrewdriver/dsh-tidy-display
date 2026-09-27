@@ -50,6 +50,12 @@ function ensureRailCss(): void {
   overflow-wrap: anywhere;
 }
 .tidychat-nav-tip-head { color: var(--tidychat-nav-tip-head, var(--dsw-alias-label-secondary, #666)) !important; font-size: 11px; margin-bottom: 2px; }
+/* 接管官方消息轨：官方 TurnNavigator 的类名是 CSS Module 产物（hash 随构建变化），
+   双重锚定保证跨 hash 稳定；隐藏而非卸载（宿主 React 会还原被删节点）。 */
+html[data-tidychat-hide-official-nav] [class*="_slot"]:has(> nav[class*="_frame"]),
+html[data-tidychat-hide-official-nav] nav[class*="_frame"]:has([style*="--turn-natural-position"]) {
+  display: none !important;
+}
 `;
   document.head.appendChild(style);
 }
@@ -123,11 +129,17 @@ const measurePos = (side: RailSide): { left: number; top: number; gutter: number
   return { left: r.left, top: r.top + r.height * 0.5, gutter: gutterL }
 }
 
-export function RailView({ enabled, side, style: railStyle, ring, hasMore, loadOlder }: {
-  enabled: boolean; side: RailSide; style: RailStyle; ring: boolean;
+export function RailView({ enabled, side, style: railStyle, ring, hideOfficialNav, hasMore, loadOlder }: {
+  enabled: boolean; side: RailSide; style: RailStyle; ring: boolean; hideOfficialNav: boolean;
   hasMore: boolean; loadOlder: () => void | Promise<void>;
 }): React.ReactElement | null {
   ensureRailCss()
+  // 接管官方消息轨：切根元素属性，官方轨 CSS 隐藏（隐藏≠卸载，宿主 React 仍挂载它）。
+  React.useEffect(() => {
+    if (hideOfficialNav) document.documentElement.setAttribute('data-tidychat-hide-official-nav', '')
+    else document.documentElement.removeAttribute('data-tidychat-hide-official-nav')
+    return () => { document.documentElement.removeAttribute('data-tidychat-hide-official-nav') }
+  }, [hideOfficialNav])
   const [pos, setPos] = React.useState<{ left: number; top: number; gutter: number } | null>(null)
   const [tip, setTip] = React.useState<{ x: number; y: number; head?: string | null; num: number | null; time: string; text: string; mirror: boolean } | null>(null)
   const [hover, setHover] = React.useState<number | null>(null)

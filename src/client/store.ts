@@ -32,6 +32,13 @@ export interface ReaderState {
   railStyle: 'bar' | 'dot';
   /** White sheen beneath current/hover marks. */
   railRing: boolean;
+  /**
+   * Hide the official TurnNavigator via the takeover attribute. The official
+   * rail still mounts even under the reader, so this stays a user-facing
+   * switch (default on) — the merge did drop it once and the official rail
+   * resurfaced next to ours.
+   */
+  hideOfficialNav: boolean;
 }
 type ReaderActions = {
   setExpanded: (draft: ReaderState, key: string, value: boolean) => void;
@@ -46,6 +53,7 @@ type ReaderActions = {
   setRailSide: (draft: ReaderState, value: 'left' | 'right') => void;
   setRailStyle: (draft: ReaderState, value: 'bar' | 'dot') => void;
   setRailRing: (draft: ReaderState, value: boolean) => void;
+  setHideOfficialNav: (draft: ReaderState, value: boolean) => void;
 };
 
 function applyFoldIntensity(draft: ReaderState, value: FoldIntensity): void {
@@ -71,6 +79,7 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       // Default on: the sheen is the rail's wallpaper-legibility guarantee
       // (the user-facing requirement was "selectable AND visible").
       railRing: true,
+      hideOfficialNav: true,
     }),
     persist: 'dsh.reader.v1',
     actions: {
@@ -90,6 +99,7 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       setRailSide: (draft, value: 'left' | 'right') => { draft.railSide = value; },
       setRailStyle: (draft, value: 'bar' | 'dot') => { draft.railStyle = value; },
       setRailRing: (draft, value: boolean) => { draft.railRing = value; },
+      setHideOfficialNav: (draft, value: boolean) => { draft.hideOfficialNav = value; },
     },
   });
 }

@@ -16,6 +16,7 @@ export interface ReaderPrefsSnapshot {
   railSide?: 'left' | 'right';
   railStyle?: 'bar' | 'dot';
   railRing?: boolean;
+  hideOfficialNav?: boolean;
 }
 
 export interface OpenPrefs {
@@ -31,6 +32,7 @@ export interface OpenPrefs {
     setRailSide?: (value: 'left' | 'right') => void;
     setRailStyle?: (value: 'bar' | 'dot') => void;
     setRailRing?: (value: boolean) => void;
+    setHideOfficialNav?: (value: boolean) => void;
   };
 }
 
@@ -80,6 +82,7 @@ export function SettingsSection(props: SettingsProps) {
   const railSide = snap.railSide === 'right' ? 'right' : 'left';
   const railStyle = snap.railStyle === 'dot' ? 'dot' : 'bar';
   const railRing = snap.railRing === true;
+  const takeover = snap.hideOfficialNav !== false;
   const setMode = (value: DeliverableOpenMode) => {
     props.prefs.actions.setDeliverableOpenMode(value);
   };
@@ -236,6 +239,22 @@ export function SettingsSection(props: SettingsProps) {
           data-on={railRing || undefined}
           data-tidy-display-rail-ring={railRing ? 'on' : 'off'}
           onClick={() => { props.prefs.actions.setRailRing?.(!railRing); }}
+        />
+      </div>
+
+      <div className={css.row}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'takeoverTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'takeoverDescription')}</div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={takeover}
+          className={css.switch}
+          data-on={takeover || undefined}
+          data-tidy-display-takeover={takeover ? 'on' : 'off'}
+          onClick={() => { props.prefs.actions.setHideOfficialNav?.(!takeover); }}
         />
       </div>
 
