@@ -62,10 +62,10 @@ export function installBetterDisplaySettings(ctx: Context, prefs: OpenPrefs): vo
     languageTag: languageTag(ctx),
     checkSkill,
   });
-  ctx.slots.inject('settings.section', () => ctx.slots.register({
-    name: 'settings.section',
+  ctx.slots.inject('dsh-family.tab', () => ctx.slots.register({
+    name: 'dsh-family.tab',
     id: 'tidy-display',
-    order: 40,
+    order: 60,
     label: () => locale?.bind?.('tidy-display')?.('nav') || settingsCopyFor(languageTag(ctx)).nav,
     locale: locale?.bind ? 'tidy-display' : undefined,
     inject: injected,
