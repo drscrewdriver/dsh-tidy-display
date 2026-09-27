@@ -12,10 +12,12 @@ import { Reader } from './Reader.js';
 import { createReaderStore } from './store.js';
 import { installReaderEntry } from './entry.js';
 import { installBetterDisplaySettings } from './settings.js';
+import { RailView } from './rail/RailView.js';
 import { fillComposerDom } from './mcp-app.js';
 import { fileAddressFor, modeFromSnapshot, openDeliverableFile } from './open-file.js';
 import type { ReaderInjected } from './types.js';
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
+import * as React from 'react';
 import { installOfficialSlots, officialChildren, type CompositionRegistry } from './official-slots.js';
 
 /** Structural face of the sanctioned per-session composer writer. */
@@ -64,6 +66,35 @@ export function apply(ctx: Context): void {
   // intensity, and open-mode on the unsuffixed `dsh.reader.v1` key.
   const prefs = store.create();
   installBetterDisplaySettings(ctx, prefs);
+
+  // 原生「对话」视图的轨挂载：视图选择按会话记忆，老会话常停在对话视图——
+  // 轨若只挂阅读视图，这些会话就没有轨。两个视图都挂（同 tidychat 的 utilities 槽位）。
+  function NativeRailView(): React.ReactElement | null {
+    const snap = React.useSyncExternalStore(prefs.subscribe, () => prefs.getSnapshot());
+    const loadEarlierPattern = /^(加载更早|Load earlier|Load older)/;
+    const hasMore = [...document.querySelectorAll('button')]
+      .some((b) => loadEarlierPattern.test((b.textContent || '').trim()));
+    return React.createElement(RailView, {
+      enabled: snap.railEnabled !== false,
+      side: snap.railSide === 'right' ? 'right' : 'left',
+      style: snap.railStyle === 'dot' ? 'dot' : 'bar',
+      ring: snap.railRing === true,
+      hideOfficialNav: snap.hideOfficialNav !== false,
+      hasMore,
+      loadOlder: () => {
+        const btn = [...document.querySelectorAll('button')]
+          .find((b) => loadEarlierPattern.test((b.textContent || '').trim()));
+        (btn as HTMLButtonElement | undefined)?.click();
+      },
+    });
+  }
+  (ctx.slots as unknown as { inject: (name: string, cb: () => unknown) => void }).inject(
+    'conversation.session.header.utilities',
+    () => (ctx.slots as unknown as { register: (options: Record<string, unknown>, component: unknown) => unknown }).register(
+      { name: 'conversation.session.header.utilities', id: 'tidy-display-nav' },
+      NativeRailView,
+    ),
+  );
   ctx.slots.inject('conversation.chat.node', function* () {
     yield ctx.slots.register({
     name: 'conversation.view',
