@@ -39,6 +39,13 @@ export interface ReaderState {
    * resurfaced next to ours.
    */
   hideOfficialNav: boolean;
+  /** Rail palette (ported from dsh-tidychat): auto / hue×lightness / custom. */
+  railColor: string;
+  railColorCustom: string;
+  railColorLight: string;
+  railAccent: string;
+  railAccentCustom: string;
+  railAccentLight: string;
 }
 type ReaderActions = {
   setExpanded: (draft: ReaderState, key: string, value: boolean) => void;
@@ -54,6 +61,12 @@ type ReaderActions = {
   setRailStyle: (draft: ReaderState, value: 'bar' | 'dot') => void;
   setRailRing: (draft: ReaderState, value: boolean) => void;
   setHideOfficialNav: (draft: ReaderState, value: boolean) => void;
+  setRailColor: (draft: ReaderState, value: string) => void;
+  setRailColorCustom: (draft: ReaderState, value: string) => void;
+  setRailColorLight: (draft: ReaderState, value: string) => void;
+  setRailAccent: (draft: ReaderState, value: string) => void;
+  setRailAccentCustom: (draft: ReaderState, value: string) => void;
+  setRailAccentLight: (draft: ReaderState, value: string) => void;
 };
 
 function applyFoldIntensity(draft: ReaderState, value: FoldIntensity): void {
@@ -80,6 +93,12 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       // (the user-facing requirement was "selectable AND visible").
       railRing: true,
       hideOfficialNav: true,
+      railColor: 'auto',
+      railColorCustom: '',
+      railColorLight: 'l3',
+      railAccent: 'auto',
+      railAccentCustom: '',
+      railAccentLight: 'l3',
     }),
     persist: 'dsh.reader.v1',
     actions: {
@@ -100,6 +119,12 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       setRailStyle: (draft, value: 'bar' | 'dot') => { draft.railStyle = value; },
       setRailRing: (draft, value: boolean) => { draft.railRing = value; },
       setHideOfficialNav: (draft, value: boolean) => { draft.hideOfficialNav = value; },
+      setRailColor: (draft, value: string) => { draft.railColor = value; },
+      setRailColorCustom: (draft, value: string) => { draft.railColorCustom = value; },
+      setRailColorLight: (draft, value: string) => { draft.railColorLight = value; },
+      setRailAccent: (draft, value: string) => { draft.railAccent = value; },
+      setRailAccentCustom: (draft, value: string) => { draft.railAccentCustom = value; },
+      setRailAccentLight: (draft, value: string) => { draft.railAccentLight = value; },
     },
   });
 }

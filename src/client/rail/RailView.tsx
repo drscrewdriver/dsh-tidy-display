@@ -345,8 +345,9 @@ export function RailView({ enabled, side, style: railStyle, ring, hideOfficialNa
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, W, H)
     const cs = getComputedStyle(document.documentElement)
-    const barColor = cs.getPropertyValue('--dsw-alias-label-caption').trim() || 'rgba(127,127,127,0.5)'
-    const hotColor = cs.getPropertyValue('--dsw-alias-state-business-primary').trim() || '#3b82f6'
+    // 配色由 colors.ts 的 applyNavColors 统一写入变量（auto/调色盘解析都在那里），这里只读
+    const barColor = cs.getPropertyValue('--tidychat-nav-color').trim() || cs.getPropertyValue('--dsw-alias-label-caption').trim() || 'rgba(127,127,127,0.5)'
+    const hotColor = cs.getPropertyValue('--tidychat-nav-color-hot').trim() || cs.getPropertyValue('--dsw-alias-state-business-primary').trim() || '#3b82f6'
     const mirror = side === 'right'
     const dot = railStyle === 'dot'
     const dir = mirror ? -1 : 1

@@ -23,6 +23,10 @@ export type SettingsCopyKey =
   | 'railRingDescription'
   | 'takeoverTitle'
   | 'takeoverDescription'
+  | 'colorBarTitle'
+  | 'colorAccentTitle'
+  | 'colorAuto'
+  | 'colorCustom'
   | 'skillTitle'
   | 'skillInstalled'
   | 'skillMissing'
@@ -60,6 +64,10 @@ export const en: SettingsCopy = {
   railRingDescription: 'On by default (matches the store default): a soft white sheen laid beneath the current and hovered marks, keeping them readable over busy wallpapers.',
   takeoverTitle: 'Take over the official rail',
   takeoverDescription: 'On by default: the official right-edge TurnNavigator is hidden (hidden, not unmounted) so this rail is the only one. Turn off to see both.',
+  colorBarTitle: 'Mark color',
+  colorAccentTitle: 'Accent color',
+  colorAuto: 'Auto',
+  colorCustom: 'Custom',
   skillTitle: 'generative-mcpapps skill',
   skillInstalled: 'Installed',
   skillMissing: 'Not detected',
@@ -96,6 +104,10 @@ export const zh: SettingsCopy = {
   railRingDescription: '默认开启：在当前轮与悬停轮的标记底下垫一层白色柔光，复杂壁纸上也能看清标记。',
   takeoverTitle: '接管官方消息轨',
   takeoverDescription: '默认开启：隐藏官方右缘 TurnNavigator（隐藏而非卸载），只保留本轨。关闭后两条轨并存。',
+  colorBarTitle: '标记色',
+  colorAccentTitle: '强调色',
+  colorAuto: '自动',
+  colorCustom: '自定义',
   skillTitle: 'generative-mcpapps 技能',
   skillInstalled: '已安装',
   skillMissing: '未检测到',

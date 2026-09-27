@@ -13,6 +13,7 @@ import { createReaderStore } from './store.js';
 import { installReaderEntry } from './entry.js';
 import { installBetterDisplaySettings } from './settings.js';
 import { RailView } from './rail/RailView.js';
+import { installRailColors } from './rail/colors.js';
 import { fillComposerDom } from './mcp-app.js';
 import { fileAddressFor, modeFromSnapshot, openDeliverableFile } from './open-file.js';
 import type { ReaderInjected } from './types.js';
@@ -66,6 +67,20 @@ export function apply(ctx: Context): void {
   // intensity, and open-mode on the unsuffixed `dsh.reader.v1` key.
   const prefs = store.create();
   installBetterDisplaySettings(ctx, prefs);
+  installRailColors({
+    subscribe: prefs.subscribe,
+    getSnapshot: () => {
+      const s = prefs.getSnapshot();
+      return {
+        navColor: s.railColor,
+        navColorCustom: s.railColorCustom,
+        navColorLight: s.railColorLight,
+        navAccent: s.railAccent,
+        navAccentCustom: s.railAccentCustom,
+        navAccentLight: s.railAccentLight,
+      };
+    },
+  }, () => document.querySelector('[data-conversation-scroll]'));
 
   // 原生「对话」视图的轨挂载：视图选择按会话记忆，老会话常停在对话视图——
   // 轨若只挂阅读视图，这些会话就没有轨。两个视图都挂（同 tidychat 的 utilities 槽位）。
