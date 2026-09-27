@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Reader chat-flow hook vs maid-atelier composer hide</title>
+<style>
+  [data-conversation-scroll] { display: flex; flex-direction: column; min-height: 120px; }
+  [data-composer-seat] { display: flex; min-height: 28px; }
+  /* Exact maid-atelier / phoebe-atelier empty-state hide (issue #10). */
+  [data-phase="active"]
+    [data-conversation-scroll]:not(:has([data-chat-flow]))
+    > [data-composer-seat] { display: none; }
+</style>
+<body>
+  <section id="inspect" data-phase="active">
+    <div data-conversation-scroll>
+      <div data-dsh-better-display="fixture"><section data-reader-turn="1">turn</section></div>
+      <div data-composer-seat id="inspect-seat">composer</div>
+    </div>
+  </section>
+  <section id="reader" data-phase="active">
+    <div data-conversation-scroll>
+      <div data-dsh-better-display="0.1.1">
+        <div data-chat-flow=""><section data-reader-turn="1">turn</section></div>
+      </div>
+      <div data-composer-seat id="reader-seat">composer</div>
+    </div>
+  </section>
+  <script>
+    document.body.dataset.inspectDisplay = getComputedStyle(document.getElementById('inspect-seat')).display;
+    document.body.dataset.readerDisplay = getComputedStyle(document.getElementById('reader-seat')).display;
+  </script>
+</body>

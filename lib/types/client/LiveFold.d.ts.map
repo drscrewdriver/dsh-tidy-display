@@ -1,0 +1,1 @@
+{"version":3,"file":"LiveFold.d.ts","sourceRoot":"","sources":["../../../src/client/LiveFold.tsx"],"names":[],"mappings":"AAIA,oEAAoE;AACpE,wBAAgB,gBAAgB,CAAC,EAAE,KAAK,EAAE,MAAM,EAAE,EAAE;IAAE,KAAK,EAAE,MAAM,CAAC;IAAC,MAAM,EAAE,OAAO,CAAA;CAAE,+BAiBrF;AAED,wBAAgB,eAAe,CAAC,EAAE,OAAO,EAAE,MAAM,EAAE,EAAE;IAAE,OAAO,EAAE,MAAM,CAAC;IAAC,MAAM,EAAE,OAAO,CAAA;CAAE,+BAkBxF"}

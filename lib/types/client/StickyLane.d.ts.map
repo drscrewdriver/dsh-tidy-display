@@ -1,0 +1,1 @@
+{"version":3,"file":"StickyLane.d.ts","sourceRoot":"","sources":["../../../src/client/StickyLane.tsx"],"names":[],"mappings":"AACA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,OAAO,CAAC;AAEvC,mFAAmF;AACnF,wBAAgB,UAAU,CAAC,EAAE,IAAI,EAAE,SAAS,EAAE,QAAQ,EAAE,EAAE;IAAE,IAAI,EAAE,SAAS,GAAG,QAAQ,CAAC;IAAC,SAAS,EAAE,MAAM,CAAC;IAAC,QAAQ,EAAE,SAAS,CAAA;CAAE,+BA6B/H"}

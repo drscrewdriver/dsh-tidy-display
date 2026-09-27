@@ -1,0 +1,78 @@
+import {
+  CONVENTIONAL_SKILL_ROOTS,
+  GENERATIVE_MCPAPPS_SKILL,
+  SKILL_PACK_RELATIVE,
+  publicSkillRoots,
+  skillListIncludes,
+  skillsFromListResult,
+  toPublicSkillStatus,
+  type HostSkillStatus,
+} from '../skill-status.js';
+
+export {
+  CONVENTIONAL_SKILL_ROOTS,
+  GENERATIVE_MCPAPPS_SKILL,
+  SKILL_PACK_RELATIVE,
+  publicSkillRoots,
+  skillListIncludes,
+  skillsFromListResult,
+  toPublicSkillStatus,
+};
+export type { HostSkillStatus };
+
+export interface SkillStatusSnapshot {
+  readonly name: typeof GENERATIVE_MCPAPPS_SKILL;
+  readonly installed: boolean;
+  readonly via: 'skills.list' | 'skill-root' | null;
+  readonly roots: HostSkillStatus['roots'];
+  readonly packPath?: string;
+  readonly hostReached: boolean;
+}
+
+export interface SkillStatusProbe {
+  listRemoteSkills?: () => Promise<readonly { readonly name?: string }[] | undefined>;
+  fetchHostStatus?: () => Promise<HostSkillStatus | undefined>;
+}
+
+export async function detectGenerativeMcpappsSkill(probe: SkillStatusProbe): Promise<SkillStatusSnapshot> {
+  let host: HostSkillStatus | undefined;
+  if (probe.fetchHostStatus) {
+    try {
+      host = await probe.fetchHostStatus();
+    } catch {
+      host = undefined;
+    }
+  }
+
+  let remoteHit = false;
+  if (probe.listRemoteSkills) {
+    try {
+      remoteHit = skillListIncludes(await probe.listRemoteSkills());
+    } catch {
+      remoteHit = false;
+    }
+  }
+
+  const installed = Boolean(host?.installed || remoteHit);
+  const via = remoteHit ? 'skills.list' : (host?.via ?? null);
+  const publicHost = host === undefined ? undefined : toPublicSkillStatus(host);
+  return {
+    name: GENERATIVE_MCPAPPS_SKILL,
+    installed,
+    via,
+    roots: publicHost?.roots ?? publicSkillRoots(),
+    hostReached: host !== undefined,
+  };
+}
+
+/** mkdir/cp using conventional relative roots only. Host paths are ignored. */
+export function shortestInstallCommand(_status?: Pick<SkillStatusSnapshot, 'packPath' | 'roots'>): string {
+  const dest = CONVENTIONAL_SKILL_ROOTS[0];
+  return `mkdir -p ${dest} && cp -R ${SKILL_PACK_RELATIVE} ${dest}/`;
+}
+
+export function firstSessionId(list: { ids?: readonly string[]; byId?: Record<string, unknown> } | undefined): string | undefined {
+  if (list?.ids && list.ids.length > 0) return list.ids[0];
+  const keys = list?.byId ? Object.keys(list.byId) : [];
+  return keys[0];
+}

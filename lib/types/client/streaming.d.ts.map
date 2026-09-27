@@ -1,0 +1,1 @@
+{"version":3,"file":"streaming.d.ts","sourceRoot":"","sources":["../../../src/client/streaming.tsx"],"names":[],"mappings":"AAIA,eAAO,MAAM,mBAAmB;aAA4B,OAAO;iBAAe,MAAM;aAAW,OAAO;cAAY,OAAO;EAAuC,CAAC;AAErK,wBAAgB,gBAAgB,CAAC,MAAM,EAAE,MAAM,EAAE,SAAS,EAAE,OAAO,EAAE,OAAO,EAAE;IAAE,SAAS,CAAC,EAAE,MAAM,CAAC;IAAC,WAAW,EAAE,OAAO,CAAC;IAAC,QAAQ,EAAE,OAAO,CAAA;CAAE;;;;;;EA+D5I"}

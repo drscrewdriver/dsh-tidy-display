@@ -1,0 +1,5 @@
+id: dsh-tidy-display
+entry: src/dsh-tidy-display.ts
+marker: '[my-plugins/dsh-tidy-display] loaded'
+kind: client
+profile: web

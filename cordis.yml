@@ -1,0 +1,4 @@
+# Source overlay for local --patch work. Stock install uses cordis.patch.yml.
+- insert:
+    - id: dsh-tidy-display
+      name: './src/dsh-tidy-display.ts'

@@ -1,0 +1,49 @@
+import type { ChatNodeKind } from '@deepseek-ai/dsh-client-ui-chat/client';
+export interface WaitingAnchor {
+    key: string;
+    time: number | null;
+}
+type InputNode = {
+    kind: string;
+    data: unknown;
+};
+type Submission = {
+    requestId: string;
+    time?: number;
+    placement?: string;
+};
+/**
+ * Chat-layer kinds that hand the turn back to the model unconditionally.
+ *
+ * These are `ChatNodeDataMap` keys, NOT conversation-layer `ConversationNode` kinds.
+ * The two layers name the same idea differently: a returned tool is `tool-result`
+ * in the conversation contract, but the row the reader sees is the `tool-call` node.
+ * A name copied from the wrong layer silently disables the branch it guards, so
+ * the `satisfies` below makes the compiler reject any name that is not a real kind.
+ */
+export declare const WAIT_AFTER: Set<ChatNodeKind>;
+/**
+ * Every chat-kind the handover logic reasons about, checked against the host's own
+ * kind union at compile time. Adding a name here that the host does not register
+ * fails `tsc` instead of failing silently at runtime.
+ */
+export declare const HANDOVER_KINDS: readonly ["user", "steering", "context", "model-retry", "tool-call", "command"];
+/**
+ * Does this node leave the model on the hook for the next move?
+ *
+ * A tool or command that is *still running* is not a wait — the tool is the one
+ * working. Only its returned form hands control back, which is exactly the moment
+ * the model can stall.
+ */
+export declare function handsBackToModel(node: InputNode): boolean;
+/**
+ * The moment the current wait began.
+ *
+ * This is the time of the **last** node that handed control to the model — a
+ * returned tool, an injected context, or the user's own message. Anchoring on the
+ * user's message alone made the readout count the entire turn, so a wait that had
+ * only just begun showed the minutes the tools had already spent.
+ */
+export declare function waitingAnchor(order: readonly string[], get: (key: string) => InputNode | undefined, pending?: readonly Submission[]): WaitingAnchor;
+export {};
+//# sourceMappingURL=waiting-clock.d.ts.map
