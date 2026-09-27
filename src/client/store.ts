@@ -26,6 +26,12 @@ export interface ReaderState {
   bubbles: boolean;
   /** Derived from foldIntensity === 2; kept for older #14 snapshots. */
   processOnly: boolean;
+  /** Canvas message rail (ported from dsh-tidychat). */
+  railEnabled: boolean;
+  railSide: 'left' | 'right';
+  railStyle: 'bar' | 'dot';
+  /** White sheen beneath current/hover marks. */
+  railRing: boolean;
 }
 type ReaderActions = {
   setExpanded: (draft: ReaderState, key: string, value: boolean) => void;
@@ -36,6 +42,10 @@ type ReaderActions = {
   setFoldIntensity: (draft: ReaderState, value: FoldIntensity) => void;
   setFrostedGlass: (draft: ReaderState, value: boolean) => void;
   setBubbles: (draft: ReaderState, value: boolean) => void;
+  setRailEnabled: (draft: ReaderState, value: boolean) => void;
+  setRailSide: (draft: ReaderState, value: 'left' | 'right') => void;
+  setRailStyle: (draft: ReaderState, value: 'bar' | 'dot') => void;
+  setRailRing: (draft: ReaderState, value: boolean) => void;
 };
 
 function applyFoldIntensity(draft: ReaderState, value: FoldIntensity): void {
@@ -55,6 +65,10 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       frostedGlass: false,
       bubbles: true,
       processOnly: false,
+      railEnabled: true,
+      railSide: 'left',
+      railStyle: 'bar',
+      railRing: false,
     }),
     persist: 'dsh.reader.v1',
     actions: {
@@ -70,6 +84,10 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       setFoldIntensity: (draft, value: FoldIntensity) => { applyFoldIntensity(draft, value); },
       setFrostedGlass: (draft, value: boolean) => { draft.frostedGlass = value; },
       setBubbles: (draft, value: boolean) => { draft.bubbles = value; },
+      setRailEnabled: (draft, value: boolean) => { draft.railEnabled = value; },
+      setRailSide: (draft, value: 'left' | 'right') => { draft.railSide = value; },
+      setRailStyle: (draft, value: 'bar' | 'dot') => { draft.railStyle = value; },
+      setRailRing: (draft, value: boolean) => { draft.railRing = value; },
     },
   });
 }

@@ -19,6 +19,12 @@ export interface ReaderState {
     bubbles: boolean;
     /** Derived from foldIntensity === 2; kept for older #14 snapshots. */
     processOnly: boolean;
+    /** Canvas message rail (ported from dsh-tidychat). */
+    railEnabled: boolean;
+    railSide: 'left' | 'right';
+    railStyle: 'bar' | 'dot';
+    /** White sheen beneath current/hover marks. */
+    railRing: boolean;
 }
 type ReaderActions = {
     setExpanded: (draft: ReaderState, key: string, value: boolean) => void;
@@ -29,6 +35,10 @@ type ReaderActions = {
     setFoldIntensity: (draft: ReaderState, value: FoldIntensity) => void;
     setFrostedGlass: (draft: ReaderState, value: boolean) => void;
     setBubbles: (draft: ReaderState, value: boolean) => void;
+    setRailEnabled: (draft: ReaderState, value: boolean) => void;
+    setRailSide: (draft: ReaderState, value: 'left' | 'right') => void;
+    setRailStyle: (draft: ReaderState, value: 'bar' | 'dot') => void;
+    setRailRing: (draft: ReaderState, value: boolean) => void;
 };
 export declare function createReaderStore(): EngineStoreHandle<ReaderState, ReaderActions>;
 export {};

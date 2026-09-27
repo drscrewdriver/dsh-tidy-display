@@ -12,6 +12,10 @@ export interface ReaderPrefsSnapshot {
   foldIntensity?: FoldIntensity;
   autoFold?: boolean;
   processOnly?: boolean;
+  railEnabled?: boolean;
+  railSide?: 'left' | 'right';
+  railStyle?: 'bar' | 'dot';
+  railRing?: boolean;
 }
 
 export interface OpenPrefs {
@@ -23,6 +27,10 @@ export interface OpenPrefs {
     setBubbles?: (value: boolean) => void;
     setFoldIntensity?: (value: FoldIntensity) => void;
     setAutoFold?: (value: boolean) => void;
+    setRailEnabled?: (value: boolean) => void;
+    setRailSide?: (value: 'left' | 'right') => void;
+    setRailStyle?: (value: 'bar' | 'dot') => void;
+    setRailRing?: (value: boolean) => void;
   };
 }
 
@@ -68,6 +76,10 @@ export function SettingsSection(props: SettingsProps) {
   const glass = frostedGlassOf(snap);
   const bubbles = bubblesOf(snap);
   const autoFold = snap.autoFold !== false && snap.foldIntensity !== 0;
+  const railOn = snap.railEnabled !== false;
+  const railSide = snap.railSide === 'right' ? 'right' : 'left';
+  const railStyle = snap.railStyle === 'dot' ? 'dot' : 'bar';
+  const railRing = snap.railRing === true;
   const setMode = (value: DeliverableOpenMode) => {
     props.prefs.actions.setDeliverableOpenMode(value);
   };
@@ -160,6 +172,70 @@ export function SettingsSection(props: SettingsProps) {
             props.prefs.actions.setAutoFold?.(!autoFold);
             props.prefs.actions.setFoldIntensity?.(!autoFold ? 1 : 0);
           }}
+        />
+      </div>
+
+      <div className={css.row}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'railTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'railDescription')}</div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={railOn}
+          className={css.switch}
+          data-on={railOn || undefined}
+          data-tidy-display-rail={railOn ? 'on' : 'off'}
+          onClick={() => { props.prefs.actions.setRailEnabled?.(!railOn); }}
+        />
+      </div>
+
+      <div className={css.row}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'railSide')}</div>
+        </div>
+        <div className={css.actions}>
+          <button type="button" className={css.button} aria-pressed={railSide === 'left'}
+            onClick={() => { props.prefs.actions.setRailSide?.('left'); }}>
+            {text(props, copy, 'railSideLeft')}
+          </button>
+          <button type="button" className={css.button} aria-pressed={railSide === 'right'}
+            onClick={() => { props.prefs.actions.setRailSide?.('right'); }}>
+            {text(props, copy, 'railSideRight')}
+          </button>
+        </div>
+      </div>
+
+      <div className={css.row}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'railStyle')}</div>
+        </div>
+        <div className={css.actions}>
+          <button type="button" className={css.button} aria-pressed={railStyle === 'bar'}
+            onClick={() => { props.prefs.actions.setRailStyle?.('bar'); }}>
+            {text(props, copy, 'railStyleBar')}
+          </button>
+          <button type="button" className={css.button} aria-pressed={railStyle === 'dot'}
+            onClick={() => { props.prefs.actions.setRailStyle?.('dot'); }}>
+            {text(props, copy, 'railStyleDot')}
+          </button>
+        </div>
+      </div>
+
+      <div className={css.row}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'railRingTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'railRingDescription')}</div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={railRing}
+          className={css.switch}
+          data-on={railRing || undefined}
+          data-tidy-display-rail-ring={railRing ? 'on' : 'off'}
+          onClick={() => { props.prefs.actions.setRailRing?.(!railRing); }}
         />
       </div>
 

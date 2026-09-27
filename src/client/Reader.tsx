@@ -17,9 +17,7 @@ import { asReadonlyArray, pendingSubmissionImages, type PendingSubmissionEcho } 
 import { WaitingStatus } from './WaitingStatus.js';
 import { handsBackToModel, waitingAnchor } from './waiting-clock.js';
 import { ContextInjectionRow } from './native/ContextInjectionRow.js';
-import { TimelineRail } from './TimelineRail.js';
-import { landTurn, scrollerOf } from './conversation-scroll.js';
-import { mergeTimelineItems, type TimelineItem } from './timeline.js';
+import { RailView } from './rail/RailView.js';
 import { presentLiveTurn, segmentLiveTurn } from './live-turn.js';
 import type { LiveStep } from './live-turn.js';
 import { bubblesOf, frostedGlassOf } from './fold-intensity.js';
@@ -690,107 +688,13 @@ export function Reader(props: ReaderProps) {
   const selectedProcessKeys = usePinnedSelection(root, '[data-reader-process]');
   const [historyError, setHistoryError] = useState(false);
 
-  // 1. Navigation items from Chat snapshot
-  const turnNavigationItems = props.useChat(snapshot => snapshot.navigation?.items ? snapshot.navigation.items() : undefined);
-  // 2. Whole-log turn outline projection
-  const turnOutline = props.useProjection?.('turnOutline');
-  // 3. Track turns with deliverables
-  const turnsWithDeliverables = useMemo(() => {
-    const set = new Set<number>();
-    for (const [turnNum, loc] of timeline.turns) {
-      const deliv = (loc.data as { get(key: string): unknown } | undefined)?.get('deliverables') as { produced?: unknown[] } | undefined;
-      if (Array.isArray(deliv?.produced) && deliv.produced.length > 0) {
-        set.add(turnNum);
-      }
-    }
-    return set;
-  }, [timeline]);
-
-  // 4. Merged timeline items for the rail
-  const timelineItems = useMemo(
-    () => mergeTimelineItems(turnNavigationItems, turnOutline, turnsWithDeliverables),
-    [turnNavigationItems, turnOutline, turnsWithDeliverables],
-  );
-
-  // 5. Active & busy turn tracking
-  const [activeTurn, setActiveTurn] = useState<number | null>(null);
-  const [busyTurn, setBusyTurn] = useState<number | null>(null);
-
-  // Scroll spy to update activeTurn
-  useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-    const scroller = el.closest('[data-conversation-scroll]') ?? el;
-
-    let ticking = false;
-    const updateActive = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
-        const line = (scroller instanceof HTMLElement ? scroller.clientHeight : window.innerHeight) * 0.35;
-        const turnRows = el.querySelectorAll<HTMLElement>('[data-reader-turn]:not([data-reader-turn="unresolved"])');
-        let current: number | null = null;
-        for (const row of turnRows) {
-          const rect = row.getBoundingClientRect();
-          if (rect.top <= line) {
-            const num = Number(row.dataset.readerTurn);
-            if (Number.isSafeInteger(num)) current = num;
-          } else {
-            break;
-          }
-        }
-        if (current !== null) {
-          setActiveTurn(current);
-        } else if (turnRows.length > 0) {
-          const first = Number(turnRows[0].dataset.readerTurn);
-          if (Number.isSafeInteger(first)) setActiveTurn(first);
-        }
-      });
-    };
-
-    scroller.addEventListener('scroll', updateActive, { passive: true });
-    updateActive();
-    return () => scroller.removeEventListener('scroll', updateActive);
-  }, [groups]);
-
-  // Navigation handler (supports loaded jump & unloaded loadThrough).
-  // Land on the conversation scroller only — scrollIntoView also moves
-  // ancestor boxes and can lift the sticky composer after a top→bottom jump.
-  const onNavigateTurn = useCallback(async (item: TimelineItem) => {
-    const el = root.current;
-    if (!el) return;
-    const port = scrollerOf(el);
-    const reveal = (turn: number) => {
-      const targetRow = el.querySelector<HTMLElement>(`[data-reader-turn="${turn}"]`);
-      if (!targetRow) return;
-      const last = timelineItems.at(-1);
-      if (last !== undefined && last.turn === turn) {
-        scroll.jump();
-      } else {
-        scroll.release();
-        landTurn(targetRow, port);
-      }
-      setActiveTurn(turn);
-    };
-
-    if (item.anchor.kind === 'loaded') {
-      reveal(item.turn);
-      return;
-    }
-
-    setBusyTurn(item.turn);
-    try {
-      if (props.loadThrough) {
-        await props.loadThrough(item.anchor.seq);
-      } else {
-        await props.loadOlder();
-      }
-      setTimeout(() => { reveal(item.turn); }, 50);
-    } finally {
-      setBusyTurn(null);
-    }
-  }, [props.loadThrough, props.loadOlder, scroll.jump, scroll.release, timelineItems]);
+  // Rail (ported from dsh-tidychat): config lives on the reader store. The rail
+  // is the single navigation rail — TimelineRail was removed in the merge; the
+  // outline-driven unloaded-turn coverage it provided is a rail follow-up.
+  const railEnabled = props.useStore(state => state.railEnabled);
+  const railSide = props.useStore(state => state.railSide);
+  const railStyle = props.useStore(state => state.railStyle);
+  const railRing = props.useStore(state => state.railRing);
 
   const lastKey = order.at(-1);
   const lastNode = lastKey ? nodes.get(lastKey) : undefined;
@@ -817,7 +721,7 @@ export function Reader(props: ReaderProps) {
   // ChatView publishes data-chat-flow="" on its column. Skins treat a
   // scrollport without that hook as inspect-only and hide [data-composer-seat].
   return <StreamMotionContext.Provider value={streamMotion}><div ref={root} className={css.root} data-reader-build="0.3.3" data-dsh-tidy-display="0.3.3" data-reader-wait-clock-version="input-v1" data-reader-wait-start={waitAnchor.time ?? undefined} data-motion={motion ? 'on' : 'off'} data-reader-glass={frostedGlass || undefined} data-reader-bubbles={bubbles ? 'on' : 'off'} data-reader-auto-fold={autoFold ? 'on' : 'off'}>
-    <TimelineRail items={timelineItems} activeTurn={activeTurn} busyTurn={busyTurn} onNavigate={onNavigateTurn} />
+    <RailView enabled={railEnabled} side={railSide} style={railStyle} ring={railRing} hasMore={hasMore} loadOlder={props.loadOlder} />
     <div className={css.column} data-chat-flow="">
       <StickyLane kind="toolbar" className={css.toolbar}>
         <button

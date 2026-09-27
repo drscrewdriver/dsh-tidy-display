@@ -11,6 +11,16 @@ export type SettingsCopyKey =
   | 'foldNone'
   | 'foldStandard'
   | 'foldSummary'
+  | 'railTitle'
+  | 'railDescription'
+  | 'railSide'
+  | 'railSideLeft'
+  | 'railSideRight'
+  | 'railStyle'
+  | 'railStyleBar'
+  | 'railStyleDot'
+  | 'railRingTitle'
+  | 'railRingDescription'
   | 'skillTitle'
   | 'skillInstalled'
   | 'skillMissing'
@@ -36,6 +46,16 @@ export const en: SettingsCopy = {
   foldNone: 'Off',
   foldStandard: 'On',
   foldSummary: 'Summary',
+  railTitle: 'Message rail',
+  railDescription: 'On by default: a canvas navigation rail at the conversation edge — fish-eye hover with summaries, click to jump, current-turn highlight.',
+  railSide: 'Rail position',
+  railSideLeft: 'Left edge',
+  railSideRight: 'Right edge (mirrored)',
+  railStyle: 'Rail style',
+  railStyleBar: 'Lines',
+  railStyleDot: 'Dots',
+  railRingTitle: 'Rail sheen',
+  railRingDescription: 'On by default: a soft white sheen laid beneath the current and hovered marks, keeping them readable over busy wallpapers.',
   skillTitle: 'generative-mcpapps skill',
   skillInstalled: 'Installed',
   skillMissing: 'Not detected',
@@ -60,6 +80,16 @@ export const zh: SettingsCopy = {
   foldNone: '关闭',
   foldStandard: '开启',
   foldSummary: '摘要',
+  railTitle: '消息轨',
+  railDescription: '默认开启：会话区边缘的 canvas 导航轨——鱼眼悬停看摘要、点击跳转、当前轮高亮。',
+  railSide: '显示位置',
+  railSideLeft: '左缘',
+  railSideRight: '右缘（镜像）',
+  railStyle: '显示样式',
+  railStyleBar: '横线',
+  railStyleDot: '圆点',
+  railRingTitle: '外圈柔光',
+  railRingDescription: '默认开启：在当前轮与悬停轮的标记底下垫一层白色柔光，复杂壁纸上也能看清标记。',
   skillTitle: 'generative-mcpapps 技能',
   skillInstalled: '已安装',
   skillMissing: '未检测到',
