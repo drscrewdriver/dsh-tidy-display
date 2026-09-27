@@ -68,7 +68,9 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       railEnabled: true,
       railSide: 'left',
       railStyle: 'bar',
-      railRing: false,
+      // Default on: the sheen is the rail's wallpaper-legibility guarantee
+      // (the user-facing requirement was "selectable AND visible").
+      railRing: true,
     }),
     persist: 'dsh.reader.v1',
     actions: {

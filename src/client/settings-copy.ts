@@ -55,7 +55,7 @@ export const en: SettingsCopy = {
   railStyleBar: 'Lines',
   railStyleDot: 'Dots',
   railRingTitle: 'Rail sheen',
-  railRingDescription: 'On by default: a soft white sheen laid beneath the current and hovered marks, keeping them readable over busy wallpapers.',
+  railRingDescription: 'On by default (matches the store default): a soft white sheen laid beneath the current and hovered marks, keeping them readable over busy wallpapers.',
   skillTitle: 'generative-mcpapps skill',
   skillInstalled: 'Installed',
   skillMissing: 'Not detected',
