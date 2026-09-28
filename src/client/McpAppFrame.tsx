@@ -44,7 +44,7 @@ export const McpAppFrame = memo(function McpAppFrame({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const lastParamsRef = useRef<Record<string, unknown>>({});
   const [height, setHeight] = useState(() => Math.max(60, Math.min(2400, initialHeight)));
-  const [ready, setReady] = useState(false);
+  const [, setReady] = useState(false);
   const [receipt, setReceipt] = useState<string | null>(null);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [reloadNonce, setReloadNonce] = useState(0);
@@ -81,7 +81,7 @@ export const McpAppFrame = memo(function McpAppFrame({
 
   const handleUserSubmit = useCallback((params: Record<string, unknown>) => {
     lastParamsRef.current = params;
-    let summary = '';
+    let summary: string;
     if (typeof params.choice === 'string') {
       const desc = typeof params.desc === 'string' ? ` (${params.desc})` : '';
       summary = `选择: ${params.choice}${desc}`;

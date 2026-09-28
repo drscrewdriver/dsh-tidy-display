@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { parseRgba } from './rail/colors.js';
-import { bubblesOf, foldIntensityOf, frostedGlassOf, type FoldIntensity } from './fold-intensity.js';
+import { bubblesOf, frostedGlassOf, type FoldIntensity } from './fold-intensity.js';
 import { deliverableOpenModeOf, type DeliverableOpenMode } from './open-file.js';
 import { settingsCopyFor, type SettingsCopy, type SettingsCopyKey } from './settings-copy.js';
 import { CONVENTIONAL_SKILL_ROOTS, detectGenerativeMcpappsSkill, shortestInstallCommand, type SkillStatusProbe, type SkillStatusSnapshot } from './skill-status.js';
@@ -73,12 +73,6 @@ function text(props: SettingsProps, copy: SettingsCopy, key: keyof SettingsCopy)
   }
   return copy[key];
 }
-
-const FOLD_STOPS: { value: FoldIntensity; key: 'foldNone' | 'foldStandard' | 'foldSummary' }[] = [
-  { value: 0, key: 'foldNone' },
-  { value: 1, key: 'foldStandard' },
-  { value: 2, key: 'foldSummary' },
-];
 
 function Chip({ on, swatch, onClick, children }: { on: boolean; swatch?: string; onClick: () => void; children: ReactNode }) {
   return (

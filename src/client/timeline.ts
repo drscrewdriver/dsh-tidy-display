@@ -1,5 +1,3 @@
-import type { TurnLocation } from '@deepseek-ai/dsh-client-ui-conversation/client';
-
 export interface TimelineItem {
   readonly turn: number;
   readonly prompt: string;

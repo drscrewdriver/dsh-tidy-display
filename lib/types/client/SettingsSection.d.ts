@@ -9,6 +9,17 @@ export interface ReaderPrefsSnapshot {
     foldIntensity?: FoldIntensity;
     autoFold?: boolean;
     processOnly?: boolean;
+    railEnabled?: boolean;
+    railSide?: 'left' | 'right';
+    railStyle?: 'bar' | 'dot';
+    railRing?: boolean;
+    hideOfficialNav?: boolean;
+    railColor?: string;
+    railColorCustom?: string;
+    railColorLight?: string;
+    railAccent?: string;
+    railAccentCustom?: string;
+    railAccentLight?: string;
 }
 export interface OpenPrefs {
     getSnapshot: () => ReaderPrefsSnapshot;
@@ -19,6 +30,17 @@ export interface OpenPrefs {
         setBubbles?: (value: boolean) => void;
         setFoldIntensity?: (value: FoldIntensity) => void;
         setAutoFold?: (value: boolean) => void;
+        setRailEnabled?: (value: boolean) => void;
+        setRailSide?: (value: 'left' | 'right') => void;
+        setRailStyle?: (value: 'bar' | 'dot') => void;
+        setRailRing?: (value: boolean) => void;
+        setHideOfficialNav?: (value: boolean) => void;
+        setRailColor?: (value: string) => void;
+        setRailColorCustom?: (value: string) => void;
+        setRailColorLight?: (value: string) => void;
+        setRailAccent?: (value: string) => void;
+        setRailAccentCustom?: (value: string) => void;
+        setRailAccentLight?: (value: string) => void;
     };
 }
 export interface BetterDisplaySettingsInjected {

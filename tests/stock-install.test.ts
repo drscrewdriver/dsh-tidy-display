@@ -17,8 +17,8 @@ test('declares dsh.bundle.patch so official add joins the profile layer stack', 
   assert.equal(pkg.dsh.bundle?.patch, './cordis.patch.yml');
   assert.equal(existsSync(resolve(root, 'cordis.patch.yml')), true);
   const patch = readFileSync(resolve(root, 'cordis.patch.yml'), 'utf8');
-  assert.match(patch, /id: dsh-tidy-display/);
-  assert.match(patch, /name: dsh-tidy-display/);
+  assert.match(patch, /id: tidy-display/);
+  assert.match(patch, /name: ["']@drscrewdriver\/dsh-tidy-display["']/);
   assert.equal(pkg.files.includes('cordis.patch.yml'), true);
 });
 
@@ -31,8 +31,8 @@ test('commits compiled lib entries and does not require a prepare script', () =>
   assert.equal(existsSync(resolve(root, 'lib/client.js')), true);
   const clientJs = readFileSync(resolve(root, 'lib/client.js'), 'utf8');
   assert.match(clientJs, /window\.__ModuleLoader__\.load/);
-  assert.match(clientJs, /id:\s*"dsh-tidy-display"/);
-  assert.match(clientJs, /settings\.section/);
+  assert.match(clientJs, /id:\s*"@drscrewdriver\/dsh-tidy-display"/);
+  assert.match(clientJs, /dsh-family\.tab/);
   assert.match(clientJs, /deliverableOpenMode/);
   assert.match(clientJs, /frostedGlass/);
   assert.match(clientJs, /foldIntensity/);
@@ -49,7 +49,7 @@ test('commits compiled lib entries and does not require a prepare script', () =>
 test('README leads with the official stock one-liner and names pnpm', () => {
   for (const name of ['README.md', 'README.en.md']) {
     const text = readFileSync(resolve(root, name), 'utf8');
-    assert.match(text, /dsh plugin --profile web add github:aa2246740\/dsh-tidy-display/);
+    assert.match(text, /dsh plugin --profile web add github:drscrewdriver\/dsh-tidy-display/);
     assert.match(text, /pnpm/);
     assert.doesNotMatch(text, /activate-new-client/);
     assert.doesNotMatch(text, /my-plugins/);

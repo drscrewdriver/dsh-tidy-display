@@ -25,6 +25,20 @@ export interface ReaderState {
     railStyle: 'bar' | 'dot';
     /** White sheen beneath current/hover marks. */
     railRing: boolean;
+    /**
+     * Hide the official TurnNavigator via the takeover attribute. The official
+     * rail still mounts even under the reader, so this stays a user-facing
+     * switch (default on) — the merge did drop it once and the official rail
+     * resurfaced next to ours.
+     */
+    hideOfficialNav: boolean;
+    /** Rail palette (ported from dsh-tidychat): auto / hue×lightness / custom. */
+    railColor: string;
+    railColorCustom: string;
+    railColorLight: string;
+    railAccent: string;
+    railAccentCustom: string;
+    railAccentLight: string;
 }
 type ReaderActions = {
     setExpanded: (draft: ReaderState, key: string, value: boolean) => void;
@@ -39,6 +53,13 @@ type ReaderActions = {
     setRailSide: (draft: ReaderState, value: 'left' | 'right') => void;
     setRailStyle: (draft: ReaderState, value: 'bar' | 'dot') => void;
     setRailRing: (draft: ReaderState, value: boolean) => void;
+    setHideOfficialNav: (draft: ReaderState, value: boolean) => void;
+    setRailColor: (draft: ReaderState, value: string) => void;
+    setRailColorCustom: (draft: ReaderState, value: string) => void;
+    setRailColorLight: (draft: ReaderState, value: string) => void;
+    setRailAccent: (draft: ReaderState, value: string) => void;
+    setRailAccentCustom: (draft: ReaderState, value: string) => void;
+    setRailAccentLight: (draft: ReaderState, value: string) => void;
 };
 export declare function createReaderStore(): EngineStoreHandle<ReaderState, ReaderActions>;
 export {};

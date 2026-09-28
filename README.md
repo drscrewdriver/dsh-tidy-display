@@ -74,8 +74,10 @@
 
 ### Web CLI
 
+npm 发布前用 GitHub 地址（发布后可直接用上面的包名）：
+
 ```sh
-dsh plugin --profile web add @drscrewdriver/dsh-tidy-display
+dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display
 ```
 
 本地目录 / tarball（开发 / 本地测试）：

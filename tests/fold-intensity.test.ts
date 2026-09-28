@@ -30,7 +30,6 @@ const tool: LiveStep = {
   },
 };
 const open = { status: 'open' } as const;
-const closed = { status: 'closed', reason: 'completed', latestStep: 2, closingStep: 2 } as const;
 
 test('fold intensity defaults to standard (1) and glass defaults off', () => {
   assert.equal(FOLD_INTENSITY_DEFAULT, 1);

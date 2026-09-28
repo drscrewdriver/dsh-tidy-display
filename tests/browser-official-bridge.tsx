@@ -104,7 +104,7 @@ slots.register({ name: 'conversation.chat.turnTail', id: '@deepseek-ai/dsh-clien
   }),
 }, DeliverablesTail);
 slots.register({ name: 'deliverables.file.actions', id: 'open-in-app', locale: 'open-in-app' }, FileRouteAction);
-let liveDetail = source('initial');
+const liveDetail = source('initial');
 const storeHandle = { create: () => {
   observations.mounts++;
   const value = source(0);

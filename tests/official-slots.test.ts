@@ -6,7 +6,7 @@ import { mirrorOfficialSlot, readerTailMatch, type CompositionRegistry } from '.
 
 function registry(kind: 'keyed' | 'chain' | 'list' = 'keyed') {
   const core = new SlotCore();
-  const register = (options: object, component: unknown) => (core.register as Function)(options, component) as () => void;
+  const register = (options: object, component: unknown) => (core.register as (...args: unknown[]) => unknown)(options, component) as () => void;
   register({ name: 'root', children: {
     source: { kind, scope: 'session' },
     reader: { kind, scope: 'session' },

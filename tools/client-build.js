@@ -118,7 +118,7 @@ function clientConfig(id, entry) {
     outputOptions: {
       entryFileNames: 'client.js',
       chunkFileNames: 'client.[name].js',
-      banner: (chunk) =>
+      banner: () =>
         `window.__ModuleLoader__.load({\n\tid: ${JSON.stringify(id)},\n\tfactory: (require) => {`,
       footer: 'return module.exports; } });',
       intro: 'var module = { exports: {} }; var exports = module.exports;',

@@ -123,6 +123,7 @@ const tokenizeBackslashMathText: Tokenizer = function (effects, ok, nok) {
 
 function createMathFlow(marker: number, openMarker: number, closeMarker: number, multiline: boolean): Construct {
   const tokenize: Tokenizer = function (effects, ok, nok) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- micromark tokenizer convention: capture `this` for the state closures
     const self = this
     let oddBackslashRun = false
     const tail = self.events.at(-1)
@@ -285,6 +286,7 @@ function createMathFlow(marker: number, openMarker: number, closeMarker: number,
 }
 
 const tokenizeNonLazyContinuation: Tokenizer = function (effects, ok, nok) {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias -- micromark tokenizer convention: capture `this` for the state closures
   const self = this
 
   return start

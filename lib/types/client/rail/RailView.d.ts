@@ -12,11 +12,12 @@ import * as React from 'react';
  */
 export type RailSide = 'left' | 'right';
 export type RailStyle = 'bar' | 'dot';
-export declare function RailView({ enabled, side, style: railStyle, ring, hasMore, loadOlder }: {
+export declare function RailView({ enabled, side, style: railStyle, ring, hideOfficialNav, hasMore, loadOlder }: {
     enabled: boolean;
     side: RailSide;
     style: RailStyle;
     ring: boolean;
+    hideOfficialNav: boolean;
     hasMore: boolean;
     loadOlder: () => void | Promise<void>;
 }): React.ReactElement | null;

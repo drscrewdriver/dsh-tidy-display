@@ -15,6 +15,17 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
             scope: 'root';
             owner: SettingsSectionOwnerProps;
         };
+        /**
+         * 「起子插件设置」family tab ledger, declared by the dsh-session-guard
+         * family hub. Every drscrewdriver-family plugin registers one tab here
+         * (id + order for tab ordering, inject = card props) instead of owning a
+         * standalone settings.section.
+         */
+        'dsh-family.tab': {
+            kind: 'list';
+            scope: 'root';
+            owner: Record<string, unknown>;
+        };
     }
     interface LocaleNamespaceMap {
         'tidy-display': SettingsCopyKey;

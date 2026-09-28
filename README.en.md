@@ -74,8 +74,10 @@ Open **Settings → Plugins → Add plugin** and enter the package name (after t
 
 ### Web CLI
 
+Before the npm publish use the GitHub address (after publish the package name above works directly):
+
 ```sh
-dsh plugin --profile web add @drscrewdriver/dsh-tidy-display
+dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display
 ```
 
 Local directory / tarball (development / local testing):
