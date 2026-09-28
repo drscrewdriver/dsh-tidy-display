@@ -155,7 +155,7 @@ export function apply(ctx: Context): void {
     };
   }
 
-  // Settings card in the plugins tab seat (0.1.2~0.1.6 verified slot).
+  // Settings card in the keyed plugins seat (settings.plugin.item, rc.7+; tidychat-provided).
   const slots = (ctx as unknown as {
     slots?: {
       inject?: (name: string, cb: () => unknown) => void;
@@ -163,8 +163,8 @@ export function apply(ctx: Context): void {
     };
   }).slots;
   if (slots?.inject !== undefined && slots?.register !== undefined) {
-    slots.inject('settings.plugins.tab', () => slots.register?.(
-      { name: 'settings.plugins.tab', id: 'tidy-display', order: 60, label: () => '整洁显示', inject: () => ({}) },
+    slots.inject('settings.plugin.item', () => slots.register?.(
+      { name: 'settings.plugin.item', key: 'tidy-display', order: 100, inject: () => ({}) },
       function SettingsTab(): React.ReactElement {
         React.useSyncExternalStore(prefs.subscribe, () => prefs.getSnapshot());
         const snap = prefs.getSnapshot();

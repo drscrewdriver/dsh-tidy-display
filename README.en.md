@@ -37,7 +37,7 @@ After the npm publish a dist-tag works too: `dsh plugin --profile web add @drscr
 
 ## Settings
 
-**Settings → Plugins → 整洁显示** (the `settings.plugins.tab` card): rail on/off, position, style, sheen, official-rail takeover, mark color, accent color, smart loading. Values go to the `tidy-display` namespace and apply immediately.
+**Settings → Plugins → 整洁显示** (the plugins config card (`settings.plugin.item`)): rail on/off, position, style, sheen, official-rail takeover, mark color, accent color, smart loading. Values go to the `tidy-display` namespace and apply immediately.
 
 ## Compatibility notes
 
