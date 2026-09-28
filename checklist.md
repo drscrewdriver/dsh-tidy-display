@@ -1,21 +1,18 @@
 # Checklist
 
-## Must Pass
-- [ ] `pnpm typecheck` 零错误；`npm run build` 产物齐全（lib/dsh-tidy-display.js + lib/client.js）
-- [ ] 宿主 0.1.7-rc.2 激活：设置 → 插件出现「Tidy Display」卡（模块 id 三处一致，不重蹈 fork.4 静默失活）
-- [ ] 阅读视图全功能回归：过程/思考/回答渲染、自动折叠、思考衬底、消息气泡、玻璃模式、交付物行、等待时钟、官方工具桥接
-- [ ] 消息轨（阅读视图）：横线/圆点两样式渲染正常；鱼眼悬停 + 摘要卡 + 点击跳转 + 滚动当前轮高亮
-- [ ] 消息轨（原生对话视图，如保留）：经 `conversation.session.header.utilities` 槽正常渲染
-- [ ] 白色柔光外圈：横线胶囊光斑 / 圆点正圆光斑，当前轮浓悬停轮淡，开关生效
-- [ ] 未加载轮次占位：长会话新开时轨显示 outline 全覆盖占位，点击经 loadThrough 加载后落位为实点，无错位
-- [ ] 末尾插队（steering）会话：圆点数 = DOM 行数，尾部点击不失效
-- [ ] 智能加载更早历史：空闲期自动逐页加载、响应下降自动暂停、手动可续
-- [ ] 诊断报告：轮数口径与轨一致，能生成报告
-- [ ] 官方 TurnNavigator 不再出现（阅读视图），无"双轨并存"
-- [ ] 明暗主题 × 玻璃皮肤：轨配色 auto 跟随正确，柔光在明暗壁纸下均为"半透明光泽"而非硬框
+## Must Pass（本轮：README 声明）
+- [ ] README.md / README.en.md 新增「来源与致谢」节：实时显示来源（bd 上游+fork）、消息轨来源（tidychat 上游+compat 线），全部带可查证链接（仓库/PR/commit）
+- [ ] 「原版 better-display 的不足」三条齐全：①消息/思考无底框（主题/壁纸下可读性差）→ fork 气泡+思考衬底；②阅读视图丢行级锚点 → 生态插件静默失效（PR #41）；③TimelineRail 无鱼眼摘要/跳转/配色
+- [ ] 「原版 tidychat 的不足」三条齐全：①折叠手术与宿主原生折叠重叠；②0.2.10 及更早 0.1.2 宿主轨从未渲染（0.3.0 修复）；③与 bd 阅读视图双向冲突
+- [ ] 「宿主兼容性」节：能力矩阵（0.1.7 / 0.1.2-alpha.2~0.1.6 / 0.1.0-rc.7~0.1.2-alpha.1）+ 版本指路表 + 「截至 2026-09-28」时效标注
+- [ ] 口吻检查：只有事实与链接，无贬损措辞；对两个上游均有致谢
+- [ ] 双语结构逐节对齐；git push 后 GitHub 渲染正常
 
 ## Should Pass
-- [ ] 长会话（50+ 轮）滚动性能与内存对比双插件方案不劣化（canvas 单轨应更优）
-- [ ] 设置卡：轨配置与 bd 原配置同卡分区展示，volatile 表单即时生效
-- [ ] 老用户迁移：装有 tidychat 的 settings.yaml 键被新插件直接读取（键名未改）
-- [ ] `npm pack` 产物 files 白名单正确，`prepublishOnly` 构建通过
+- [ ] 规划四件套 + 归档说明在仓库可见（docs/plans/2026-09-28-merge/）
+- [ ] PR #41 合并后回访更新声明第 ② 条（记入 tasks 后续）
+
+## 旧宿主 legacy 线（本轮只规划，实施时启用）
+- [ ] compat/legacy 分支：rail-only 裁剪清单按 tasks Phase L 执行
+- [ ] 0.1.5 / 0.1.2 / 0.1.1 宿主实测：轨渲染、柔光、配色、autoLoad、installSection/register 设置面
+- [ ] dist-tag 发布（dsh-0.1.5 / dsh-0.1.2 / dsh-0.1.1）+ README 版本表更新

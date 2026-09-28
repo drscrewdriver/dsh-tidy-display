@@ -1,61 +1,60 @@
-# Spec: dsh-tidy-display —— tidychat × tidy-display 合并项目（DSH 0.1.7 基准）
+# Spec: dsh-tidy-display · 诚实来源声明 + 旧宿主（0.1.5/0.1.2/0.1.1）反向适配规划
+
+> 上一轮「合并项目」规划已归档于 `docs/plans/2026-09-28-merge/`（执行完毕：骨架/轨/配色/调色盘/起子设置/发版 v0.1.0）。
 
 ## 需求
 
-以 **DSH 0.1.7-rc.2** 为唯一目标宿主，把 `dsh-tidychat` 与 `dsh-tidy-display`（fork）缝合为一个插件 **`dsh-tidy-display`**（npm: `@drscrewdriver/dsh-tidy-display`），整合双方 UI 优点，构造性消除两插件的 DOM 契约冲突。
+### R1 README「来源与不足」诚实声明（双语，功能清单之前的显著位置）
+如实说明（所有断言可被 git 历史 / PR 链接互证）：
 
-**保留的功能（合并后全量）**：
-- 来自 tidy-display（主体）：阅读视图（过程/思考/最终回答渲染）、自动折叠与过程编排、消息气泡（半透明底）+ 玻璃模式、推理思考衬底（本轮新增）、交付物行、官方桥接（工具/反馈/turnTail）、设置分区、mcp-app、等待时钟等全部现有能力
-- 来自 tidychat（移植）：canvas 消息轨（鱼眼悬停、拖动预览、点击跳转、当前轮高亮、摘要卡）、白色柔光外圈（navRing）、横线/圆点样式、左/右贴边镜像、配色链（自动/调色盘）、智能加载更早历史（autoLoad Governor）、诊断报告
-- 锚点契约修复（PR aa2246740/dsh-tidy-display#41 的等价改动）作为内部事实随合并携带
+**实时显示（流式阅读）的来源**：better-display 阅读视图——上游 `aa2246740/dsh-better-display`（流式渲染、过程编排、官方桥接），经 `drscrewdriver` fork 增强。本项目未重写其流式/折叠/动效链路。
 
-**明确丢弃（及理由）**：
-- tidychat 折叠 / 分隔线手术 → bd auto-fold 已覆盖且更优；两套 DOM 手术必然打架
-- 首次引导（双轨二选一向导）→ 单插件无双轨困惑
-- 「接管官方消息轨」开关 → 阅读视图不渲染官方 TurnNavigator，接管语义自然消失；原生对话视图兼容问题随之不存在（合并后只走阅读视图一条渲染路径）
-- tidychat 的 0.1.2~0.1.6 兼容层（installSettingsSection 双路径、legacy 线）→ 锁定 0.1.7
+**消息轨的来源**：dsh-tidychat——上游 `BananaSoldier01/dsh-tidychat`（canvas 轨、鱼眼、配色链、智能加载），经 `drscrewdriver` compat 线增强（白色柔光、steering 同视、DOM 单一事实源）。移植时依赖注入化改造，算法与观感保持原样。
 
-## 技术方案
+**原版 better-display 的不足（本 fork / 合并修复的动机）**：
+1. **消息与思考没有底框**：最终回答与思考文字直接铺在页面背景上，换肤 / 壁纸 / 深色主题下可读性差 → fork 增加消息气泡（官方 `--dsw-alias-bg-layer-1` 半透明底）与思考卡同款衬底（fork 提交 `94d59c7`、`fa3a795`）
+2. **阅读视图丢弃宿主行级锚点**（`data-chat-anchor-key` / `data-chat-flow-kind`）：以该契约为事实源的第三方插件在阅读视图下解析出 0 行、静默失效——与 tidychat 同装时消息轨不渲染（修复 PR：aa2246740/dsh-better-display#41）
+3. 自带 TimelineRail 仅有官方大纲一轨，无鱼眼摘要、无点击跳转、无配色能力
 
-### 底座与代码起点
-- **底座 = tidy-display fork**（`refer-dsh-tidy-display` @ `feat/message-bubbles`，含锚点修复、思考衬底、模块 id 钉死）。理由：reader 6.5k 行是复杂度主体且持续跟 rc 演化；tidychat 需要移植的只有 ~800 行（轨组件+配色链+autoLoad+诊断）
-- tidychat 侧以 `release/0.1.7`（b38c26e + 白色柔光改动）为移植源
+**原版 tidychat 的不足（合并动机，公平陈述）**：
+1. 折叠 / 分隔线是 DOM 手术，与宿主 0.1.2+ 原生折叠重叠，需用户手动二选一
+2. v0.2.10 及更早在 0.1.2 宿主上消息轨取数路径读错快照——解析出 0 轮、实际从未渲染（v0.3.0 修复，见其仓库 RAIL-ROOT-CAUSE-ANALYSIS）
+3. 与 bd 阅读视图天然冲突（其 DOM 手术作用不到阅读视图的行；阅读视图又丢锚点反过来废掉消息轨）
 
-### 架构
-```
-dsh-tidy-display/
-├─ src/dsh-tidy-display.ts          # host 半（bd 原 host 半 + 声明式 volatile schema 并入轨配置）
-├─ src/client/
-│  ├─ index.tsx                      # bd 客户端入口（原样）
-│  ├─ Reader.tsx / Blocks / ...      # 阅读视图全家（原样，含锚点契约行）
-│  ├─ TimelineRail.tsx               # 【移除】——由移植的 canvas 轨接替（见下）
-│  ├─ rail/                          # 【新】tidychat 轨移植包
-│  │  ├─ RailView.tsx                # canvas 轨组件（鱼眼/命中/跳转/tip/柔光外圈）
-│  │  ├─ colors.ts                   # 配色链（parseRgba/contrastRatio/resolveNavColors/applyNavColors）
-│  │  └─ outline.ts                  # 【新】bd 大纲数据 → 轨数据源适配（含未加载轮占位）
-│  ├─ autoload.ts                    # autoLoad Governor（对接 reader 的 loadOlder/loadThrough）
-│  └─ diagnostics.ts                 # 诊断报告（口径统一走行采集 helper）
-└─ ...
-```
+### R2 旧宿主反向适配规划（0.1.5 / 0.1.2 / 0.1.1）
 
-### 关键设计
-1. **单轨融合**：tidychat canvas 轨为唯一轨渲染器；吸收 bd `TimelineRail` 的数据源 `mergeTimelineItems(turnNavigationItems, turnOutline, turnsWithDeliverables)`——已加载窗口用 DOM 行（DOM 单一事实源，精确几何/跳转），未加载轮次用 outline 占位标记（点击走 `loadThrough` 加载后落位）。bd TimelineRail 组件移除。
-2. **双视图下轨都可用**：阅读视图内轨挂 reader 内部（替代 TimelineRail 位）；保留原生对话视图路径时轨继续走 `conversation.session.header.utilities` 槽（现有代码原样）。
-3. **配置合并**：轨配置（navigator/navSide/navStyle/navRing/配色五项/autoLoad）以声明式 volatile schema 并入（0.1.7 configForms 自动成表），与 bd 的 `dsh.reader.v1` prefs 并存但统一进一张「Tidy Display」设置卡；键名沿用 tidychat 已发布键，老用户 settings.yaml 迁移零成本。
-4. **锚点契约**：行级 `data-chat-anchor-key`/`data-chat-flow-kind` 内部自带（本会话已改）；对外仍保留——将来第三方插件同样受益。
+**能力矩阵（依据 = tidychat README 兼容表 + bd changelog 实证）**：
+
+| 宿主 | 阅读视图 | 消息轨 | 智能加载 | 设置面 |
+|---|---|---|---|---|
+| 0.1.7-rc.1+（当前线） | ✅ | ✅ 双视图 | ✅（待移植） | 声明式 + family tab |
+| 0.1.2-alpha.2 ~ 0.1.6（含 0.1.5） | ❌ | ✅ 原生视图 | ✅ | `installSection` |
+| 0.1.0-rc.7 ~ 0.1.2-alpha.1（含 0.1.1） | ❌ | ✅ 原生视图 | ✅ | `register`（keyed 槽） |
+
+**为什么阅读视图不能下放**：bd 的 reader 绑定 0.1.7 槽位契约（`turnTail` list 化、`configForms`、0.1.7-rc.1/rc.2 之间都曾互不兼容），下放 = 重写 bd，成本远超价值。旧宿主线 = **rail-only 子集**（消息轨 + 柔光 + 配色 + 智能加载），这恰好是 tidychat 旧维护线已验证可用的全部能力。
+
+**技术方案：分线发布（沿用 tidychat 已验证模式）**：
+- tidychat README 明确结论：0.1.7 声明式 `.volatile()` 与旧宿主 `installSection`/`register` 无法共存于一份产物（旧宿主调用 `.volatile()` 即抛错、加载失败）→ 不做单包运行时探测
+- `compat/legacy` 分支：从本项目裁出 rail-only 变体——删除 Reader 及 bd 全部模块，保留 `rail/RailView.tsx` + `rail/colors.ts` + autoLoad（从 tidychat 回移植 Governor）+ 双 API 设置层（回移植 tidychat `installSection`/`register` 路径）
+- 旧宿主只有原生渲染，锚点契约天然完整 → 无需 `data-reader-key` 回退，`railRows()` 的原生路径即全部
+- 接管开关保留（0.1.2+ 有官方轨）；0.1.1 无官方轨，开关自动无效（无害）
+- 包命名：`@drscrewdriver/dsh-tidy-display` 用 dist-tag（`dsh-0.1.5` / `dsh-0.1.2` / `dsh-0.1.1`，同 tidychat 的 `dsh-0.1.2` 惯例），不加 `-legacy` 后缀（README 指引按宿主版本装对应 tag）
+
+### R3 交付物（本轮）
+- README.md / README.en.md：新增「来源与致谢」「宿主兼容性」两节（含上方全部声明 + 能力矩阵）
+- 本规划四件套
+- legacy 线**只规划不实施**：等 0.1.7 线稳定 + 有真实旧宿主用户反馈再开工
 
 ## 决策记录
 | 选项 | 选择 | 理由 |
 |---|---|---|
-| 底座 bd vs tidychat | bd fork | reader 是复杂度主体（6.5k vs 2k）且需持续跟宿主 rc；tidychat 移植面小且功能独立（轨/配色/自动加载可整体搬） |
-| 单轨 vs 双轨 | 单轨融合 | 合并的初衷就是消冲突；canvas 轨渲染能力（鱼眼/命中/柔光）+ bd 大纲数据（全会话覆盖含未加载）互补，TimelineRail 无存在必要 |
-| tidychat 折叠/分隔线 | 丢弃 | bd auto-fold 覆盖；双手术必打架（会话内已论证） |
-| 0.1.7 以下兼容 | 丢弃 | 用户明确以 0.1.7 为基准；砍掉双 API 注册/legacy 线减一半维护面 |
-| 与 PR #41 的关系 | 不阻塞 | 上游合并→fork 基更干净；不合并→合并项目内部已自带修复，无影响 |
+| 单包运行时探测 vs 分线发布 | 分线发布（compat/legacy 分支 + dist-tag） | tidychat 实证单份产物无法两线兼容；社区已验证模式，且本机就有分线维护经验（tidychat release/0.1.7、legacy/0.1.2） |
+| legacy 线基座 | 本仓库裁剪（非继续用 tidychat 原包） | 继承白色柔光/调色盘/steering 同视/单一事实源等新修复；tidychat 上游已停更 |
+| legacy 阅读视图 | 明确不支持 | 成本 = 重写 bd；旧宿主用户核心诉求是消息轨与可读性 |
+| R1 声明口吻 | 事实 + 可查证链接，不贬低上游 | 上游是社区作品；fork 增强均有 PR/commit 链 |
+| 现在是否实施 legacy | 否 | YAGNI：0.1.7 线刚闭环；规划落盘随时可开工 |
 
 ## 约束
-- 禁止硬编码 CSS Module hash 类名（两边共同的设计红线）
-- 模块 id / bundle id / 包名三处必须一致为 `@drscrewdriver/dsh-tidy-display`（本轮部署踩过的坑，源码钉死）
-- peer range 锁 `>=0.1.7-rc.1 <0.1.8`；`compat/harness-rc2.json` 升级门保留
-- 主题颜色只跟随 DSW 语义 token + 保守兜底原则（tidychat HANDOVER 原则 1）继续有效
-- lib/ 产物照旧入库（bd 既有约定）
+- README 断言与 git 历史/PR 可互证；不写无出处的贬损
+- legacy 线 peer range 按 tidychat 旧表（0.1.0-rc.7+；≤0.1.0-rc.6 用户指向 tidychat 0.1.0）
+- 本轮只改 README 与规划文档，不动 src/

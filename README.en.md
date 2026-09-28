@@ -9,6 +9,39 @@
 > [dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat) (message rail / smart history loading).
 > The merge removes the DOM-contract conflict between them; credit and thanks to both.
 
+## Provenance & credits (stated as-is)
+
+**The live reading view** comes from [dsh-better-display](https://github.com/aa2246740/dsh-better-display): upstream aa2246740's streaming render, process folding choreography, and official bridging, enhanced by the drscrewdriver fork. This project did not rewrite its rendering or motion pipeline.
+
+**The message rail** comes from [dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat): the canvas rail, fish-eye hover, color chain, and smart history loading are ports, enhanced by the drscrewdriver compat line (white sheen, steering parity, DOM single source of truth).
+
+### Original better-display shortcomings, fixed by this project / the fork
+
+1. **No plate behind messages or thinking** — final answers and reasoning text sit directly on the page background; readability suffers under skins, wallpapers, and dark themes. → The fork added the official `--dsw-alias-bg-layer-1` translucent bubble plate for answers and the same plate for the reasoning card (commits `fa3a795`, `94d59c7`).
+2. **The reading view drops the host per-row anchors** — `data-chat-anchor-key` / `data-chat-flow-kind` are not emitted on message rows, so third-party plugins that rely on them as their DOM source of truth (e.g. the tidychat rail) resolve zero rows and **fail silently** under the reader. → Fix submitted upstream as [aa2246740/dsh-better-display#41](https://github.com/aa2246740/dsh-better-display/pull/41); the merged project carries the same fix.
+3. Its TimelineRail is a single official-outline rail — no fish-eye summaries, no click-to-jump, no colors.
+
+### Original dsh-tidychat shortcomings, and why the merge happened
+
+1. Fold / divider are DOM surgery overlapping the host's native folding (0.1.2+), forcing a manual either/or.
+2. v0.2.10 and earlier misread the snapshot on DSH 0.1.2 hosts — the rail resolved zero turns and **never actually rendered** (fixed in v0.3.0; see its repo's `docs/RAIL-ROOT-CAUSE-ANALYSIS.md`).
+3. It conflicted with the better-display reading view **in both directions**: tidychat's surgery could not reach the reader's rows, and the reader's dropped anchors in turn crippled the rail — the direct motivation for this merge.
+
+Thanks to both upstreams and their authors (aa2246740, BananaSoldier01) — this project stands on their shoulders. Upstream improvements that do not conflict will be tracked over time.
+
+## Host compatibility
+
+| DSH host | Reading view | Message rail | Settings |
+|---|---|---|---|
+| 0.1.7-rc.1+ (this line) | ✅ | ✅ (both views) | 起子插件设置 → 整洁显示 |
+| 0.1.2-alpha.2 ~ 0.1.6 (incl. 0.1.5) | ❌ | ✅ (planned) | plugin config card |
+| 0.1.0-rc.7 ~ 0.1.2-alpha.1 (incl. 0.1.1) | ❌ | ✅ (planned) | plugin config card |
+
+- The reading view is bound to the 0.1.7 slot contract (the host itself had breaking changes between 0.1.7-rc.1 and rc.2); it will not be backported.
+- Backporting the rail subset (rail + sheen + colors + smart loading) to older hosts is **planned but not implemented**; see `tasks.md` Phase L in this repo. Release form: dist-tags `dsh-0.1.5` / `dsh-0.1.2` / `dsh-0.1.1`.
+- 0.1.0-rc.6 and earlier are out of scope (use dsh-tidychat 0.1.0).
+- Matrix as of 2026-09-28 (tidy-display v0.1.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4 line).
+
 ## Features
 
 ### Reading view (from better-display)
@@ -67,9 +100,7 @@ Targets DeepSeek Harness **0.1.7-rc.1+** (peer `>=0.1.7-rc.1 <0.1.8`). Display o
 
 ## Relationship to the originals
 
-- The reading view is based on [aa2246740/dsh-better-display](https://github.com/aa2246740/dsh-better-display) (MIT) plus drscrewdriver fork enhancements (per-row host anchor contract, reasoning plate, answer bubbles)
-- The rail / colors / smart loading are ported from [BananaSoldier01/dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat) (MIT)
-- Upstream improvements that do not conflict will be tracked over time
+See "[Provenance & credits](#provenance--credits-stated-as-is)" at the top — upstream improvements that do not conflict will be tracked over time.
 
 ## License
 
