@@ -1,109 +1,62 @@
-# dsh-tidy-display
+# dsh-tidy-display (legacy 0.1.5 line)
 
 [中文](./README.md)
 
-**Tidy Display** — a community plugin for DeepSeek Harness (DSH) **0.1.7** that merges the reading view and the message rail into one plugin: long sessions become scannable, navigable, and resumable.
+**Tidy Display · message-rail subset** for DeepSeek Harness (DSH) **0.1.5-alpha.1 ~ 0.1.6**. Brings the canvas navigation rail to legacy hosts: long sessions become scannable, jumpable, and fully loadable.
 
-> This project merges two popular DSH plugins:
-> [dsh-better-display](https://github.com/aa2246740/dsh-better-display) (reading view, maintained via a fork) ×
-> [dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat) (message rail / smart history loading).
-> The merge removes the DOM-contract conflict between them; credit and thanks to both.
-
-## Provenance & credits (stated as-is)
-
-**The live reading view** comes from [dsh-better-display](https://github.com/aa2246740/dsh-better-display): upstream aa2246740's streaming render, process folding choreography, and official bridging, enhanced by the drscrewdriver fork. This project did not rewrite its rendering or motion pipeline.
-
-**The message rail** comes from [dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat): the canvas rail, fish-eye hover, color chain, and smart history loading are ports, enhanced by the drscrewdriver compat line (white sheen, steering parity, DOM single source of truth).
-
-### Original better-display shortcomings, fixed by this project / the fork
-
-1. **No plate behind messages or thinking** — final answers and reasoning text sit directly on the page background; readability suffers under skins, wallpapers, and dark themes. → The fork added the official `--dsw-alias-bg-layer-1` translucent bubble plate for answers and the same plate for the reasoning card (commits `fa3a795`, `94d59c7`).
-2. **The reading view drops the host per-row anchors** — `data-chat-anchor-key` / `data-chat-flow-kind` are not emitted on message rows, so third-party plugins that rely on them as their DOM source of truth (e.g. the tidychat rail) resolve zero rows and **fail silently** under the reader. → Fix submitted upstream as [aa2246740/dsh-better-display#41](https://github.com/aa2246740/dsh-better-display/pull/41); the merged project carries the same fix.
-3. Its TimelineRail is a single official-outline rail — no fish-eye summaries, no click-to-jump, no colors.
-
-### Original dsh-tidychat shortcomings, and why the merge happened
-
-1. Fold / divider are DOM surgery overlapping the host's native folding (0.1.2+), forcing a manual either/or.
-2. v0.2.10 and earlier misread the snapshot on DSH 0.1.2 hosts — the rail resolved zero turns and **never actually rendered** (fixed in v0.3.0; see its repo's `docs/RAIL-ROOT-CAUSE-ANALYSIS.md`).
-3. It conflicted with the better-display reading view **in both directions**: tidychat's surgery could not reach the reader's rows, and the reader's dropped anchors in turn crippled the rail — the direct motivation for this merge.
-
-Thanks to both upstreams and their authors (aa2246740, BananaSoldier01) — this project stands on their shoulders. Upstream improvements that do not conflict will be tracked over time.
-
-## Host compatibility
-
-| DSH host | Reading view | Message rail | Settings |
-|---|---|---|---|
-| 0.1.7-rc.1+ (this line) | ✅ | ✅ (both views) | 起子插件设置 → 整洁显示 |
-| 0.1.2-alpha.2 ~ 0.1.6 (incl. 0.1.5) | ❌ | ✅ (planned) | plugin config card |
-| 0.1.0-rc.7 ~ 0.1.2-alpha.1 (incl. 0.1.1) | ❌ | ✅ (planned) | plugin config card |
-
-- The reading view is bound to the 0.1.7 slot contract (the host itself had breaking changes between 0.1.7-rc.1 and rc.2); it will not be backported.
-- Backporting the rail subset (rail + sheen + colors + smart loading) to older hosts is **planned but not implemented**; see `tasks.md` Phase L in this repo. Release form: dist-tags `dsh-0.1.5` / `dsh-0.1.2` / `dsh-0.1.1`.
-- 0.1.0-rc.6 and earlier are out of scope (use dsh-tidychat 0.1.0).
-- Matrix as of 2026-09-28 (tidy-display v0.1.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4 line).
+> This is a compat branch of [@drscrewdriver/dsh-tidy-display](https://github.com/drscrewdriver/dsh-tidy-display) (the 0.1.7 line) carrying **the message-rail capabilities only**. On 0.1.7-rc.1+ install the main line; on 0.1.2-alpha.2~0.1.4 use the [`compat/0.1.2`](https://github.com/drscrewdriver/dsh-tidy-display/tree/compat/0.1.2) line (tag `v0.1.0-dsh0.1.2`); on 0.1.0-rc.7~0.1.2-alpha.1 use `compat/0.1.1` (tag `v0.1.0-dsh0.1.1`).
+> The rail is ported from [dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat) (canvas rail, fish-eye hover, color chain, smart loading are its work; the white sheen and the slider palette are compat-line enhancements here). Thanks to its author.
 
 ## Features
 
-### Reading view (from better-display)
-- Running steps collapse into expandable summaries; final answers render as **message bubbles** (translucent plate + optional frosted glass that lets skinned wallpapers through)
-- The reasoning card shares the same translucent plate; streaming thinking can auto-follow, pause, and expand
-- Official bridge: tool views, feedback, deliverable cards, turnTail via official slots
-- `` ```mcp-app `` fences mount as sandboxed interactive cards (`<iframe sandbox="allow-scripts allow-forms">`); skill pack in [`skills/generative-mcpapps/`](skills/generative-mcpapps/)
-- Deliverables row, waiting clock, pending echo; native Chat / Trajectory, composer, model picker, tools, and approvals stay
-
-### Message rail (from dsh-tidychat)
-- Canvas navigation rail at the conversation edge: fish-eye hover with summaries, click-to-jump, current-turn highlight on scroll
-- Styles **lines / dots**, position **left / right (mirrored)**
-- **White sheen ring**: a soft sheen beneath the current and hovered marks keeps them readable over busy wallpapers
-- **Colors**: mark color and accent color each offer Auto (theme-following with a 3:1 corrective fallback) / Custom (color picker + HEX/RGB text + alpha slider)
-- **Take over the official rail**: hides the official right-edge TurnNavigator (hidden, not unmounted)
-- Works in **both** the native Chat view and the reading view
-
-### Settings
-Everything lives under **Settings → 起子插件设置 → 整洁显示 (Tidy Display)**: rail (toggle / position / style / sheen / takeover / colors) + message bubbles / frosted glass / auto-fold / deliverable open mode. Persisted on `dsh.reader.v1`.
+- Canvas navigation rail at the conversation edge: fish-eye hover with summaries, click to jump, current-turn highlight
+- Style **lines / dots**, position **left / right edge (mirrored)**
+- **White sheen ring** beneath current/hover marks, keeping them readable over busy wallpapers
+- **Palette**: mark color / accent color, each "auto (theme-aware with contrast correction) / custom (color picker + HEX/RGB text + alpha slider)"
+- **Take over the official rail**: hides the official right-edge TurnNavigator (hidden, not unmounted). ⚠️ On DSH 0.1.5 the official rail is hardcoded in ChatView — if hiding fails, turn this switch off (to-be-verified item)
+- **Smart history loading**: auto-clicks the host "load earlier" button under a time budget, pausing automatically under performance pressure
+- Works on the native chat view only; the 0.1.7 reading face is **not** part of this branch (it is bound to 0.1.7 host slot contracts and cannot be carried back)
 
 ## Install
 
-### DSH Studio desktop app (recommended)
+### DSH Studio desktop app
 
-Open **Settings → Plugins → Add plugin** and enter the package name (after the npm release):
+Open **Settings → Plugins → Add plugin** and enter:
 
 ```text
-@drscrewdriver/dsh-tidy-display
+github:drscrewdriver/dsh-tidy-display#v0.1.0-dsh0.1.5
 ```
 
 ### Web CLI
 
-Before the npm publish use the GitHub address (after publish the package name above works directly):
-
 ```sh
-dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display
+dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display#v0.1.0-dsh0.1.5
 ```
 
-Local directory / tarball (development / local testing):
+After the npm publish a dist-tag works too: `dsh plugin --profile web add @drscrewdriver/dsh-tidy-display` (the `dsh-0.1.5` tag). Reopen the Host once and hard-refresh the page after installing (bundles are read at boot).
 
-```sh
-dsh plugin --profile web add ./dsh-tidy-display
-dsh plugin --profile web add ./dsh-tidy-display-0.1.0.tgz
-```
+## Settings
 
-`dsh.bundle` is captured at boot: do **not** hand-write the same insert row into the profile's `cordis.patch.yml` (double mount). Remove an installed copy with `dsh plugin --profile web remove dsh-tidy-display`. For an already-running Web Host, reopen the Host once and reload.
+**Settings → Plugins → 整洁显示** (the `settings.plugins.tab` card): rail on/off, position, style, sheen, official-rail takeover, mark color, accent color, smart loading. Values go to the `tidy-display` namespace and apply immediately.
+
+## Compatibility notes
+
+- Targets **0.1.5-alpha.1 ~ 0.1.6**; 0.1.3 / 0.1.4 should work but are untested
+- 0.1.0-rc.6 and earlier are out of scope (use dsh-tidychat 0.1.0)
+- Display only; Agent execution, the SDK, and credentials are untouched. Node.js `^22.19.0 || >=24`
 
 ## Development
 
 ```sh
 pnpm install
 npm run typecheck
-npm run build      # emits lib/ (committed; the check-harness-compat gate needs a Harness checkout)
+npm run lint
 npm test
+npm run build      # lib/ artifacts are committed
 ```
 
-Targets DeepSeek Harness **0.1.7-rc.1+** (peer `>=0.1.7-rc.1 <0.1.8`). Display only — it does not change Agent execution, the SDK, or credentials. Node.js `^22.19.0 || >=24`. New sessions default to reading.
-
-## Relationship to the originals
-
-See "[Provenance & credits](#provenance--credits-stated-as-is)" at the top — upstream improvements that do not conflict will be tracked over time.
+Gates: typecheck + eslint + test (rail subset) + build, all green before tagging.
 
 ## License
 
-Display and Markdown portions come from DeepSeek Harness (MIT). Motion references [Transitions.dev](https://transitions.dev/). This repository's code is [MIT](LICENSE).
+This repository is [MIT](LICENSE). The rail algorithms and looks come from dsh-tidychat (MIT); thanks to its author.

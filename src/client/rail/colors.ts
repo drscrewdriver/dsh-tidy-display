@@ -31,7 +31,7 @@ export const NAV_HUE_PREVIEW: Record<string, string> = {
 export const NAV_LIGHT_KEYS = ['l1', 'l2', 'l3', 'l4', 'l5'] as const;
 export const NAV_LIGHT_LABELS: Record<string, string> = { l1: '极浅', l2: '浅', l3: '中', l4: '深', l5: '极深' };
 
-const NAV_HUE_PALETTE: Record<string, [string, string, string, string, string]> = {
+export const NAV_HUE_PALETTE: Record<string, [string, string, string, string, string]> = {
   gray: ['rgba(225,225,225,0.9)', 'rgba(190,190,190,0.78)', 'rgba(128,128,128,0.8)', 'rgba(70,70,70,0.85)', 'rgba(20,20,20,0.92)'],
   black: ['rgba(90,90,90,0.8)', 'rgba(60,60,60,0.85)', 'rgba(30,30,30,0.9)', 'rgba(12,12,12,0.94)', 'rgba(0,0,0,0.97)'],
   white: ['rgba(255,255,255,0.95)', 'rgba(250,250,250,0.9)', 'rgba(240,240,240,0.85)', 'rgba(225,225,225,0.8)', 'rgba(205,205,205,0.75)'],
@@ -42,9 +42,9 @@ const NAV_HUE_PALETTE: Record<string, [string, string, string, string, string]> 
   orange: ['#fdba74', '#fb923c', '#f97316', '#ea580c', '#9a3412'],
   red: ['#fca5a5', '#f87171', '#ef4444', '#dc2626', '#991b1b'],
 };
-const NAV_LIGHT_IDX: Record<string, number> = { l1: 0, l2: 1, l3: 2, l4: 3, l5: 4 };
+export const NAV_LIGHT_IDX: Record<string, number> = { l1: 0, l2: 1, l3: 2, l4: 3, l5: 4 };
 
-const hueColor = (hue: unknown, light: unknown, fallback: string): string => {
+export const hueColor = (hue: unknown, light: unknown, fallback: string): string => {
   if (typeof hue === 'string') {
     const palette = NAV_HUE_PALETTE[hue]
     if (palette !== undefined) return palette[NAV_LIGHT_IDX[typeof light === 'string' ? light : 'l3'] ?? 2]
@@ -90,7 +90,7 @@ export const parseRgba = (s: string): [number, number, number, number] | null =>
   return null
 }
 
-const parseRgb = (s: string): [number, number, number] | null => {
+export const parseRgb = (s: string): [number, number, number] | null => {
   const a = parseRgba(s)
   return a === null ? null : [a[0], a[1], a[2]]
 }
@@ -116,7 +116,7 @@ const isDarkBackground = (start: Element | null): boolean => {
   return false
 }
 
-const contrastRatio = (a: [number, number, number], b: [number, number, number]): number => {
+export const contrastRatio = (a: [number, number, number], b: [number, number, number]): number => {
   const lum = (c: [number, number, number]): number => {
     const f = (v: number): number => {
       const s = v / 255
@@ -131,7 +131,7 @@ const contrastRatio = (a: [number, number, number], b: [number, number, number])
   return (hi + 0.05) / (lo + 0.05)
 }
 
-const validColor = (raw: unknown, fallback: string): string => {
+export const validColor = (raw: unknown, fallback: string): string => {
   if (typeof raw !== 'string') return fallback
   const s = raw.trim()
   if (s === '') return fallback

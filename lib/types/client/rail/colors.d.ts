@@ -24,7 +24,13 @@ export declare const NAV_HUE_LABELS: Record<string, string>;
 export declare const NAV_HUE_PREVIEW: Record<string, string>;
 export declare const NAV_LIGHT_KEYS: readonly ["l1", "l2", "l3", "l4", "l5"];
 export declare const NAV_LIGHT_LABELS: Record<string, string>;
+export declare const NAV_HUE_PALETTE: Record<string, [string, string, string, string, string]>;
+export declare const NAV_LIGHT_IDX: Record<string, number>;
+export declare const hueColor: (hue: unknown, light: unknown, fallback: string) => string;
 export declare const parseRgba: (s: string) => [number, number, number, number] | null;
+export declare const parseRgb: (s: string) => [number, number, number] | null;
+export declare const contrastRatio: (a: [number, number, number], b: [number, number, number]) => number;
+export declare const validColor: (raw: unknown, fallback: string) => string;
 export declare const resolveNavColors: (cfg: RailColorConfig, start: Element | null) => {
     bar: string;
     hot: string;

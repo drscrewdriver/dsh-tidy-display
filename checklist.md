@@ -1,18 +1,22 @@
 # Checklist
 
-## Must Pass（本轮：README 声明）
-- [ ] README.md / README.en.md 新增「来源与致谢」节：实时显示来源（bd 上游+fork）、消息轨来源（tidychat 上游+compat 线），全部带可查证链接（仓库/PR/commit）
-- [ ] 「原版 better-display 的不足」三条齐全：①消息/思考无底框（主题/壁纸下可读性差）→ fork 气泡+思考衬底；②阅读视图丢行级锚点 → 生态插件静默失效（PR #41）；③TimelineRail 无鱼眼摘要/跳转/配色
-- [ ] 「原版 tidychat 的不足」三条齐全：①折叠手术与宿主原生折叠重叠；②0.2.10 及更早 0.1.2 宿主轨从未渲染（0.3.0 修复）；③与 bd 阅读视图双向冲突
-- [ ] 「宿主兼容性」节：能力矩阵（0.1.7 / 0.1.2-alpha.2~0.1.6 / 0.1.0-rc.7~0.1.2-alpha.1）+ 版本指路表 + 「截至 2026-09-28」时效标注
-- [ ] 口吻检查：只有事实与链接，无贬损措辞；对两个上游均有致谢
-- [ ] 双语结构逐节对齐；git push 后 GitHub 渲染正常
+## Must Pass（每条兼容分支的发布门）
+- [ ] `npx tsc -p tsconfig.json --noEmit` 零错误
+- [ ] `npx eslint .` 零错误（eslint.config.mjs 沿用 main）
+- [ ] `node --import tsx/esm --test tests/*.test.ts` 全绿（兼容子集：stock-install / rail-colors / rail-store / legacy-settings-schema）
+- [ ] `npx tsc -p tsconfig.json && npx tsdown` 构建成功，`lib/dsh-tidy-display.js` + `lib/client.js` 入库，client.js 内 `id: "@drscrewdriver/dsh-tidy-display"`
+- [ ] src 内无 reader 面残留（`grep -r "Reader\|McpApp\|official-slots" src/` 无命中）；无 `.volatile()`（`grep -r volatile src/` 无命中）；无 `@deepseek-ai/schemastery`
+- [ ] package.json：peer 仅 `@deepseek-ai/dsh-settings`（按线范围）+ `react ^18.2.0`；deps 仅 `schemastery ^3.18.0`；`dsh.client.inject` = `["@deepseek-ai/dsh-client-store", "@deepseek-ai/dsh-client-ui-settings"]`
+- [ ] 宿主半探测链：`installSection` 存在则走之，否则 `register`，两者皆无静默跳过（插件仍加载）
+- [ ] 消息轨在原生对话视图渲染：横线/圆点切换、左右镜像、白色柔光外圈、鱼眼悬停摘要、点击跳转、当前轮高亮
+- [ ] 配色链：auto 跟随主题对比度纠偏；自定义取色器 + HEX/RGB 文本 + 透明度滑杆实时生效
+- [ ] autoLoad：出现「加载更早 / Load earlier / Load older」按钮时按 Governor 时间预算自动点击，长会话全量纳入轨
+- [ ] README.md / README.en.md：该线安装一行式（tag）、兼容矩阵行、已知限制（0.1.5 接管待实测 / 0.1.3-0.1.4 未实测 / 0.1.1 无接管）
+- [ ] tag `v0.1.0-dsh0.1.x` 打在线首提交上并推送
 
 ## Should Pass
-- [ ] 规划四件套 + 归档说明在仓库可见（docs/plans/2026-09-28-merge/）
-- [ ] PR #41 合并后回访更新声明第 ② 条（记入 tasks 后续）
-
-## 旧宿主 legacy 线（本轮只规划，实施时启用）
-- [ ] compat/legacy 分支：rail-only 裁剪清单按 tasks Phase L 执行
-- [ ] 0.1.5 / 0.1.2 / 0.1.1 宿主实测：轨渲染、柔光、配色、autoLoad、installSection/register 设置面
-- [ ] dist-tag 发布（dsh-0.1.5 / dsh-0.1.2 / dsh-0.1.1）+ README 版本表更新
+- [ ] 0.1.5-rc.2 宿主实测：轨渲染 + 设置卡 + autoLoad（本机有该宿主则必做）
+- [ ] 0.1.2-rc.1 宿主实测：同上 + 接管开关生效
+- [ ] 0.1.1 宿主实测：register 表单可改值并即时生效
+- [ ] 主线 README 兼容矩阵从「规划支持」改为「compat/0.1.x 分支（已支持）」并链接 tag
+- [ ] CHANGELOG.md 记录三线发布

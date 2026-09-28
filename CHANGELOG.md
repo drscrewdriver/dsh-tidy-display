@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0-dsh0.1.5 — compat/0.1.5 line
+
+- Legacy compat branch for DSH **0.1.5-alpha.1 ~ 0.1.6**: the message-rail subset of tidy-display on the pre-0.1.7 hosts. The reader face (and every module it needs) is stripped; what ships is the canvas rail (lines/dots, mirrored edges, white sheen), the theme-aware palette with the custom picker + alpha slider, and the smart-history Governor ported from dsh-tidychat `compat/0.1.5`.
+- Settings ride the imperative seam: unscoped `schemastery` schema registered through `installSection` with a `register` fallback (probeable APIs); the settings card mounts in the `settings.plugins.tab` seat, ported from the tidychat card. The 0.1.7 declarative seam (`configForms`/`.volatile()`) is intentionally absent — one build cannot serve both eras.
+- The rail mounts beside the native conversation column without host slots (a self-created fixed container + React root), since the 0.1.7 utilities seat is unverified on legacy hosts; a signature-guarded MutationObserver nudges re-measure when rows change.
+- Peer set collapses to `@deepseek-ai/dsh-settings ^0.1.5-rc.2` + `react`; client inject becomes `@deepseek-ai/dsh-client-store` + `@deepseek-ai/dsh-client-ui-settings` (the tidychat compat/0.1.5 set). Bundle shrinks from 1.37 MB to ~57 KB.
+- Known limits, stated up front: 0.1.5 official-rail takeover is to-be-verified (hardcoded TurnNavigator); 0.1.3/0.1.4 untested; the 0.1.7 reading face cannot be carried back (slot contract).
+
 ## Unreleased
 
 - Module id pinned in source (fork-local build correction): `src/dsh-tidy-display.ts` now exports `name = '@drscrewdriver/dsh-tidy-display'` (with the package name and tsdown entry aligned to the scoped id). The upstream tree carries the unscoped `dsh-tidy-display`; building it unmodified and deploying under the scoped profile entry makes the host unable to mount the client bundle, and the whole plugin silently fails to activate (no 阅读 tab, native view only) — the same failure fork.4 fixed in the published artifact, now pinned at the source level for fork builds.
