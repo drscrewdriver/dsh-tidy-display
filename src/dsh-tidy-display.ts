@@ -28,8 +28,6 @@ export interface Config {
   railStyle?: string;
   /** White sheen beneath current/hover marks. */
   railRing?: boolean;
-  /** Hide the official TurnNavigator (0.1.2+; no-op where absent). */
-  hideOfficialNav?: boolean;
   /** Mark color mode: auto (theme-aware) / custom (railColorCustom). */
   railColor?: string;
   /** Custom mark color: any CSS color, e.g. #3b82f6 / rgb(59,130,246) / rgba(…,0.85). */
@@ -51,7 +49,6 @@ export const Config = z.object({
   railSide: z.union(RAIL_SIDE_KEYS).default('left'),
   railStyle: z.union(RAIL_STYLE_KEYS).default('bar'),
   railRing: z.boolean().default(true),
-  hideOfficialNav: z.boolean().default(true),
   railColor: z.union(RAIL_COLOR_KEYS).default('auto'),
   railColorCustom: z.string().default(''),
   railAccent: z.union(RAIL_COLOR_KEYS).default('auto'),

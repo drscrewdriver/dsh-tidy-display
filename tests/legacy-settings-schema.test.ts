@@ -17,7 +17,6 @@ test('schema evaluates with every rail key and the documented defaults', () => {
   assert.equal(value.railSide, 'left');
   assert.equal(value.railStyle, 'bar');
   assert.equal(value.railRing, true);
-  assert.equal(value.hideOfficialNav, true);
   assert.equal(value.railColor, 'auto');
   assert.equal(value.railColorCustom, '');
   assert.equal(value.railAccent, 'auto');
@@ -43,6 +42,8 @@ test('host half carries no 0.1.7-only declarative seam', () => {
   // The probe chain: installSection first, register as fallback.
   assert.match(code, /installSection/);
   assert.match(code, /register\(/);
+  // 0.1.1 line: no official TurnNavigator exists, so no takeover field.
+  assert.doesNotMatch(code, /hideOfficialNav/);
   // 0.1.7-only web routes (reveal / skill-status) stay on main.
   assert.doesNotMatch(code, /tidy-display\/reveal/);
 });

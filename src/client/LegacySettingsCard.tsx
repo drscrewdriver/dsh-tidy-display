@@ -13,7 +13,6 @@ export interface LegacySettingsValue {
   railSide: string;
   railStyle: string;
   railRing: boolean;
-  hideOfficialNav: boolean;
   railColor: string;
   railColorCustom: string;
   railAccent: string;
@@ -24,7 +23,6 @@ export interface LegacySettingsValue {
 export interface LegacySettingsCardProps {
   value: LegacySettingsValue;
   writable: boolean;
-  hasTakeover: boolean;
   onToggle: (field: keyof LegacySettingsValue) => void;
   onSet: (field: string, value: unknown) => void;
   langTag: string | undefined;
@@ -184,7 +182,7 @@ const toggleField = (
   );
 
 export function LegacySettingsCard(props: LegacySettingsCardProps): React.ReactElement {
-  const { value, writable, hasTakeover, onToggle, onSet, langTag } = props;
+  const { value, writable, onToggle, onSet, langTag } = props;
   const copy: SettingsCopy = settingsCopyFor(langTag);
   const [open, setOpen] = React.useState(false);
   const chevron = React.createElement('svg', {
@@ -226,9 +224,6 @@ export function LegacySettingsCard(props: LegacySettingsCardProps): React.ReactE
         ], String(value.railStyle ?? 'bar'), (k) => onSet('railStyle', k), !writable),
       ),
       toggleField(copy.railRingTitle, copy.railRingDescription, value.railRing === true, !writable, () => onToggle('railRing')),
-      hasTakeover
-        ? toggleField(copy.takeoverTitle, copy.takeoverDescription, value.hideOfficialNav === true, !writable, () => onToggle('hideOfficialNav'))
-        : null,
       colorField(copy.colorBarTitle, 'railColor', 'railColorCustom', String(value.railColor ?? 'auto'), String(value.railColorCustom ?? ''), 'currentColor', '自动 = 跟随主题，对比不足自动纠偏；自定义 = 取色器 / HEX·RGB / 透明度。', writable, onSet),
       colorField(copy.colorAccentTitle, 'railAccent', 'railAccentCustom', String(value.railAccent ?? 'auto'), String(value.railAccentCustom ?? ''), 'currentColor', '强调色作用于当前轮与悬停轮的标记。', writable, onSet),
       toggleField(copy.autoLoadTitle, copy.autoLoadDescription, value.autoLoad === true, !writable, () => onToggle('autoLoad')),

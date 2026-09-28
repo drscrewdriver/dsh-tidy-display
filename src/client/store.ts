@@ -12,8 +12,6 @@ export interface RailState {
   railStyle: 'bar' | 'dot';
   /** White sheen beneath current/hover marks. */
   railRing: boolean;
-  /** Hide the official TurnNavigator (0.1.2+; absent on 0.1.1). */
-  hideOfficialNav: boolean;
   /** Rail palette (ported from dsh-tidychat): auto / hue×lightness / custom. */
   railColor: string;
   railColorCustom: string;
@@ -30,7 +28,6 @@ type RailActions = {
   setRailSide: (draft: RailState, value: 'left' | 'right') => void;
   setRailStyle: (draft: RailState, value: 'bar' | 'dot') => void;
   setRailRing: (draft: RailState, value: boolean) => void;
-  setHideOfficialNav: (draft: RailState, value: boolean) => void;
   setRailColor: (draft: RailState, value: string) => void;
   setRailColorCustom: (draft: RailState, value: string) => void;
   setRailColorLight: (draft: RailState, value: string) => void;
@@ -49,7 +46,6 @@ export function createRailStore(): EngineStoreHandle<RailState, RailActions> {
       // Default on: the sheen is the rail's wallpaper-legibility guarantee
       // (the user-facing requirement was "selectable AND visible").
       railRing: true,
-      hideOfficialNav: true,
       railColor: 'auto',
       railColorCustom: '',
       railColorLight: 'l3',
@@ -64,7 +60,6 @@ export function createRailStore(): EngineStoreHandle<RailState, RailActions> {
       setRailSide: (draft, value: 'left' | 'right') => { draft.railSide = value; },
       setRailStyle: (draft, value: 'bar' | 'dot') => { draft.railStyle = value; },
       setRailRing: (draft, value: boolean) => { draft.railRing = value; },
-      setHideOfficialNav: (draft, value: boolean) => { draft.hideOfficialNav = value; },
       setRailColor: (draft, value: string) => { draft.railColor = value; },
       setRailColorCustom: (draft, value: string) => { draft.railColorCustom = value; },
       setRailColorLight: (draft, value: string) => { draft.railColorLight = value; },

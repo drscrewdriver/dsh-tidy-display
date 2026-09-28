@@ -7,7 +7,6 @@ const DEFAULTS: RailState = {
   railSide: 'left',
   railStyle: 'bar',
   railRing: true,
-  hideOfficialNav: true,
   railColor: 'auto',
   railColorCustom: '',
   railColorLight: 'l3',
@@ -31,7 +30,6 @@ test('rail actions change exactly their own field', () => {
   prefs.actions.setRailSide('right');
   prefs.actions.setRailStyle('dot');
   prefs.actions.setRailRing(false);
-  prefs.actions.setHideOfficialNav(false);
   prefs.actions.setRailColor('custom');
   prefs.actions.setRailColorCustom('rgba(16,185,129,0.8)');
   prefs.actions.setRailAccent('violet');
@@ -42,7 +40,6 @@ test('rail actions change exactly their own field', () => {
   assert.equal(snap.railSide, 'right');
   assert.equal(snap.railStyle, 'dot');
   assert.equal(snap.railRing, false);
-  assert.equal(snap.hideOfficialNav, false);
   assert.equal(snap.railColor, 'custom');
   assert.equal(snap.railColorCustom, 'rgba(16,185,129,0.8)');
   assert.equal(snap.railAccent, 'violet');

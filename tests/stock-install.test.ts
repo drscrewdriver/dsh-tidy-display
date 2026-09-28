@@ -26,8 +26,8 @@ test('declares dsh.bundle.patch so official add joins the profile layer stack', 
 test('legacy dependency set: schemastery dep, per-line peers, legacy client inject', () => {
   assert.deepEqual(Object.keys(pkg.dependencies).sort(), ['schemastery']);
   assert.deepEqual(Object.keys(pkg.peerDependencies).sort(), ['@deepseek-ai/dsh-settings', 'react']);
-  // 0.1.2 line: the installSection seam exists, the session surface is pre-V3.
-  assert.match(pkg.peerDependencies['@deepseek-ai/dsh-settings'], /^>=0\.1\.2-alpha\.2 <0\.1\.5-alpha\.1$/);
+  // 0.1.1 line: pre-installSection hosts, register-only settings.
+  assert.match(pkg.peerDependencies['@deepseek-ai/dsh-settings'], /^>=0\.1\.0-rc\.7 <0\.1\.2-alpha\.2$/);
   assert.deepEqual(pkg.dsh.client?.inject, [
     '@deepseek-ai/dsh-client-store',
     '@deepseek-ai/dsh-client-ui-settings',
@@ -42,7 +42,7 @@ test('commits compiled lib entries without reader-face or 0.1.7-only seams', () 
   const clientJs = readFileSync(resolve(root, 'lib/client.js'), 'utf8');
   assert.match(clientJs, /window\.__ModuleLoader__\.load/);
   assert.match(clientJs, /id:\s*"@drscrewdriver\/dsh-tidy-display"/);
-  assert.match(clientJs, /settings\.plugins\.tab/);
+  assert.match(clientJs, /settings\.plugin\.item/);
   assert.match(clientJs, /dsh\.reader\.v1/);
   assert.match(clientJs, /加载更早/);
   assert.match(clientJs, /data-chat-anchor-key/);
@@ -60,7 +60,7 @@ test('commits compiled lib entries without reader-face or 0.1.7-only seams', () 
 test('README leads with the legacy install one-liner and the compat scope', () => {
   for (const name of ['README.md', 'README.en.md']) {
     const text = readFileSync(resolve(root, name), 'utf8');
-    assert.match(text, /dsh plugin --profile web add github:drscrewdriver\/dsh-tidy-display#v0\.1\.0-dsh0\.1\.2/);
+    assert.match(text, /dsh plugin --profile web add github:drscrewdriver\/dsh-tidy-display#v0\.1\.0-dsh0\.1\.1/);
     assert.match(text, /pnpm/);
     assert.doesNotMatch(text, /阅读视图/);
     assert.doesNotMatch(text, /reading view/);

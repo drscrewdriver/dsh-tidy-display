@@ -61,8 +61,6 @@ export function apply(ctx: Context): void {
       if (cur.railStyle !== railStyle) prefs.actions.setRailStyle(railStyle);
       const railRing = v.railRing !== false;
       if (cur.railRing !== railRing) prefs.actions.setRailRing(railRing);
-      const hideOfficialNav = v.hideOfficialNav !== false;
-      if (cur.hideOfficialNav !== hideOfficialNav) prefs.actions.setHideOfficialNav(hideOfficialNav);
       const railColor = typeof v.railColor === 'string' ? v.railColor : 'auto';
       if (cur.railColor !== railColor) prefs.actions.setRailColor(railColor);
       const railColorCustom = typeof v.railColorCustom === 'string' ? v.railColorCustom : '';
@@ -128,7 +126,9 @@ export function apply(ctx: Context): void {
       side: snap.railSide === 'right' ? 'right' : 'left',
       style: snap.railStyle === 'dot' ? 'dot' : 'bar',
       ring: snap.railRing === true,
-      hideOfficialNav: snap.hideOfficialNav !== false,
+      // No official TurnNavigator exists on 0.1.0-rc.7 ~ 0.1.2-alpha.1 — the
+      // takeover stays off so the hide attribute is never set.
+      hideOfficialNav: false,
       hasMore,
       loadOlder: () => { findLoadOlderButton()?.click(); },
     });
@@ -174,7 +174,6 @@ export function apply(ctx: Context): void {
           railSide: snap.railSide,
           railStyle: snap.railStyle,
           railRing: snap.railRing,
-          hideOfficialNav: snap.hideOfficialNav,
           railColor: snap.railColor,
           railColorCustom: snap.railColorCustom,
           railAccent: snap.railAccent,
@@ -191,7 +190,7 @@ export function apply(ctx: Context): void {
         };
         const langTag = typeof document !== 'undefined' ? document.documentElement.lang : undefined;
         return React.createElement(LegacySettingsCard, {
-          value, writable: settingsScope !== null, hasTakeover: true, onToggle, onSet, langTag,
+          value, writable: settingsScope !== null, onToggle, onSet, langTag,
         });
       },
     ));
