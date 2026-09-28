@@ -1,7 +1,7 @@
 {
   "name": "@drscrewdriver/dsh-tidy-display",
   "version": "0.1.0",
-  "description": "Message-rail subset of tidy-display for legacy DeepSeek Harness (0.1.5-alpha.1 ~ 0.1.6): canvas rail, theme-aware palette, smart history loading.",
+  "description": "Message-rail subset of tidy-display for legacy DeepSeek Harness (0.1.2-alpha.2 ~ 0.1.4): canvas rail, theme-aware palette, smart history loading.",
   "type": "module",
   "license": "MIT",
   "main": "lib/dsh-tidy-display.js",
@@ -38,7 +38,7 @@
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-settings": "^0.1.5-rc.2",
+    "@deepseek-ai/dsh-settings": ">=0.1.2-alpha.2 <0.1.5-alpha.1",
     "react": "^18.2.0"
   },
   "devDependencies": {

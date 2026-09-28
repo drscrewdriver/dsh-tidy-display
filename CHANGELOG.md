@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-dsh0.1.2 — compat/0.1.2 line
+
+- Same rail-only subset as `compat/0.1.5`, pinned to DSH **0.1.2-alpha.2 ~ 0.1.4.x** (the `installSection` seam exists, the session surface is pre-V3). Peer range narrows accordingly; 0.1.3/0.1.4 should work but are untested.
+- The official-rail takeover keeps its proven 0.1.2 behavior; the 0.1.5 hardcoded-TurnNavigator caveat does not apply here.
+
 ## 0.1.0-dsh0.1.5 — compat/0.1.5 line
 
 - Legacy compat branch for DSH **0.1.5-alpha.1 ~ 0.1.6**: the message-rail subset of tidy-display on the pre-0.1.7 hosts. The reader face (and every module it needs) is stripped; what ships is the canvas rail (lines/dots, mirrored edges, white sheen), the theme-aware palette with the custom picker + alpha slider, and the smart-history Governor ported from dsh-tidychat `compat/0.1.5`.
