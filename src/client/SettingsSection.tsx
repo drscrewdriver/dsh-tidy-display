@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
-import { NAV_HUE_KEYS, NAV_HUE_LABELS, NAV_HUE_PREVIEW, NAV_LIGHT_KEYS, NAV_LIGHT_LABELS, parseRgba } from './rail/colors.js';
+import { parseRgba } from './rail/colors.js';
 import { bubblesOf, foldIntensityOf, frostedGlassOf, type FoldIntensity } from './fold-intensity.js';
 import { deliverableOpenModeOf, type DeliverableOpenMode } from './open-file.js';
 import { settingsCopyFor, type SettingsCopy, type SettingsCopyKey } from './settings-copy.js';
@@ -99,51 +99,52 @@ function rgbaToHex(value: string): string {
   return '#' + rgba.slice(0, 3).map((v) => v.toString(16).padStart(2, '0')).join('');
 }
 
-/** 标记色 / 强调色 共用的色板组：自动 + 色系×明度 + 自定义（取色器 / rgba 文本）。 */
+const cssColor = (rgb: readonly number[], a: number): string =>
+  a >= 1
+    ? '#' + rgb.slice(0, 3).map((n) => Math.round(n).toString(16).padStart(2, '0')).join('')
+    : 'rgba(' + Math.round(rgb[0]) + ', ' + Math.round(rgb[1]) + ', ' + Math.round(rgb[2]) + ', ' + (Math.round(a * 1000) / 1000) + ')';
+
+/**
+ * 调色盘（同 tidychat 75743fd 的设计）：自动 / 自定义二选一。
+ * 自定义 = 原生取色器（无极调色）+ HEX/RGB 文本 + 透明度滑杆，实时色块预览。
+ */
 function RailColorPicker(props: {
   title: string;
   mode: string;
   custom: string;
-  light: string;
   autoLabel: string;
   customLabel: string;
   setMode: (value: string) => void;
   setCustom: (value: string) => void;
-  setLight: (value: string) => void;
 }) {
-  const isHue = !(props.mode === 'auto' || props.mode === 'custom');
-  const wrapStyle = { display: 'flex', flexWrap: 'wrap' as const, gap: 6, marginTop: 6 };
+  const customOn = props.mode === 'custom';
+  const parsed = parseRgba(props.custom);
+  const rgb: number[] = parsed === null ? [59, 130, 246] : [parsed[0], parsed[1], parsed[2]];
+  const alpha = parsed === null ? 1 : parsed[3];
+  const swatch = parsed !== null ? cssColor(rgb, alpha) : 'linear-gradient(135deg, #f87171, #60a5fa, #4ade80)';
+  const inputStyle = { flex: 1, minWidth: 0, textAlign: 'left' as const, color: 'var(--dsw-alias-label-primary, inherit)' };
   return (
     <div className={css.rowText}>
       <div className={css.title}>{props.title}</div>
-      <div style={wrapStyle}>
-        <Chip on={props.mode === 'auto'} onClick={() => props.setMode('auto')}>{props.autoLabel}</Chip>
-        {NAV_HUE_KEYS.map((hue) => (
-          <Chip key={hue} on={props.mode === hue} swatch={NAV_HUE_PREVIEW[hue]}
-            onClick={() => props.setMode(hue)}>
-            {NAV_HUE_LABELS[hue]}
-          </Chip>
-        ))}
-        <Chip on={props.mode === 'custom'} onClick={() => props.setMode('custom')}>{props.customLabel}</Chip>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+        <Chip on={!customOn} onClick={() => props.setMode('auto')}>{props.autoLabel}</Chip>
+        <Chip on={customOn} swatch={swatch} onClick={() => props.setMode('custom')}>{props.customLabel}</Chip>
       </div>
-      {isHue && (
-        <div style={wrapStyle}>
-          <span className={css.desc} style={{ alignSelf: 'center' }}>{NAV_LIGHT_LABELS[props.light] ?? '中'}</span>
-          {NAV_LIGHT_KEYS.map((light) => (
-            <Chip key={light} on={props.light === light} onClick={() => props.setLight(light)}>
-              {NAV_LIGHT_LABELS[light]}
-            </Chip>
-          ))}
-        </div>
-      )}
-      {props.mode === 'custom' && (
+      {customOn && (
         <div style={{ display: 'flex', gap: 6, marginTop: 6, alignItems: 'center' }}>
           <input type="color" value={rgbaToHex(props.custom)} aria-label={props.title}
             style={{ width: 34, height: 26, border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}
+            onChange={(event) => {
+              const p = parseRgba(event.target.value);
+              if (p !== null) props.setCustom(cssColor([p[0], p[1], p[2]], alpha));
+            }} />
+          <input type="text" className={css.button} value={props.custom} placeholder="#3b82f6 / rgb(59,130,246)" spellCheck={false}
+            style={inputStyle}
             onChange={(event) => props.setCustom(event.target.value)} />
-          <input type="text" className={css.button} value={props.custom} placeholder="#rrggbb / rgba()"
-            style={{ flex: 1, minWidth: 0, textAlign: 'left' }}
-            onChange={(event) => props.setCustom(event.target.value)} />
+          <input type="range" min={0} max={100} step={1} value={Math.round(alpha * 100)} aria-label={props.title + ' 透明度'}
+            style={{ width: 90, accentColor: 'var(--dsw-alias-state-business-primary, #3b82f6)' }}
+            onChange={(event) => props.setCustom(cssColor(rgb, Number(event.target.value) / 100))} />
+          <span className={css.desc} style={{ minWidth: 34, textAlign: 'right' }}>{Math.round(alpha * 100)}%</span>
         </div>
       )}
     </div>
@@ -330,12 +331,10 @@ export function SettingsSection(props: SettingsProps) {
           title={text(props, copy, 'colorBarTitle')}
           mode={snap.railColor ?? 'auto'}
           custom={snap.railColorCustom ?? ''}
-          light={snap.railColorLight ?? 'l3'}
           autoLabel={text(props, copy, 'colorAuto')}
           customLabel={text(props, copy, 'colorCustom')}
           setMode={(v) => props.prefs.actions.setRailColor?.(v)}
           setCustom={(v) => props.prefs.actions.setRailColorCustom?.(v)}
-          setLight={(v) => props.prefs.actions.setRailColorLight?.(v)}
         />
       </div>
 
@@ -344,12 +343,10 @@ export function SettingsSection(props: SettingsProps) {
           title={text(props, copy, 'colorAccentTitle')}
           mode={snap.railAccent ?? 'auto'}
           custom={snap.railAccentCustom ?? ''}
-          light={snap.railAccentLight ?? 'l3'}
           autoLabel={text(props, copy, 'colorAuto')}
           customLabel={text(props, copy, 'colorCustom')}
           setMode={(v) => props.prefs.actions.setRailAccent?.(v)}
           setCustom={(v) => props.prefs.actions.setRailAccentCustom?.(v)}
-          setLight={(v) => props.prefs.actions.setRailAccentLight?.(v)}
         />
       </div>
 

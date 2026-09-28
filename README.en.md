@@ -2,54 +2,75 @@
 
 [中文](./README.md)
 
+**Tidy Display** — a community plugin for DeepSeek Harness (DSH) **0.1.7** that merges the reading view and the message rail into one plugin: long sessions become scannable, navigable, and resumable.
+
+> This project merges two popular DSH plugins:
+> [dsh-better-display](https://github.com/aa2246740/dsh-better-display) (reading view, maintained via a fork) ×
+> [dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat) (message rail / smart history loading).
+> The merge removes the DOM-contract conflict between them; credit and thanks to both.
+
+## Features
+
+### Reading view (from better-display)
+- Running steps collapse into expandable summaries; final answers render as **message bubbles** (translucent plate + optional frosted glass that lets skinned wallpapers through)
+- The reasoning card shares the same translucent plate; streaming thinking can auto-follow, pause, and expand
+- Official bridge: tool views, feedback, deliverable cards, turnTail via official slots
+- `` ```mcp-app `` fences mount as sandboxed interactive cards (`<iframe sandbox="allow-scripts allow-forms">`); skill pack in [`skills/generative-mcpapps/`](skills/generative-mcpapps/)
+- Deliverables row, waiting clock, pending echo; native Chat / Trajectory, composer, model picker, tools, and approvals stay
+
+### Message rail (from dsh-tidychat)
+- Canvas navigation rail at the conversation edge: fish-eye hover with summaries, click-to-jump, current-turn highlight on scroll
+- Styles **lines / dots**, position **left / right (mirrored)**
+- **White sheen ring**: a soft sheen beneath the current and hovered marks keeps them readable over busy wallpapers
+- **Colors**: mark color and accent color each offer Auto (theme-following with a 3:1 corrective fallback) / Custom (color picker + HEX/RGB text + alpha slider)
+- **Take over the official rail**: hides the official right-edge TurnNavigator (hidden, not unmounted)
+- Works in **both** the native Chat view and the reading view
+
+### Settings
+Everything lives under **Settings → 起子插件设置 → 整洁显示 (Tidy Display)**: rail (toggle / position / style / sheen / takeover / colors) + message bubbles / frosted glass / auto-fold / deliverable open mode. Persisted on `dsh.reader.v1`.
+
 ## Install
 
 ### DSH Studio desktop app (recommended)
 
-Open **Settings → Plugins → Add plugin** and enter this in “Package name or address”:
+Open **Settings → Plugins → Add plugin** and enter the package name (after the npm release):
 
 ```text
-github:aa2246740/dsh-tidy-display#v0.3.3
+@drscrewdriver/dsh-tidy-display
 ```
-
-The desktop plugin manager owns the Desktop profile and its bundled package manager. This release includes built `lib/`; normal use needs no clone, build, or DSHX installation. Follow the app if it asks you to reload or reopen after installation.
 
 ### Web CLI
 
 ```sh
-dsh plugin --profile web add github:aa2246740/dsh-tidy-display#v0.3.3
+dsh plugin --profile web add @drscrewdriver/dsh-tidy-display
 ```
 
-This official CLI command writes only the `web` profile; it cannot modify the Desktop App profile. For an already-running Web Host, reopen that Host once and reload the page because bundles are read at boot.
-
-Adds a **阅读** tab to DeepSeek Harness. While a turn runs you see steps, thinking, and progress. After a successful turn those collapse and the final answer stays. Native Chat / Trajectory, the composer, model picker, tools, and approvals stay. The reading column keeps ChatView's `data-chat-flow` hook so third-party skins that gate the composer on that mark still treat Reader as an interactive conversation.
-
-A ````mcp-app` fence in the final answer mounts as an interactive card in the reading view, inside `<iframe sandbox="allow-scripts allow-forms">` without `allow-same-origin`. The card can fill the next prompt via JSON-RPC. The skill pack is [`skills/generative-mcpapps/`](skills/generative-mcpapps/). Settings → **Tidy Display** can preview deliverables in the right Sidebar (system app remains the default), turn on translucent frosted glass (off by default), toggle process auto-folding (On is the default), and reports whether that skill is installed in a harness skill root.
-
-Targets DeepSeek Harness **0.1.7-rc.2**. Display only. It does not change Agent execution, the SDK, or credentials. Node.js `^22.19.0 || >=24`. New sessions default to reading.
-
-**0.3.0** keeps the existing reading layout, folding, and motion while using official feedback, tool details, file cards, and file links. It also fixes process content staying expanded after auto-folding is re-enabled. See the [official integration notes](docs/official-rendering-bridge.md) for coverage and upgrade checks.
-
-From a local checkout or tarball (development/local testing):
+Local directory / tarball (development / local testing):
 
 ```sh
 dsh plugin --profile web add ./dsh-tidy-display
-dsh plugin --profile web add ./dsh-tidy-display-0.3.3.tgz
+dsh plugin --profile web add ./dsh-tidy-display-0.1.0.tgz
 ```
 
-`dsh.bundle` is captured at Host boot. Do not also insert the same row by hand in the profile `cordis.patch.yml`, or it will mount twice.
+`dsh.bundle` is captured at boot: do **not** hand-write the same insert row into the profile's `cordis.patch.yml` (double mount). Remove an installed copy with `dsh plugin --profile web remove dsh-tidy-display`. For an already-running Web Host, reopen the Host once and reload.
+
+## Development
 
 ```sh
-dsh plugin --profile web remove dsh-tidy-display
-```
-
-## Develop
-
-```sh
-npm test
+pnpm install
 npm run typecheck
+npm run build      # emits lib/ (committed; the check-harness-compat gate needs a Harness checkout)
+npm test
 ```
+
+Targets DeepSeek Harness **0.1.7-rc.1+** (peer `>=0.1.7-rc.1 <0.1.8`). Display only — it does not change Agent execution, the SDK, or credentials. Node.js `^22.19.0 || >=24`. New sessions default to reading.
+
+## Relationship to the originals
+
+- The reading view is based on [aa2246740/dsh-better-display](https://github.com/aa2246740/dsh-better-display) (MIT) plus drscrewdriver fork enhancements (per-row host anchor contract, reasoning plate, answer bubbles)
+- The rail / colors / smart loading are ported from [BananaSoldier01/dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat) (MIT)
+- Upstream improvements that do not conflict will be tracked over time
 
 ## License
 
-Display and Markdown pieces come from DeepSeek Harness (MIT). Motion is based on [Transitions.dev](https://transitions.dev/). This repo is [MIT](LICENSE).
+Display and Markdown portions come from DeepSeek Harness (MIT). Motion references [Transitions.dev](https://transitions.dev/). This repository's code is [MIT](LICENSE).

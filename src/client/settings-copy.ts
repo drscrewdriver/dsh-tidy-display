@@ -40,7 +40,7 @@ export type SettingsCopyKey =
 export type SettingsCopy = Record<SettingsCopyKey, string>;
 
 export const en: SettingsCopy = {
-  nav: 'Tidy Display',
+  nav: '整洁显示',
   openTitle: 'Open deliverables in built-in panel',
   openDescription: 'Off by default: chips and inline file mentions open in the system app. Turn this on to preview them in the right Sidebar, matching official chat. Reveal and folder actions still use the system file manager.',
   glassTitle: 'Translucent frosted glass',
@@ -80,7 +80,7 @@ export const en: SettingsCopy = {
 };
 
 export const zh: SettingsCopy = {
-  nav: 'Tidy Display',
+  nav: '整洁显示',
   openTitle: '在内置面板中打开产物',
   openDescription: '默认关闭：产物芯片和正文中的文件提及会用系统应用打开。打开后与官方对话一致，在右侧栏预览。访达 / 资源管理器中的显示与打开所在文件夹不受此开关控制。',
   glassTitle: '半透明毛玻璃',
