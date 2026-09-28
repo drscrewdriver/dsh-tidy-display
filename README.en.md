@@ -34,11 +34,12 @@ Thanks to both upstreams and their authors (aa2246740, BananaSoldier01) — this
 | DSH host | Reading view | Message rail | Settings |
 |---|---|---|---|
 | 0.1.7-rc.1+ (this line) | ✅ | ✅ (both views) | 起子插件设置 → 整洁显示 |
-| 0.1.2-alpha.2 ~ 0.1.6 (incl. 0.1.5) | ❌ | ✅ (planned) | plugin config card |
-| 0.1.0-rc.7 ~ 0.1.2-alpha.1 (incl. 0.1.1) | ❌ | ✅ (planned) | plugin config card |
+| 0.1.5-alpha.1 ~ 0.1.6 (incl. 0.1.5) | ❌ | ✅ (`compat/0.1.5` line, tag `v0.1.0-dsh0.1.5`) | plugin config card |
+| 0.1.2-alpha.2 ~ 0.1.4.x | ❌ | ✅ (`compat/0.1.2` line, tag `v0.1.0-dsh0.1.2`) | plugin config card |
+| 0.1.0-rc.7 ~ 0.1.2-alpha.1 (incl. 0.1.1) | ❌ | ✅ (`compat/0.1.1` line, tag `v0.1.0-dsh0.1.1`) | plugin config card |
 
 - The reading view is bound to the 0.1.7 slot contract (the host itself had breaking changes between 0.1.7-rc.1 and rc.2); it will not be backported.
-- Backporting the rail subset (rail + sheen + colors + smart loading) to older hosts is **planned but not implemented**; see `tasks.md` Phase L in this repo. Release form: dist-tags `dsh-0.1.5` / `dsh-0.1.2` / `dsh-0.1.1`.
+- The legacy backport of the rail subset (rail + sheen + colors + smart loading) **has shipped**: it lives on three compat branches, install one-liner e.g. `dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display#v0.1.0-dsh0.1.5`; npm dist-tags `dsh-0.1.5` / `dsh-0.1.2` / `dsh-0.1.1` follow the publish. The 0.1.5-line official-rail takeover is to-be-verified; 0.1.3/0.1.4 ride the `compat/0.1.2` line untested.
 - 0.1.0-rc.6 and earlier are out of scope (use dsh-tidychat 0.1.0).
 - Matrix as of 2026-09-28 (tidy-display v0.1.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4 line).
 
