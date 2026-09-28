@@ -37,7 +37,7 @@ npm 发布后可用 dist-tag：`dsh plugin --profile web add @drscrewdriver/dsh-
 
 ## 设置
 
-**设置 → 插件 → 整洁显示**（`settings.plugins.tab` 卡片）：消息轨开关 / 显示位置 / 显示样式 / 外圈柔光 / 接管官方轨 / 标记色 / 强调色 / 智能加载。配置写入 `tidy-display` 命名空间，即时生效。
+**设置 → 插件 → 整洁显示**（`settings.plugin.item` 配置卡片）：消息轨开关 / 显示位置 / 显示样式 / 外圈柔光 / 接管官方轨 / 标记色 / 强调色 / 智能加载。配置写入 `tidy-display` 命名空间，即时生效。
 
 ## 兼容性说明
 

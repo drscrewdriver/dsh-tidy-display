@@ -3,7 +3,7 @@ import { parseRgba } from './rail/colors.js';
 import { settingsCopyFor, type SettingsCopy, type SettingsCopyKey } from './settings-copy.js';
 
 /**
- * Legacy settings card, ported from dsh-tidychat (settings.plugins.tab seat,
+ * Legacy settings card, ported from dsh-tidychat (settings.plugin.item seat,
  * imperative settings era). Writes go through the bound settings scope; when
  * the scope is missing the card renders read-only defaults.
  */
@@ -191,7 +191,7 @@ export function LegacySettingsCard(props: LegacySettingsCardProps): React.ReactE
     className: 'td-card-chevron' + (open ? ' td-card-chevron-open' : ''),
     viewBox: '0 0 14 14', width: 14, height: 14, fill: 'none',
   }, React.createElement('path', { d: 'M3.5 5.5L7 9l3.5-3.5', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }));
-  // tab panel context (settings.plugins.tab) is not a list — the card root is a div.
+  // keyed slot panel context (settings.plugin.item) is not a list — the card root is a div.
   return React.createElement('div', { className: 'td-card' + (open ? ' td-card-open' : '') },
     React.createElement('button', {
       type: 'button',

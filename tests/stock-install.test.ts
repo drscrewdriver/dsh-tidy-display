@@ -42,7 +42,7 @@ test('commits compiled lib entries without reader-face or 0.1.7-only seams', () 
   const clientJs = readFileSync(resolve(root, 'lib/client.js'), 'utf8');
   assert.match(clientJs, /window\.__ModuleLoader__\.load/);
   assert.match(clientJs, /id:\s*"@drscrewdriver\/dsh-tidy-display"/);
-  assert.match(clientJs, /settings\.plugins\.tab/);
+  assert.match(clientJs, /settings\.plugin\.item/);
   assert.match(clientJs, /dsh\.reader\.v1/);
   assert.match(clientJs, /加载更早/);
   assert.match(clientJs, /data-chat-anchor-key/);
