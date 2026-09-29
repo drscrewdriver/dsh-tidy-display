@@ -65,17 +65,25 @@
 
 ## 安装
 
+> ⚠️ **与 `dsh-better-display`、`@bananasoldier01/dsh-tidychat` 互斥**：三者都会在 `conversation.view` 列表槽位注册 `reader` 视图（同 id 同优先级），同时启用会在激活期因重复注册直接失败（client 侧报 `entry did not activate`，页面卡在「插件加载失败」）。启用本插件前先卸载或禁用它们。
+
 ### DSH Studio 桌面 App（推荐）
 
-打开 **设置 → 插件 → 添加插件**，输入包名或地址（npm 发布后可用）：
+打开 **设置 → 插件 → 添加插件**，输入包名：
 
 ```text
-@drscrewdriver/dsh-tidy-display
+dsh-tidy-display
 ```
 
 ### Web CLI
 
-npm 发布前用 GitHub 地址（发布后可直接用上面的包名）：
+npm 已发布，直接用包名：
+
+```sh
+dsh plugin --profile web add dsh-tidy-display
+```
+
+GitHub 地址同样可用（旧宿主 compat 线按 tag 装，见上方兼容矩阵）：
 
 ```sh
 dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display

@@ -65,17 +65,25 @@ Everything lives under **Settings → 起子插件设置 → 整洁显示 (Tidy 
 
 ## Install
 
+> ⚠️ **Mutually exclusive with `dsh-better-display` and `@bananasoldier01/dsh-tidychat`**: all three register a `reader` view (same id, same priority) in the `conversation.view` list slot. Running them together fails activation on a duplicate registration (client reports `entry did not activate` and the page sticks on the plugin-load failure screen). Uninstall or disable them before enabling this plugin.
+
 ### DSH Studio desktop app (recommended)
 
-Open **Settings → Plugins → Add plugin** and enter the package name (after the npm release):
+Open **Settings → Plugins → Add plugin** and enter the package name:
 
 ```text
-@drscrewdriver/dsh-tidy-display
+dsh-tidy-display
 ```
 
 ### Web CLI
 
-Before the npm publish use the GitHub address (after publish the package name above works directly):
+Published on npm — install by the bare name:
+
+```sh
+dsh plugin --profile web add dsh-tidy-display
+```
+
+The GitHub address works too (pre-0.1.7 compat lines install by tag, see the matrix above):
 
 ```sh
 dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display

@@ -11,7 +11,7 @@ declare module '@deepseek-ai/cordis' {
         };
     }
 }
-export declare const name = "@drscrewdriver/dsh-tidy-display";
+export declare const name = "dsh-tidy-display";
 export declare const inject: string[];
 export declare function apply(ctx: Context): void;
 //# sourceMappingURL=dsh-tidy-display.d.ts.map

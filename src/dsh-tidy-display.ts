@@ -16,10 +16,11 @@ declare module '@deepseek-ai/cordis' {
   }
 }
 
-// Module id must equal the profile entry id (the scoped package name), or the
-// host cannot mount the client bundle and the whole plugin silently fails to
-// activate — the fork.4 regression this constant pins down.
-export const name = '@drscrewdriver/dsh-tidy-display';
+// Module id must equal the npm package name (the id the host mounts the
+// client bundle under), or the host cannot mount the client bundle and the
+// whole plugin silently fails to activate — the fork.4 regression this
+// constant pins down.
+export const name = 'dsh-tidy-display';
 export const inject = ['webServer'];
 
 function writeJson(res: ServerResponse, status: number, body: unknown): void {

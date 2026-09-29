@@ -18,7 +18,7 @@ test('declares dsh.bundle.patch so official add joins the profile layer stack', 
   assert.equal(existsSync(resolve(root, 'cordis.patch.yml')), true);
   const patch = readFileSync(resolve(root, 'cordis.patch.yml'), 'utf8');
   assert.match(patch, /id: tidy-display/);
-  assert.match(patch, /name: ["']@drscrewdriver\/dsh-tidy-display["']/);
+  assert.match(patch, new RegExp(`name: ["']${pkg.name}["']`));
   assert.equal(pkg.files.includes('cordis.patch.yml'), true);
 });
 
@@ -31,7 +31,7 @@ test('commits compiled lib entries and does not require a prepare script', () =>
   assert.equal(existsSync(resolve(root, 'lib/client.js')), true);
   const clientJs = readFileSync(resolve(root, 'lib/client.js'), 'utf8');
   assert.match(clientJs, /window\.__ModuleLoader__\.load/);
-  assert.match(clientJs, /id:\s*"@drscrewdriver\/dsh-tidy-display"/);
+  assert.match(clientJs, new RegExp(`id:\\s*"${pkg.name}"`));
   assert.match(clientJs, /dsh-family\.tab/);
   assert.match(clientJs, /deliverableOpenMode/);
   assert.match(clientJs, /frostedGlass/);
