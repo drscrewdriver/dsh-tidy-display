@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Package renamed to the unscoped **`dsh-tidy-display`** and republished: `package.json` name, `src/dsh-tidy-display.ts` module id, tsdown bundle id, and the `cordis.patch.yml` insert row all move together (the module-id-equals-package-name invariant is unchanged, just re-pinned to the new name). The earlier scoped publish `@drscrewdriver/dsh-tidy-display@0.1.0` remains on npm but is superseded — install by the bare name (`dsh plugin --profile web add dsh-tidy-display`). dist-tags: `dsh-0.1.7` and `latest`, both → 0.1.0.
+
+- Documented the mutual exclusion with `dsh-better-display` / `@bananasoldier01/dsh-tidychat` (README install sections): all three register a `reader` view (same id, same priority 0) in the `conversation.view` list slot, and the host's slot registry rejects the duplicate at activation — the client reports `1 entry did not activate: failed` and the page sticks on the plugin-load failure screen. Diagnosed live on a web profile where better-display was still enabled alongside the tidy-display npm install; nothing is wrong with the package itself. Disable or uninstall better-display / tidychat before enabling this plugin.
+
+- `check-harness-compat` gate: pass `--path-separator=/` to ripgrep. Windows ripgrep 15 prints backslash paths, so the `/src/client/` path filter skipped every file, silently emptied the official-registration scan, and failed the baseline comparison with a wall of phantom `removedRegistrations` — on the very checkout the baseline was recorded against.
+
 - Legacy backport shipped: three compat branches carry the message-rail subset to pre-0.1.7 hosts — `compat/0.1.5` (0.1.5-alpha.1~0.1.6, tag `v0.1.0-dsh0.1.5`), `compat/0.1.2` (0.1.2-alpha.2~0.1.4.x, tag `v0.1.0-dsh0.1.2`), `compat/0.1.1` (0.1.0-rc.7~0.1.2-alpha.1, tag `v0.1.0-dsh0.1.1`). The host compatibility matrix above now links the tags.
 
 - Module id pinned in source (fork-local build correction): `src/dsh-tidy-display.ts` now exports `name = '@drscrewdriver/dsh-tidy-display'` (with the package name and tsdown entry aligned to the scoped id). The upstream tree carries the unscoped `dsh-tidy-display`; building it unmodified and deploying under the scoped profile entry makes the host unable to mount the client bundle, and the whole plugin silently fails to activate (no 阅读 tab, native view only) — the same failure fork.4 fixed in the published artifact, now pinned at the source level for fork builds.

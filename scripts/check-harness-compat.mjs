@@ -28,7 +28,11 @@ const files = [
 ];
 const hashes = Object.fromEntries(files.map(file => [file, createHash('sha256').update(readFileSync(join(harness, file))).digest('hex')]));
 const registrations = [];
-for (const path of execFileSync('rg', ['--files', 'packages/client', '-g', '*.ts', '-g', '*.tsx'], { cwd: harness, encoding: 'utf8' }).trim().split('\n')) {
+// `--path-separator=/` pins the listing to forward slashes: Windows ripgrep
+// 15+ prints backslash paths, and the `/src/client/` filter below would then
+// skip every file, silently emptying `registrations` and failing the baseline
+// comparison with a wall of phantom removals.
+for (const path of execFileSync('rg', ['--path-separator=/', '--files', 'packages/client', '-g', '*.ts', '-g', '*.tsx'], { cwd: harness, encoding: 'utf8' }).trim().split('\n')) {
   if (!path.includes('/src/client/')) continue;
   const text = readFileSync(join(harness, path), 'utf8');
   if (!/conversation\.chat\.|tool\.call\.|conversation\.message\./u.test(text)) continue;
