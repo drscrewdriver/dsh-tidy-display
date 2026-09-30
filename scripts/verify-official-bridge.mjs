@@ -41,8 +41,9 @@ const server = createServer(async (req, res) => {
   if (req.url === '/') { res.setHeader('Content-Type', 'text/html'); res.end('<!doctype html><html lang="zh"><meta charset="utf-8"><link rel="stylesheet" href="/fixture.css"><style>body{font-family:system-ui;margin:24px}button{cursor:pointer}</style><div id="app"></div><script type="module" src="/fixture.js"></script></html>'); return; }
   if (req.url?.startsWith('/api/file?') || req.url === '/pixel.png') { res.setHeader('Content-Type', 'image/png'); res.end(pixel); return; }
   if (req.url?.startsWith('/api/present.open')) { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify([{ id: 'preview-app', name: 'Preview App', default: true, icon: null }, { id: 'other-app', name: 'Other App', default: false, icon: null }])); return; }
+  if (req.url === '/favicon.ico') { res.writeHead(204); res.end(); return; }
   const file = req.url === '/fixture.js' ? 'fixture.js' : req.url === '/fixture.css' ? 'fixture.css' : null;
-  if (!file) { res.writeHead(404); res.end(); return; }
+  if (!file) { console.warn('[fixture-server] unmatched request:', req.url); res.writeHead(404); res.end(); return; }
   res.setHeader('Content-Type', file.endsWith('.js') ? 'text/javascript' : 'text/css');
   res.end(await readFile(join(out, file)));
 });
