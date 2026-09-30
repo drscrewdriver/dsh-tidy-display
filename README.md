@@ -1,6 +1,6 @@
 # dsh-tidy-display
 
-[English](./README.en.md)
+[简体中文](README.md) | [English](README.en.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Español](README.es.md)
 
 **整洁显示** —— DeepSeek Harness（DSH）**0.1.7** 的一个社区插件：把「阅读视图」与「消息轨」缝合成一个插件，长会话可扫读、可定位、可续聊。
 

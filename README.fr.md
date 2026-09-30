@@ -1,0 +1,118 @@
+# dsh-tidy-display
+
+[简体中文](README.md) | [English](README.en.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Español](README.es.md)
+
+**Tidy Display** — un plugin communautaire pour DeepSeek Harness (DSH) **0.1.7** qui fusionne la vue de lecture et le rail des messages en un seul plugin : les longues sessions deviennent lisibles en un coup d'œil, navigables et faciles à reprendre.
+
+> Ce projet est issu de la fusion de deux plugins DSH très populaires :
+> [dsh-better-display](https://github.com/aa2246740/dsh-better-display) (vue de lecture, maintenu via un fork) ×
+> [dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat) (rail des messages / chargement intelligent de l'historique).
+> La fusion élimine le conflit de contrat DOM entre les deux ; crédit et remerciements à chacun.
+
+## Sources et remerciements (énoncés tels quels)
+
+**La vue de lecture en direct** provient de [dsh-better-display](https://github.com/aa2246740/dsh-better-display) : rendu en flux de l'amont aa2246740, chorégraphie de repli du processus et pontage officiel, enrichis par le fork de drscrewdriver. Ce projet n'a pas réécrit sa chaîne de rendu ni celle des animations.
+
+**Le rail des messages** provient de [dsh-tidychat](https://github.com/BananaSoldier01/dsh-tidychat) : le rail canvas, le survol fisheye, la chaîne de couleurs et le chargement intelligent de l'historique sont des portages, enrichis par la ligne compat de drscrewdriver (halo blanc, parité avec le steering, DOM comme source unique de vérité).
+
+### Limites du better-display d'origine, corrigées par ce projet / le fork
+
+1. **Aucune plaque sous les messages ni le raisonnement** — les réponses finales et le texte de raisonnement reposent directement sur l'arrière-plan de la page ; la lisibilité souffre avec les skins, les fonds d'écran et les thèmes sombres. → Le fork a ajouté aux réponses la plaque translucide officielle `--dsw-alias-bg-layer-1`, et à la carte de raisonnement le même fond (commits `fa3a795`, `94d59c7`).
+2. **La vue de lecture perd les ancres par ligne de l'hôte** — `data-chat-anchor-key` / `data-chat-flow-kind` ne sont pas émis avec les lignes de messages, si bien que les plugins tiers qui s'y fient comme source de vérité DOM (par ex. le rail de tidychat) ne résolvent aucune ligne et **échouent en silence** sous la vue de lecture. → Correctif soumis en amont via [aa2246740/dsh-better-display#41](https://github.com/aa2246740/dsh-better-display/pull/41) ; le projet fusionné embarque le même correctif.
+3. Son TimelineRail n'est qu'un unique rail au plan officiel — pas de résumés fisheye, pas de saut au clic, pas de couleurs.
+
+### Limites du dsh-tidychat d'origine, et motivations de la fusion
+
+1. Le repli / les séparateurs sont de la chirurgie DOM qui chevauche le repli natif de l'hôte (0.1.2+), obligeant l'utilisateur à choisir manuellement l'un ou l'autre.
+2. Les versions v0.2.10 et antérieures lisaient le mauvais instantané sur les hôtes DSH 0.1.2 — le rail ne résolvait aucun tour et **n'a en réalité jamais été rendu** (corrigé en v0.3.0 ; voir `docs/RAIL-ROOT-CAUSE-ANALYSIS.md` dans son dépôt).
+3. Il entrait en conflit **dans les deux sens** avec la vue de lecture de better-display : la chirurgie de tidychat n'atteignait pas les lignes de la vue de lecture, et les ancres perdues par la vue de lecture sabotaient à leur tour le rail — la motivation directe de cette fusion.
+
+Merci aux deux dépôts amont et à leurs auteurs (aa2246740, BananaSoldier01) — ce projet est monté sur leurs épaules. Les améliorations amont sans conflit seront suivies au fil de l'eau.
+
+## Compatibilité avec l'hôte
+
+| Hôte DSH | Vue de lecture | Rail des messages | Réglages |
+|---|---|---|---|
+| 0.1.7-rc.1+ (cette ligne) | ✅ | ✅ (les deux vues) | 起子插件设置 → 整洁显示 |
+| 0.1.5-alpha.1 ~ 0.1.6 (0.1.5 inclus) | ❌ | ✅ (ligne `compat/0.1.5`, tag `v0.1.0-dsh0.1.5`) | carte de configuration du plugin |
+| 0.1.2-alpha.2 ~ 0.1.4.x | ❌ | ✅ (ligne `compat/0.1.2`, tag `v0.1.0-dsh0.1.2`) | carte de configuration du plugin |
+| 0.1.0-rc.7 ~ 0.1.2-alpha.1 (0.1.1 inclus) | ❌ | ✅ (ligne `compat/0.1.1`, tag `v0.1.0-dsh0.1.1`) | carte de configuration du plugin |
+
+- La vue de lecture est liée au contrat de slot 0.1.7 (l'hôte officiel a lui-même connu des changements rupture entre 0.1.7-rc.1 et rc.2) ; elle ne sera pas rétroportée vers les anciens hôtes.
+- Le rétroportage vers les anciens hôtes **est réalisé** : le sous-ensemble rail (rail + halo + couleurs + chargement intelligent) est publié sur trois branches compat, installation en une ligne du type `dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display#v0.1.0-dsh0.1.5` ; après publication npm viendront s'ajouter les dist-tags `dsh-0.1.5` / `dsh-0.1.2` / `dsh-0.1.1`. La reprise du rail officiel sur la ligne 0.1.5 reste à vérifier en pratique ; 0.1.3 / 0.1.4 passent théoriquement par la ligne `compat/0.1.2`, sans test réel.
+- 0.1.0-rc.6 et antérieurs hors périmètre (utilisez dsh-tidychat 0.1.0).
+- Matrice à jour au 2026-09-28 (ligne tidy-display v0.1.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4).
+
+## Fonctionnalités
+
+### Vue de lecture (issue de better-display)
+- Les étapes d'exécution se replient en résumés dépliables ; les réponses finales s'affichent en **bulles de message** (plaque translucide + verre dépoli optionnel qui laisse transparaître les fonds d'écran des skins)
+- La carte de raisonnement bénéficie du même fond translucide ; le raisonnement en flux peut suivre le défilement, se mettre en pause et se déplier intégralement
+- Pontage officiel : vues d'outils, feedback, cartes de livrables, turnTail et plus, rendus via les slots officiels
+- Les blocs `` ```mcp-app `` sont montés en cartes interactives en sandbox (`<iframe sandbox="allow-scripts allow-forms">`) ; pack de compétences dans [`skills/generative-mcpapps/`](skills/generative-mcpapps/)
+- Ligne des livrables, horloge d'attente, écho des actions en attente ; la « Conversation / Trajectoire » d'origine, la zone de saisie, le sélecteur de modèle, les outils et les approbations restent en place
+
+### Rail des messages (issu de dsh-tidychat)
+- Rail de navigation canvas au bord de la conversation : survol fisheye avec cartes de résumé, saut au clic, surbrillance du tour courant pendant le défilement
+- Styles **lignes / points**, position **bord gauche / droit (en miroir)**
+- **Anneau à halo blanc** : un halo doux sous les marqueurs du tour courant et du tour survolé les garde lisibles même sur des fonds d'écran chargés
+- **Couleurs** : couleur des marqueurs et couleur d'accent offrent chacune Auto (suit le thème, avec correction automatique si le contraste est insuffisant) / Personnalisé (sélecteur de couleur + texte HEX/RGB + curseur d'opacité)
+- **Reprise du rail officiel des messages** : masque le TurnNavigator officiel du bord droit (masqué, pas démonté) pour ne garder que ce rail
+- Fonctionne dans **les deux** vues : la vue « Conversation » native et la vue de lecture
+
+### Réglages
+Tous les réglages se trouvent sous **Réglages → 起子插件设置 → 整洁显示 (Tidy Display)** : rail (activation / position / style / halo / reprise / couleurs) + bulles de message / verre dépoli translucide / repli automatique / mode d'ouverture des livrables. La configuration est persistée dans `dsh.reader.v1`.
+
+## Installation
+
+> ⚠️ **Mutuellement exclusif avec `dsh-better-display` et `@bananasoldier01/dsh-tidychat`** : les trois enregistrent une vue `reader` (même id, même priorité) dans le slot de liste `conversation.view`. Les activer ensemble fait échouer l'activation dès la phase d'activation pour cause de double enregistrement (le client signale `entry did not activate` et la page reste bloquée sur l'écran d'échec de chargement des plugins). Désinstallez ou désactivez-les avant d'activer ce plugin.
+
+### Application de bureau DSH Studio (recommandé)
+
+Ouvrez **Réglages → Plugins → Ajouter un plugin** et saisissez le nom du paquet :
+
+```text
+dsh-tidy-display
+```
+
+### Web CLI
+
+Publié sur npm — installez par le nom seul :
+
+```sh
+dsh plugin --profile web add dsh-tidy-display
+```
+
+L'adresse GitHub fonctionne aussi (les lignes compat antérieures à 0.1.7 s'installent par tag, voir la matrice ci-dessus) :
+
+```sh
+dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display
+```
+
+Répertoire local / tarball (développement / test local) :
+
+```sh
+dsh plugin --profile web add ./dsh-tidy-display
+dsh plugin --profile web add ./dsh-tidy-display-0.1.0.tgz
+```
+
+`dsh.bundle` est capturé au démarrage : n'**écrivez** pas à la main la même ligne d'insert dans le `cordis.patch.yml` du profil (double montage) ; une copie déjà installée se retire avec `dsh plugin --profile web remove dsh-tidy-display`. Pour un Web Host déjà en cours d'exécution, rouvrez le Host une fois puis rechargez la page.
+
+## Développement
+
+```sh
+pnpm install
+npm run typecheck
+npm run build      # produit lib/ (committée ; le garde-fou check-harness-compat exige un checkout du Harness)
+npm test
+```
+
+Cible DeepSeek Harness **0.1.7-rc.1+** (peer `>=0.1.7-rc.1 <0.1.8`). Uniquement de l'affichage — ni l'exécution de l'Agent, ni le SDK, ni les identifiants des modèles ne sont modifiés. Node.js `^22.19.0 || >=24`. Les nouvelles sessions ouvrent la lecture par défaut.
+
+## Relation avec les projets d'origine
+
+Voir « [Sources et remerciements](#sources-et-remerciements-énoncés-tels-quels) » en tête — les améliorations amont sans conflit seront suivies au fil de l'eau.
+
+## Licence
+
+Les parties affichage et Markdown proviennent de DeepSeek Harness (MIT). Les animations s'inspirent de [Transitions.dev](https://transitions.dev/). Le code de ce dépôt est [MIT](LICENSE).
