@@ -33,15 +33,17 @@
 
 | DSH 宿主 | 阅读视图 | 消息轨 | 设置入口 |
 |---|---|---|---|
-| 0.1.7-rc.1+（本线） | ✅ | ✅（双视图） | 起子插件设置 → 整洁显示 |
+| 0.2.0-rc.1+（本线，`compat/0.2.0`） | ✅ | ✅（双视图） | 起子插件设置 → 整洁显示 |
+| 0.1.7-rc.1+（main 线） | ✅ | ✅（双视图） | 起子插件设置 → 整洁显示 |
 | 0.1.5-alpha.1 ~ 0.1.6（含 0.1.5） | ❌ | ✅（`compat/0.1.5` 线，tag `v0.1.0-dsh0.1.5`） | 插件配置卡片 |
 | 0.1.2-alpha.2 ~ 0.1.4.x | ❌ | ✅（`compat/0.1.2` 线，tag `v0.1.0-dsh0.1.2`） | 插件配置卡片 |
 | 0.1.0-rc.7 ~ 0.1.2-alpha.1（含 0.1.1） | ❌ | ✅（`compat/0.1.1` 线，tag `v0.1.0-dsh0.1.1`） | 插件配置卡片 |
 
-- 阅读视图绑定 0.1.7 槽位契约（官方 0.1.7-rc.1 → rc.2 之间都有破坏性变更），不下放旧宿主。
+- 阅读视图绑定宿主槽位契约，按线锁基线（本线 0.2.0-rc.2，main 线 0.1.7-rc.2；官方在 0.1.7-rc.1 → rc.2 → 0.2.0 之间都有契约漂移），不下放旧宿主。
 - 旧宿主反向适配**已实施**：消息轨子集（轨 + 柔光 + 配色 + 智能加载）在三条兼容分支上发布，安装一行式形如 `dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display#v0.1.0-dsh0.1.5`；npm 发布后补 dist-tag `dsh-0.1.5` / `dsh-0.1.2` / `dsh-0.1.1`。0.1.5 线的官方轨接管为待实测项；0.1.3 / 0.1.4 随 `compat/0.1.2` 线理论可用、未实测。
+- 0.2.0 线（本分支）：安装 `dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display#v0.2.0-dsh0.2.0`；npm 发布后可用 dist-tag：`dsh plugin --profile web add dsh-tidy-display@dsh-0.2.0`。
 - 0.1.0-rc.6 及更早不在支持范围（请使用 dsh-tidychat 0.1.0）。
-- 矩阵截至 2026-09-28（tidy-display v0.1.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4 线）。
+- 矩阵截至 2026-09-30（tidy-display v0.2.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4 线）。
 
 ## 功能
 
@@ -107,7 +109,7 @@ npm run build      # 产物 lib/（入库；check-harness-compat 门需要 Harne
 npm test
 ```
 
-面向 DeepSeek Harness **0.1.7-rc.1+**（peer `>=0.1.7-rc.1 <0.1.8`）。只改展示，不改 Agent 执行、SDK 或模型凭据。Node.js `^22.19.0 || >=24`。新会话默认进阅读。
+面向 DeepSeek Harness **0.2.0-rc.1+**（peer `>=0.2.0-rc.1 <0.2.1-0`）。只改展示，不改 Agent 执行、SDK 或模型凭据。Node.js `^22.19.0 || >=24`。新会话默认进阅读。
 
 ## 与原项目的关系
 

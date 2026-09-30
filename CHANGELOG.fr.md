@@ -56,6 +56,13 @@
   - Le mode skin ne transporte plus sa propre seconde échelle de voies.
   - `tests/footer-precedence.test.ts` protège l'échelle dans la feuille de source et dans le bundle committé.
 
+## 0.2.0 — 2026-09-30 (adaptation à la ligne d'hôte 0.2.0)
+
+- 12 peers `@deepseek-ai/dsh-*` migrés vers `>=0.2.0-rc.1 <0.2.1-0` ; devDependencies vers 0.2.0-rc.2 ; `pnpm-lock.yaml` supprimé (npm est l'unique gestionnaire de paquets, `package-lock.json` versionné).
+- Base du gate renouvelée : `compat/harness-020rc2.json` (hôte 0.2.0-rc.2 ; 74 enregistrements officiels inchangés, 14 des 18 fichiers ancres identiques à l'octet près).
+- Revue de la dérive de l'hôte 0.2.0 (scoped-slots mémoïsé / contract ui-tool purement additif userQuestionPanels / MessageItem TextShimmer / TurnProcessNodeView sans horloge live) : sémantique d'appelant partout, **aucune modification de source**.
+- Le serveur de fixtures répond 204 sur `/favicon.ico` et journalise les requêtes inconnues (première baseline de fixtures headless sur cette machine).
+
 ## 0.2.0 — 2026-09-18
 
 ### Revue des diffs et présentation des outils

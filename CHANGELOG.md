@@ -66,6 +66,13 @@
   - `tests/footer-precedence.test.ts` guards the ladder in the source sheet and
     in the committed bundle.
 
+## 0.2.0 — 2026-09-30（宿主 0.2.0 线适配）
+
+- 12 项 `@deepseek-ai/dsh-*` peer 换代到 `>=0.2.0-rc.1 <0.2.1-0`；devDependencies 换代到 0.2.0-rc.2；`pnpm-lock.yaml` 移除（npm 为唯一包管理器，`package-lock.json` 入库）。
+- 门禁基线换代：`compat/harness-020rc2.json`（宿主 0.2.0-rc.2；74 项官方注册零增删，18 个锚点文件 14 个逐字节未变）。
+- 宿主 0.2.0 漂移评审（scoped-slots useMemo 化 / ui-tool contract 纯新增 userQuestionPanels / MessageItem TextShimmer / TurnProcessNodeView 移除 live 时钟）：插件对四处均为 caller 语义，**零源码改动**。
+- fixture 服务器补 `/favicon.ico` 204 路由并记录未匹配请求（本机首个 headless fixture 基线建立）。
+
 ## 0.2.0 — 2026-09-18
 
 ### Diff review and tool presentation

@@ -33,15 +33,17 @@ Grazie ai due upstream e ai loro autori (aa2246740, BananaSoldier01) — questo 
 
 | Host DSH | Vista di lettura | Barra dei messaggi | Impostazioni |
 |---|---|---|---|
-| 0.1.7-rc.1+ (questa linea) | ✅ | ✅ (entrambe le viste) | 起子插件设置 → 整洁显示 |
+| 0.2.0-rc.1+ (questa linea, `compat/0.2.0`) | ✅ | ✅ (entrambe le viste) | 起子插件设置 → 整洁显示 |
+| 0.1.7-rc.1+ (linea main) | ✅ | ✅ (entrambe le viste) | 起子插件设置 → 整洁显示 |
 | 0.1.5-alpha.1 ~ 0.1.6 (0.1.5 incluso) | ❌ | ✅ (linea `compat/0.1.5`, tag `v0.1.0-dsh0.1.5`) | scheda di configurazione del plugin |
 | 0.1.2-alpha.2 ~ 0.1.4.x | ❌ | ✅ (linea `compat/0.1.2`, tag `v0.1.0-dsh0.1.2`) | scheda di configurazione del plugin |
 | 0.1.0-rc.7 ~ 0.1.2-alpha.1 (0.1.1 incluso) | ❌ | ✅ (linea `compat/0.1.1`, tag `v0.1.0-dsh0.1.1`) | scheda di configurazione del plugin |
 
-- La vista di lettura è vincolata al contratto di slot 0.1.7 (l'host stesso ha avuto breaking change tra 0.1.7-rc.1 e rc.2); non verrà retroportata sui vecchi host.
+- La vista di lettura è vincolata al contratto di slot dell'host, con baseline propria per linea (questa linea: 0.2.0-rc.2; main: 0.1.7-rc.2 — l'host ha avuto breaking change tra 0.1.7-rc.1 → rc.2 → 0.2.0); non verrà retroportata sui vecchi host.
 - Il backport del sottoinsieme della barra **è stato realizzato**: il sottoinsieme (barra + bagliore + colori + caricamento intelligente) è pubblicato su tre branch compat, installazione in una riga tipo `dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display#v0.1.0-dsh0.1.5`; dopo la pubblicazione npm seguono i dist-tag `dsh-0.1.5` / `dsh-0.1.2` / `dsh-0.1.1`. La presa in carico della barra ufficiale della linea 0.1.5 resta da verificare sul campo; 0.1.3 / 0.1.4 passano teoricamente per la linea `compat/0.1.2`, non testata.
+- La linea 0.2.0 (questo branch): installa con `dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display#v0.2.0-dsh0.2.0`; dopo la pubblicazione su npm funziona il dist-tag: `dsh plugin --profile web add dsh-tidy-display@dsh-0.2.0`.
 - 0.1.0-rc.6 e precedenti sono fuori dal perimetro di supporto (usare dsh-tidychat 0.1.0).
-- Matrice aggiornata al 2026-09-28 (linea tidy-display v0.1.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4).
+- Matrice aggiornata al 2026-09-30 (linea tidy-display v0.2.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4).
 
 ## Funzionalità
 
@@ -107,7 +109,7 @@ npm run build      # genera lib/ (committata; il gate check-harness-compat richi
 npm test
 ```
 
-Punta a DeepSeek Harness **0.1.7-rc.1+** (peer `>=0.1.7-rc.1 <0.1.8`). Solo presentazione: non modifica l'esecuzione dell'Agent, l'SDK né le credenziali dei modelli. Node.js `^22.19.0 || >=24`. Le nuove sessioni partono in lettura per impostazione predefinita.
+Punta a DeepSeek Harness **0.2.0-rc.1+** (peer `>=0.2.0-rc.1 <0.2.1-0`). Solo presentazione: non modifica l'esecuzione dell'Agent, l'SDK né le credenziali dei modelli. Node.js `^22.19.0 || >=24`. Le nuove sessioni partono in lettura per impostazione predefinita.
 
 ## Relazione con i progetti originali
 

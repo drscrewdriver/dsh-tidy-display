@@ -56,6 +56,13 @@
   - La modalità skin non porta più con sé una seconda scala di corsie.
   - `tests/footer-precedence.test.ts` protegge la scala nel foglio sorgente e nel bundle committato.
 
+## 0.2.0 — 2026-09-30 (adattamento alla linea host 0.2.0)
+
+- 12 peer `@deepseek-ai/dsh-*` aggiornati a `>=0.2.0-rc.1 <0.2.1-0`; devDependencies a 0.2.0-rc.2; `pnpm-lock.yaml` rimosso (npm è l'unico package manager, `package-lock.json` nel repo).
+- Baseline del gate rinnovata: `compat/harness-020rc2.json` (host 0.2.0-rc.2; 74 registrazioni ufficiali invariate, 14 dei 18 file ancora identici byte per byte).
+- Revisione della deriva dell'host 0.2.0 (scoped-slots con useMemo / contract ui-tool puramente aggiuntivo userQuestionPanels / MessageItem TextShimmer / TurnProcessNodeView senza orologio live): ovunque semantica da chiamante, **zero modifiche al sorgente**.
+- Il server delle fixture risponde 204 su `/favicon.ico` e registra le richieste non gestite (prima baseline fixture headless su questa macchina).
+
 ## 0.2.0 — 2026-09-18
 
 ### Revisione dei diff e presentazione dei tool

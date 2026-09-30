@@ -56,6 +56,13 @@
   - El modo skin ya no lleva su propia segunda escalera de carriles.
   - `tests/footer-precedence.test.ts` protege la escalera en la hoja de código fuente y en el bundle commiteado.
 
+## 0.2.0 — 2026-09-30 (adaptación a la línea de host 0.2.0)
+
+- 12 peers `@deepseek-ai/dsh-*` actualizados a `>=0.2.0-rc.1 <0.2.1-0`; devDependencies a 0.2.0-rc.2; `pnpm-lock.yaml` eliminado (npm es el único gestor de paquetes, `package-lock.json` en el repo).
+- Línea base del gate renovada: `compat/harness-020rc2.json` (host 0.2.0-rc.2; 74 registros oficiales sin cambios, 14 de 18 archivos ancla idénticos byte a byte).
+- Revisión de la deriva del host 0.2.0 (scoped-slots useMemo / contract de ui-tool solo añade userQuestionPanels / MessageItem TextShimmer / TurnProcessNodeView sin reloj en vivo): solo semántica de llamador, **cero cambios de código fuente**.
+- El servidor de fixtures sirve `/favicon.ico` con 204 y registra peticiones desconocidas (primera baseline de fixtures headless en esta máquina).
+
 ## 0.2.0 — 2026-09-18
 
 ### Revisión de diffs y presentación de herramientas

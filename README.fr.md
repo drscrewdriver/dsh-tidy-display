@@ -33,15 +33,17 @@ Merci aux deux dépôts amont et à leurs auteurs (aa2246740, BananaSoldier01) �
 
 | Hôte DSH | Vue de lecture | Rail des messages | Réglages |
 |---|---|---|---|
-| 0.1.7-rc.1+ (cette ligne) | ✅ | ✅ (les deux vues) | 起子插件设置 → 整洁显示 |
+| 0.2.0-rc.1+ (cette ligne, `compat/0.2.0`) | ✅ | ✅ (les deux vues) | 起子插件设置 → 整洁显示 |
+| 0.1.7-rc.1+ (ligne main) | ✅ | ✅ (les deux vues) | 起子插件设置 → 整洁显示 |
 | 0.1.5-alpha.1 ~ 0.1.6 (0.1.5 inclus) | ❌ | ✅ (ligne `compat/0.1.5`, tag `v0.1.0-dsh0.1.5`) | carte de configuration du plugin |
 | 0.1.2-alpha.2 ~ 0.1.4.x | ❌ | ✅ (ligne `compat/0.1.2`, tag `v0.1.0-dsh0.1.2`) | carte de configuration du plugin |
 | 0.1.0-rc.7 ~ 0.1.2-alpha.1 (0.1.1 inclus) | ❌ | ✅ (ligne `compat/0.1.1`, tag `v0.1.0-dsh0.1.1`) | carte de configuration du plugin |
 
-- La vue de lecture est liée au contrat de slot 0.1.7 (l'hôte officiel a lui-même connu des changements rupture entre 0.1.7-rc.1 et rc.2) ; elle ne sera pas rétroportée vers les anciens hôtes.
+- La vue de lecture est liée au contrat de slot de l'hôte, avec une base propre par ligne (cette ligne : 0.2.0-rc.2 ; main : 0.1.7-rc.2 — l'hôte a connu des changements rupture entre 0.1.7-rc.1 → rc.2 → 0.2.0) ; elle ne sera pas rétroportée vers les anciens hôtes.
 - Le rétroportage vers les anciens hôtes **est réalisé** : le sous-ensemble rail (rail + halo + couleurs + chargement intelligent) est publié sur trois branches compat, installation en une ligne du type `dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display#v0.1.0-dsh0.1.5` ; après publication npm viendront s'ajouter les dist-tags `dsh-0.1.5` / `dsh-0.1.2` / `dsh-0.1.1`. La reprise du rail officiel sur la ligne 0.1.5 reste à vérifier en pratique ; 0.1.3 / 0.1.4 passent théoriquement par la ligne `compat/0.1.2`, sans test réel.
+- La ligne 0.2.0 (cette branche) : installer via `dsh plugin --profile web add github:drscrewdriver/dsh-tidy-display#v0.2.0-dsh0.2.0` ; après publication npm, le dist-tag fonctionne : `dsh plugin --profile web add dsh-tidy-display@dsh-0.2.0`.
 - 0.1.0-rc.6 et antérieurs hors périmètre (utilisez dsh-tidychat 0.1.0).
-- Matrice à jour au 2026-09-28 (ligne tidy-display v0.1.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4).
+- Matrice à jour au 2026-09-30 (ligne tidy-display v0.2.0 / better-display 0.3.3-fork.5 / tidychat 0.3.4).
 
 ## Fonctionnalités
 
@@ -107,7 +109,7 @@ npm run build      # produit lib/ (committée ; le garde-fou check-harness-compa
 npm test
 ```
 
-Cible DeepSeek Harness **0.1.7-rc.1+** (peer `>=0.1.7-rc.1 <0.1.8`). Uniquement de l'affichage — ni l'exécution de l'Agent, ni le SDK, ni les identifiants des modèles ne sont modifiés. Node.js `^22.19.0 || >=24`. Les nouvelles sessions ouvrent la lecture par défaut.
+Cible DeepSeek Harness **0.2.0-rc.1+** (peer `>=0.2.0-rc.1 <0.2.1-0`). Uniquement de l'affichage — ni l'exécution de l'Agent, ni le SDK, ni les identifiants des modèles ne sont modifiés. Node.js `^22.19.0 || >=24`. Les nouvelles sessions ouvrent la lecture par défaut.
 
 ## Relation avec les projets d'origine
 

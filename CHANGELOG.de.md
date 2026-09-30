@@ -56,6 +56,13 @@
   - Der Skin-Modus führt keine eigene zweite Lane-Leiter mehr mit.
   - `tests/footer-precedence.test.ts` sichert die Leiter im Quell-Sheet und im eingecheckten Bundle.
 
+## 0.2.0 – 2026-09-30 (Anpassung an die Wirtslinie 0.2.0)
+
+- 12 `@deepseek-ai/dsh-*`-Peers auf `>=0.2.0-rc.1 <0.2.1-0` gehoben; devDependencies auf 0.2.0-rc.2; `pnpm-lock.yaml` entfernt (npm ist der einzige Paketmanager, `package-lock.json` liegt im Repo).
+- Gate-Basislinie erneuert: `compat/harness-020rc2.json` (Host 0.2.0-rc.2; 74 offizielle Registrierungen unverändert, 14 von 18 Ankerdateien byteidentisch).
+- Review der Host-0.2.0-Drifts (scoped-slots useMemo / ui-tool contract rein ergänzend userQuestionPanels / MessageItem TextShimmer / TurnProcessNodeView ohne Live-Uhr): überall nur Caller-Semantik, **keine Quellcodeänderungen**.
+- Fixture-Server: `/favicon.ico` mit 204 bedient und unbekannte Anfragen geloggt (erste Headless-Fixture-Baseline auf diesem Rechner).
+
 ## 0.2.0 — 2026-09-18
 
 ### Diff-Review und Tool-Präsentation
