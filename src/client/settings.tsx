@@ -1,12 +1,12 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from './settings-slots.js';
-import { settingsCopyFor, zh, en } from './settings-copy.js';
+import { settingsCopyFor, zh, en, fr, de, it, ru, es } from './settings-copy.js';
 import { SettingsSection, type BetterDisplaySettingsInjected, type OpenPrefs } from './SettingsSection.js';
 import { firstSessionId, skillsFromListResult, type SkillStatusProbe } from './skill-status.js';
 import type { HostSkillStatus } from '../skill-status.js';
 
 interface LocaleFace {
-  register?: (ns: string, dicts: { zh: unknown; en: unknown }) => () => void;
+  register?: (ns: string, dicts: { zh: unknown; en: unknown } & Record<string, unknown>) => () => void;
   bind?: (ns: string) => (key: string) => string;
   getSnapshot?: () => { locale?: string; language?: string };
 }
@@ -53,7 +53,7 @@ function createSkillProbe(ctx: Context): SkillStatusProbe {
 export function installBetterDisplaySettings(ctx: Context, prefs: OpenPrefs): void {
   const locale = (ctx.get?.('locale') ?? (ctx as unknown as { locale?: LocaleFace }).locale) as LocaleFace | undefined;
   if (locale?.register) {
-    ctx.effect(() => locale.register!('tidy-display', { zh, en }), 'dsh-tidy-display: settings copy');
+    ctx.effect(() => locale.register!('tidy-display', { zh, en, fr, de, it, ru, es }), 'dsh-tidy-display: settings copy');
   }
   const checkSkill = createSkillProbe(ctx);
   const injected = (): BetterDisplaySettingsInjected => ({

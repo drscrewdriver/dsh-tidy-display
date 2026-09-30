@@ -2,6 +2,12 @@ export type SettingsCopyKey = 'nav' | 'openTitle' | 'openDescription' | 'glassTi
 export type SettingsCopy = Record<SettingsCopyKey, string>;
 export declare const en: SettingsCopy;
 export declare const zh: SettingsCopy;
-export declare function settingsLanguage(tag: string | undefined): 'zh' | 'en';
+export declare const fr: SettingsCopy;
+export declare const de: SettingsCopy;
+export declare const it: SettingsCopy;
+export declare const ru: SettingsCopy;
+export declare const es: SettingsCopy;
+export type SettingsLanguage = 'zh' | 'en' | 'fr' | 'de' | 'it' | 'ru' | 'es';
+export declare function settingsLanguage(tag: string | undefined): SettingsLanguage;
 export declare function settingsCopyFor(tag: string | undefined): SettingsCopy;
 //# sourceMappingURL=settings-copy.d.ts.map
