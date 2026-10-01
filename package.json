@@ -1,6 +1,6 @@
 {
   "name": "dsh-tidy-display",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "One plugin for a calmer DeepSeek Harness: reading view + message rail + smart history loading, for the Harness 0.2.0 line.",
   "type": "module",
   "license": "MIT",
@@ -79,7 +79,8 @@
     "tsdown": "^0.22.2",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.70.1"
+    "typescript-eslint": "^8.70.1",
+    "@deepseek-ai/schemastery": "^3.18.4"
   },
   "dependencies": {
     "clsx": "^2.0.0",

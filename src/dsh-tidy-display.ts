@@ -4,6 +4,9 @@ import type { Context } from '@deepseek-ai/cordis';
 import { scanGenerativeMcpappsStatus } from './skill-roots.js';
 import { skillsFromListResult, toPublicSkillStatus } from './skill-status.js';
 
+export { Config, READER_CONFIG_FIELDS } from './config.js';
+export type { ReaderConfig, ReaderConfigField } from './config.js';
+
 declare module '@deepseek-ai/cordis' {
   interface Context {
     webServer?: {

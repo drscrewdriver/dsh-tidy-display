@@ -1,5 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Context } from '@deepseek-ai/cordis';
+export { Config, READER_CONFIG_FIELDS } from './config.js';
+export type { ReaderConfig, ReaderConfigField } from './config.js';
 declare module '@deepseek-ai/cordis' {
     interface Context {
         webServer?: {

@@ -12,6 +12,7 @@ import { Reader } from './Reader.js';
 import { createReaderStore } from './store.js';
 import { installReaderEntry } from './entry.js';
 import { installBetterDisplaySettings } from './settings.js';
+import { installConfigBridge } from './config-bridge.js';
 import { RailView } from './rail/RailView.js';
 import { installRailColors } from './rail/colors.js';
 import { fillComposerDom } from './mcp-app.js';
@@ -67,6 +68,7 @@ export function apply(ctx: Context): void {
   // intensity, and open-mode on the unsuffixed `dsh.reader.v1` key.
   const prefs = store.create();
   installBetterDisplaySettings(ctx, prefs);
+  installConfigBridge(ctx, prefs as unknown as Parameters<typeof installConfigBridge>[1]);
   installRailColors({
     subscribe: prefs.subscribe,
     getSnapshot: () => {
