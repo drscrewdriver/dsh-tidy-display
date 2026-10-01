@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { DiffBlock, diffTotals } from '@deepseek-ai/dsh-client-ui-primitives';
 import css from './Reader.module.css';
 import { diffBlockLabels } from './primitive-labels.js';
+import { t } from './locales.js';
 import { FOLD_TIMING } from './fold-choreography.js';
 import { foldDiffHunks } from './tool-activity.js';
 import type { LiveStep } from './live-turn.js';
@@ -94,7 +95,7 @@ export function DiffStat({ steps, label }: { steps: readonly LiveStep[]; label: 
   return <>
     <span className={css.diffStatRoot}>
       <button type="button" className={css.diffStatButton} aria-expanded={open}
-        aria-label={`${label} · 改动 ${totals.added} 行，删除 ${totals.removed} 行`}
+        aria-label={t('diff.linesAria', { label, added: totals.added, removed: totals.removed })}
         onClick={event => {
           event.stopPropagation();
           if (open) { setOpen(false); return; }

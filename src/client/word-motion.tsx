@@ -4,10 +4,14 @@ import type { MarkdownFileMentions } from '@deepseek-ai/dsh-client-ui-primitives
 import { MarkdownText } from './markdown/MarkdownText.js';
 import { readerPathImages } from './platform-media.js';
 import { WORD_MOTION, WordTimeline } from './word-timeline.js';
+import { t } from './locales.js';
 import css from './Reader.module.css';
 
 const WordScope = createContext({ enabled: false, generation: 0 });
-const CODE_LABELS = { copyLabel: '复制代码', copiedLabel: '已复制' };
+const CODE_LABELS = {
+  get copyLabel() { return t('md.copyCode'); },
+  get copiedLabel() { return t('common.copied'); },
+};
 
 function useSourceReveal(element: RefObject<HTMLElement>, born: number | null, generation: number) {
   const scope = useContext(WordScope);

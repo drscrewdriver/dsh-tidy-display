@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { t } from '../locales.js';
 
 /**
  * Canvas message rail, ported from dsh-tidychat (release/0.1.7, white-sheen
@@ -94,7 +95,7 @@ const fallbackSummary = (el: Element): string => {
 const hhmm = (ms: number): string => {
   const d = new Date(ms)
   const pad = (n: number) => (n < 10 ? '0' + n : String(n))
-  return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + pad(d.getHours()) + ':' + pad(d.getMinutes())
+  return t('date.monthDay', { m: d.getMonth() + 1, d: d.getDate(), clock: pad(d.getHours()) + ':' + pad(d.getMinutes()) })
 }
 
 const railHeight = (n: number): number => Math.min(Math.min(window.innerHeight * 0.7, 660), Math.max(NAV_RAIL_MIN_HEIGHT, n * NAV_RAIL_TURN_SPACING))
@@ -290,10 +291,10 @@ export function RailView({ enabled, side, style: railStyle, ring, hideOfficialNa
         setTip({
           x: mirror ? p.x - 18 : p.x + 18,
           y: p.y - 8,
-          head: '更早历史未加载',
+          head: t('rail.olderHead'),
           num: null,
           time: '',
-          text: `点击加载更早记录 · 当前轨道仅覆盖已加载的 ${turns.length} 轮`,
+          text: t('rail.olderTip', { count: turns.length }),
           mirror,
         })
         return
@@ -485,7 +486,7 @@ export function RailView({ enabled, side, style: railStyle, ring, hideOfficialNa
   const railEl = React.createElement('div', {
     className: 'tidychat-nav-rail',
     style: { transform: 'translateY(-50%)', left: pos.left + 'px', top: pos.top + 'px' },
-    'aria-label': '用户消息定位',
+    'aria-label': t('rail.aria'),
   }, React.createElement('canvas', {
     ref: canvasRef,
     className: 'tidychat-nav-canvas',

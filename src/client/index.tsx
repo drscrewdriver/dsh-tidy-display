@@ -9,6 +9,7 @@ import { dirname } from './deliverables.js';
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client';
 import { Reader } from './Reader.js';
+import { NS, dictionaries, installTranslate, t } from './locales.js';
 import { createReaderStore } from './store.js';
 import { installReaderEntry } from './entry.js';
 import { installBetterDisplaySettings } from './settings.js';
@@ -31,6 +32,15 @@ interface ConversationFace {
 
 interface SidebarRightFace {
   openResource?: (address: string, options?: { params?: { line?: number } }) => void;
+}
+
+/**
+ * Structural face of the host `locale` service, so this plugin compiles without
+ * the optional `@deepseek-ai/dsh-client-locale` types being installed.
+ */
+interface LocaleLike {
+  register?: (ns: string, dicts: Record<string, Record<string, string>>) => () => void;
+  bind?: (ns: string) => (key: string) => string;
 }
 
 const officialFileAddressFor = (workspacePathPkg as {
@@ -58,9 +68,27 @@ async function openWorkspacePath(
 export type { ReaderBlockOwner } from './types.js';
 export { McpAppFrame } from './McpAppFrame.js';
 export const name = 'dsh-tidy-display-client';
-export const inject = ['slots', 'sessions', 'conversation', 'uiConversation', 'remote', 'remote.session'];
+export const inject = ['slots', 'sessions', 'conversation', 'uiConversation', 'remote', 'remote.session', 'locale'];
 
 export function apply(ctx: Context): void {
+  // One registration activates all nine shipped languages; `bind` is resolved
+  // lazily and cached, so helper modules can translate at render time too.
+  const locale = (ctx.get?.('locale') ?? (ctx as unknown as { locale?: LocaleLike }).locale) as LocaleLike | undefined;
+  if (locale?.register) {
+    ctx.effect(() => locale.register!(NS, dictionaries), 'dsh-tidy-display: dictionaries');
+  }
+  let bound: ((key: string) => string) | undefined;
+  installTranslate(locale?.bind
+    ? (key) => {
+        try {
+          bound ??= locale.bind!(NS);
+          return bound?.(key) ?? key;
+        } catch {
+          return key;
+        }
+      }
+    : null);
+
   const store = createReaderStore();
   // conversation.view is session-scoped, so session persist keys are
   // `dsh.reader.v1.<sessionId>`. One root instance keeps glass, fold
@@ -115,7 +143,7 @@ export function apply(ctx: Context): void {
     name: 'conversation.view',
     id: 'reader',
     order: -5,
-    label: () => '阅读',
+    label: () => t('view.reader'),
     locale: 'chat',
     children: {
       'dsh-tidy-display.block': { kind: 'chain', scope: 'session' },

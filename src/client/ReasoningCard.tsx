@@ -3,6 +3,7 @@ import { StreamMotionContext } from './streaming.js';
 import type { ReactNode } from 'react';
 import { REASON_CHASE_HOLD, REASON_HOLD, REASON_LINES, REASON_STEP, reasoningTarget } from './reasoning-follow.js';
 import css from './Reader.module.css';
+import { t } from './locales.js';
 
 const EASING = 'cubic-bezier(.22,1,.36,1)';
 
@@ -278,11 +279,11 @@ export function ReasoningCard({ children, step, active, motion, selected, onRead
 
   return <div className={css.reasonCard} data-reader-reasoning-card data-reader-anchor data-expanded={expanded} data-following={allowed} data-overflow={overflow} data-ud-motion="reader-reasoning-size">
     <div className={css.reasonHeading} data-reader-reasoning-heading data-ud-check="reasoning-identity">
-      <span className={css.reasonLabel} data-reader-reasoning-label>思考</span>
-      <span>步骤 {step}</span>
+      <span className={css.reasonLabel} data-reader-reasoning-label>{t('reason.label')}</span>
+      <span>{t('reason.step', { n: step })}</span>
     </div>
     <div ref={viewport} id={controls} className={css.reasonViewport} data-reader-reasoning-scroll data-edges={edges}
-      data-ud-motion="reader-reasoning-scroll" role="region" aria-label={`步骤 ${step} 的思考${overflow ? '，可滚动阅读' : ''}`}
+      data-ud-motion="reader-reasoning-scroll" role="region" aria-label={overflow ? t('reason.regionScrollable', { n: step }) : t('reason.region', { n: step })}
       tabIndex={overflow ? 0 : undefined} onPointerDown={pause} onFocus={pause}>
       <div ref={track} className={css.reasonTrack} data-reader-reasoning-track>
         <div ref={content} className={css.reasonText} data-reader-reasoning-text>{children}</div>
@@ -290,15 +291,15 @@ export function ReasoningCard({ children, step, active, motion, selected, onRead
     </div>
     {(overflow || expanded) && <div className={css.reasonFooter} data-ud-check="reasoning-controls">
       {active && motion ? <button type="button" className={css.reasonAction} disabled={selected} aria-controls={controls}
-        aria-label={following ? '暂停自动跟随思考' : '继续跟随最新思考'}
-        title={selected ? '取消文字选择后可继续跟随' : undefined}
+        aria-label={following ? t('reason.pauseAria') : t('reason.resumeAria')}
+        title={selected ? t('reason.selectionHint') : undefined}
         onClick={() => { if (following) pause(); else { onRead(); setFollowing(true); } }}>
         <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">{following ? <path d="M5.5 4v8m5-8v8" /> : <path d="M8 3v10m-4-4 4 4 4-4" />}</svg>
-        {following ? '暂停跟随' : '跟随最新'}
-      </button> : <span className={css.reasonCaption}>{expanded ? '手动阅读' : '可滚动阅读'}</span>}
+        {following ? t('reason.pause') : t('reason.follow')}
+      </button> : <span className={css.reasonCaption}>{expanded ? t('reason.manualReading') : t('reason.scrollableReading')}</span>}
       <button type="button" className={css.reasonAction} aria-expanded={expanded} aria-controls={controls}
-        aria-label={expanded ? '收起完整思考' : '展开阅读完整思考'} onClick={toggleReading}>
-        {expanded ? '收起' : '展开阅读'}
+        aria-label={expanded ? t('reason.collapseAria') : t('reason.expandAria')} onClick={toggleReading}>
+        {expanded ? t('common.collapse') : t('reason.expandRead')}
         <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">{expanded ? <path d="m4 10 4-4 4 4" /> : <path d="m4 6 4 4 4-4" />}</svg>
       </button>
     </div>}

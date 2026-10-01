@@ -7,48 +7,93 @@ import type {
   TerminalBlockLabels,
   WebBlockLabels,
 } from '@deepseek-ai/dsh-client-ui-primitives';
+import { t } from './locales.js';
 
+/**
+ * Labels handed to the official content primitives.
+ *
+ * Every plain string is a getter on purpose: the primitive components keep the
+ * object identity around, so resolving through `t()` at property-read time is
+ * what lets a mid-session language switch take effect on the next render
+ * instead of freezing the copy at module load.
+ */
 export const markdownLabels: MarkdownLabels = {
-  code: { copyLabel: '复制', copiedLabel: '已复制' },
-  footnotes: '脚注',
+  code: { get copyLabel() { return t('common.copy'); }, get copiedLabel() { return t('common.copied'); } },
+  get footnotes() { return t('md.footnotes'); },
 };
 
 export const readBlockLabels: ReadBlockLabels = {
-  codeLabel: '代码', wrapLabel: '自动换行', unwrapLabel: '不换行',
-  window: (shown, total) => `显示 ${shown} / ${total} 行`,
-  copy: '复制', copied: '已复制', collapseAria: '收起文件内容',
-  expandAria: hidden => `展开其余 ${hidden} 行`, collapse: '收起', expand: hidden => `展开其余 ${hidden} 行`,
+  get codeLabel() { return t('read.code'); },
+  get wrapLabel() { return t('read.wrap'); },
+  get unwrapLabel() { return t('read.unwrap'); },
+  window: (shown, total) => t('read.window', { shown, total }),
+  get copy() { return t('common.copy'); },
+  get copied() { return t('common.copied'); },
+  get collapseAria() { return t('read.collapseAria'); },
+  expandAria: hidden => t('common.expandLines', { n: hidden }),
+  get collapse() { return t('common.collapse'); },
+  expand: hidden => t('common.expandLines', { n: hidden }),
 };
 
 export const terminalBlockLabels: TerminalBlockLabels = {
-  signal: signal => `信号 ${signal}`, exitCode: code => `退出码 ${code}`, noExitCode: '无退出码',
-  running: '执行中', failed: '失败', done: '已完成', copy: '复制', copied: '已复制',
-  noOutput: '没有输出', collapseAria: '收起命令输出', collapse: '收起',
-  expandAria: hidden => `展开其余 ${hidden} 行`, expand: hidden => `展开其余 ${hidden} 行`,
+  signal: signal => t('tool.signal', { signal }),
+  exitCode: code => t('tool.exitCode', { code }),
+  get noExitCode() { return t('term.noExitCode'); },
+  get running() { return t('tool.phase.running'); },
+  get failed() { return t('tool.phase.failed'); },
+  get done() { return t('tool.phase.succeeded'); },
+  get copy() { return t('common.copy'); },
+  get copied() { return t('common.copied'); },
+  get noOutput() { return t('term.noOutput'); },
+  get collapseAria() { return t('term.collapseAria'); },
+  get collapse() { return t('common.collapse'); },
+  expandAria: hidden => t('common.expandLines', { n: hidden }),
+  expand: hidden => t('common.expandLines', { n: hidden }),
 };
 
 export const diffBlockLabels: DiffBlockLabels = {
-  codeLabel: '代码', wrapLabel: '自动换行', unwrapLabel: '不换行',
-  copy: '复制', copied: '已复制', collapseAria: '收起差异', collapse: '收起',
-  expandAria: hidden => `展开其余 ${hidden} 行`, expand: hidden => `展开其余 ${hidden} 行`,
+  get codeLabel() { return t('read.code'); },
+  get wrapLabel() { return t('read.wrap'); },
+  get unwrapLabel() { return t('read.unwrap'); },
+  get copy() { return t('common.copy'); },
+  get copied() { return t('common.copied'); },
+  get collapseAria() { return t('diff.collapseAria'); },
+  get collapse() { return t('common.collapse'); },
+  expandAria: hidden => t('common.expandLines', { n: hidden }),
+  expand: hidden => t('common.expandLines', { n: hidden }),
 };
 
 export const searchBlockLabels: SearchBlockLabels = {
-  pathsSummary: (shown, total, truncated) => `${shown} / ${total} 个路径${truncated ? '（结果已截断）' : ''}`,
-  matchesSummary: (shown, total, files, truncated) => `${shown} / ${total} 处匹配 · ${files} 个文件${truncated ? '（结果已截断）' : ''}`,
-  copy: '复制', copied: '已复制', noResults: '没有结果', collapseAria: '收起搜索结果', collapse: '收起',
-  expandAria: hidden => `展开其余 ${hidden} 行`, expand: hidden => `展开其余 ${hidden} 行`,
+  pathsSummary: (shown, total, truncated) => `${t('search.paths', { shown, total })}${truncated ? t('search.truncated') : ''}`,
+  matchesSummary: (shown, total, files, truncated) => `${t('search.matches', { shown, total, files })}${truncated ? t('search.truncated') : ''}`,
+  get copy() { return t('common.copy'); },
+  get copied() { return t('common.copied'); },
+  get noResults() { return t('search.noResults'); },
+  get collapseAria() { return t('search.collapseAria'); },
+  get collapse() { return t('common.collapse'); },
+  expandAria: hidden => t('common.expandLines', { n: hidden }),
+  expand: hidden => t('common.expandLines', { n: hidden }),
 };
 
 export const webBlockLabels: WebBlockLabels = {
-  noResults: '没有结果', sourcesTruncated: '来源已截断', http: 'HTTP', contentTruncated: '内容已截断',
+  get noResults() { return t('search.noResults'); },
+  get sourcesTruncated() { return t('web.sourcesTruncated'); },
+  http: 'HTTP',
+  get contentTruncated() { return t('web.contentTruncated'); },
   markdown: markdownLabels,
 };
 
 export const jsonTreeLabels: JsonTreeLabels = {
-  copyValue: '复制值', copyJson: '复制 JSON', copyPath: '复制路径', copyPrettyJson: '复制格式化 JSON',
-  copyCompactJson: '复制紧凑 JSON', copied: '已复制', copyFailed: '复制失败', collapseNode: '收起节点',
-  expandNode: '展开节点', copyButtonTitle: action => action,
+  get copyValue() { return t('json.copyValue'); },
+  get copyJson() { return t('json.copyJson'); },
+  get copyPath() { return t('json.copyPath'); },
+  get copyPrettyJson() { return t('json.copyPretty'); },
+  get copyCompactJson() { return t('json.copyCompact'); },
+  get copied() { return t('common.copied'); },
+  get copyFailed() { return t('json.copyFailed'); },
+  get collapseNode() { return t('json.collapseNode'); },
+  get expandNode() { return t('json.expandNode'); },
+  copyButtonTitle: action => action,
 };
 
-export const truncatedJsonLabel = (total: number): string => `内容过长，已截断（共 ${total} 个字符）`;
+export const truncatedJsonLabel = (total: number): string => t('json.truncated', { total });

@@ -1,4 +1,5 @@
 import type { TurnLocation } from '@deepseek-ai/dsh-client-ui-conversation/client';
+import { t } from './locales.js';
 import type { MarkdownFileMentions } from '@deepseek-ai/dsh-client-ui-primitives';
 import type { ReaderFlowEntry } from './tool-activity.js';
 import { inputFields, stringValue, toolIdentity } from './tool-activity.js';
@@ -114,7 +115,7 @@ export function createProducedFileMentions(
       if (path === undefined) return undefined;
       return {
         open: () => { openFile(path); },
-        label: `打开 ${path}`,
+        label: t('deliverables.openPath', { path }),
         title: path,
       };
     },

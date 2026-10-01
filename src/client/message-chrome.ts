@@ -1,5 +1,7 @@
 /** Local clock and run-duration labels for reader message chrome. */
 
+import { t } from './locales.js';
+
 function pad2(n: number): string {
   return String(n).padStart(2, '0')
 }
@@ -12,7 +14,9 @@ export function formatRunDuration(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000))
   const minutes = Math.floor(total / 60)
   const seconds = total % 60
-  return minutes > 0 ? `${minutes}分${pad2(seconds)}秒` : `${seconds}秒`
+  return minutes > 0
+    ? t('time.minutesSeconds', { m: minutes, ss: pad2(seconds) })
+    : t('time.seconds', { n: seconds })
 }
 
 /**
@@ -20,7 +24,7 @@ export function formatRunDuration(ms: number): string {
  * @param ms - Elapsed milliseconds.
  */
 export function formatRanFor(ms: number): string {
-  return `用时 ${formatRunDuration(ms)}`
+  return t('time.ranFor', { duration: formatRunDuration(ms) });
 }
 
 /**
@@ -41,7 +45,7 @@ export function formatMessageClock(time: number, now: number = Date.now()): stri
     return clock
   }
   if (d.getFullYear() === n.getFullYear()) {
-    return `${d.getMonth() + 1}月${d.getDate()}日 ${clock}`
+    return t('date.monthDay', { m: d.getMonth() + 1, d: d.getDate(), clock })
   }
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${clock}`
+  return t('date.yearMonthDay', { y: d.getFullYear(), m: d.getMonth() + 1, d: d.getDate(), clock })
 }

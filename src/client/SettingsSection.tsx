@@ -108,6 +108,8 @@ function RailColorPicker(props: {
   custom: string;
   autoLabel: string;
   customLabel: string;
+  /** Localized slider label carrying a `{title}` placeholder, filled in here. */
+  opacityLabel: string;
   setMode: (value: string) => void;
   setCustom: (value: string) => void;
 }) {
@@ -135,7 +137,7 @@ function RailColorPicker(props: {
           <input type="text" className={css.button} value={props.custom} placeholder="#3b82f6 / rgb(59,130,246)" spellCheck={false}
             style={inputStyle}
             onChange={(event) => props.setCustom(event.target.value)} />
-          <input type="range" min={0} max={100} step={1} value={Math.round(alpha * 100)} aria-label={props.title + ' 透明度'}
+          <input type="range" min={0} max={100} step={1} value={Math.round(alpha * 100)} aria-label={props.opacityLabel.replace('{title}', props.title)}
             style={{ width: 90, accentColor: 'var(--dsw-alias-state-business-primary, #3b82f6)' }}
             onChange={(event) => props.setCustom(cssColor(rgb, Number(event.target.value) / 100))} />
           <span className={css.desc} style={{ minWidth: 34, textAlign: 'right' }}>{Math.round(alpha * 100)}%</span>
@@ -327,6 +329,7 @@ export function SettingsSection(props: SettingsProps) {
           custom={snap.railColorCustom ?? ''}
           autoLabel={text(props, copy, 'colorAuto')}
           customLabel={text(props, copy, 'colorCustom')}
+          opacityLabel={text(props, copy, 'opacityLabel')}
           setMode={(v) => props.prefs.actions.setRailColor?.(v)}
           setCustom={(v) => props.prefs.actions.setRailColorCustom?.(v)}
         />
@@ -339,6 +342,7 @@ export function SettingsSection(props: SettingsProps) {
           custom={snap.railAccentCustom ?? ''}
           autoLabel={text(props, copy, 'colorAuto')}
           customLabel={text(props, copy, 'colorCustom')}
+          opacityLabel={text(props, copy, 'opacityLabel')}
           setMode={(v) => props.prefs.actions.setRailAccent?.(v)}
           setCustom={(v) => props.prefs.actions.setRailAccentCustom?.(v)}
         />

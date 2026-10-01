@@ -29,6 +29,7 @@ import { McpAppCodeBlock, StreamingMcpAppPlaceholder } from '../McpAppFrame.js'
 import { isMcpAppCodeBlock, extractMcpAppTitle, extractMcpAppHeight } from '../mcp-app.js'
 import type { MarkdownPathImages } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PositionedBlock } from './incremental.js'
+import { t } from '../locales.js'
 import css from './MarkdownText.module.css'
 
 /** Copy-button labels forwarded to fence CodeBlocks (this package is cordis-free, so copy arrives via props). */
@@ -357,8 +358,8 @@ function renderCode(node: Md.Code, key: Key, context: MarkdownRenderContext): Re
       // that trim eat a REAL trailing blank line inside the fence instead.
       code={`${node.value}\n`}
       lang={context.streaming ? undefined : lang}
-      copyLabel={context.codeLabels?.copyLabel ?? '复制代码'}
-      copiedLabel={context.codeLabels?.copiedLabel ?? '已复制'}
+      copyLabel={context.codeLabels?.copyLabel ?? t('md.copyCode')}
+      copiedLabel={context.codeLabels?.copiedLabel ?? t('common.copied')}
     />
   )
 }
@@ -640,7 +641,7 @@ export function renderFootnoteSection(context: MarkdownRenderContext): ReactNode
   if (items.length === 0) return null
   return (
     <section key="footnotes" data-footnotes className="footnotes">
-      <h2 id="footnote-label" className="sr-only">Footnotes</h2>
+      <h2 id="footnote-label" className="sr-only">{t('md.footnotes')}</h2>
       <ol>{items}</ol>
     </section>
   )

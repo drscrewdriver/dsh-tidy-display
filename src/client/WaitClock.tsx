@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { formatRunDuration } from './message-chrome.js';
+import { t } from './locales.js';
 import css from './Reader.module.css';
 
 /** Past this, a wait stops being a pause and reads as the model not answering. */
@@ -28,6 +29,6 @@ export function WaitClock({ startTime }: { startTime: number | null }) {
   return <span className={css.waitClock} data-reader-wait-clock
     {...(overtime ? { 'data-overtime': '' } : {})}>
     <span className={css.waitSeconds}>{formatRunDuration(waited)}</span>
-    {overtime && <span className={css.waitOvertime} data-reader-wait-badge>暂未响应</span>}
+    {overtime && <span className={css.waitOvertime} data-reader-wait-badge>{t('time.overtime')}</span>}
   </span>;
 }

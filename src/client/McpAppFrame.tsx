@@ -7,6 +7,7 @@ import {
   formatReceiptPrompt,
   fillComposerDom,
 } from './mcp-app.js';
+import { t } from './locales.js';
 import css from './McpAppFrame.module.css';
 
 /**
@@ -51,7 +52,7 @@ export const McpAppFrame = memo(function McpAppFrame({
   const frameId = useId();
 
   const title = useMemo(() => {
-    return initialTitle || extractHtmlTitle(html) || '交互式 MCP App';
+    return initialTitle || extractHtmlTitle(html) || t('mcp.defaultTitle');
   }, [initialTitle, html]);
 
   // Capture the host theme ONCE for the initial srcDoc. Live theme switches
@@ -84,11 +85,11 @@ export const McpAppFrame = memo(function McpAppFrame({
     let summary: string;
     if (typeof params.choice === 'string') {
       const desc = typeof params.desc === 'string' ? ` (${params.desc})` : '';
-      summary = `选择: ${params.choice}${desc}`;
+      summary = t('mcp.receiptChoice', { value: `${params.choice}${desc}` });
     } else if (typeof params.action === 'string') {
-      summary = `操作: ${params.action}${params.payload ? ` (${JSON.stringify(params.payload)})` : ''}`;
+      summary = t('mcp.receiptAction', { value: `${params.action}${params.payload ? ` (${JSON.stringify(params.payload)})` : ''}` });
     } else if (typeof params.selectedVariant === 'string') {
-      summary = `方案: ${params.selectedVariant}`;
+      summary = t('mcp.receiptVariant', { value: params.selectedVariant });
     } else {
       summary = JSON.stringify(params);
     }
@@ -237,8 +238,8 @@ export const McpAppFrame = memo(function McpAppFrame({
             type="button"
             className={css.iconBtn}
             onClick={handleReload}
-            title="重置组件状态"
-            aria-label="重置组件状态"
+            title={t('mcp.reset')}
+            aria-label={t('mcp.reset')}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
@@ -269,7 +270,7 @@ export const McpAppFrame = memo(function McpAppFrame({
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            <span>已就绪：{receipt}</span>
+            <span>{t('mcp.ready', { receipt })}</span>
           </span>
           {lastPrompt && (
             <div className={css.receiptPrompt} title={lastPrompt}>
@@ -280,12 +281,12 @@ export const McpAppFrame = memo(function McpAppFrame({
             <button
               type="button"
               className={css.sendKbd}
-              title="把这条结果重新填入输入框，然后回车发送"
+              title={t('mcp.fillHint')}
               onClick={() => {
                 fillComposer(lastParamsRef.current);
               }}
             >
-              <span>填入输入框</span>
+              <span>{t('mcp.fillButton')}</span>
               <kbd>↵</kbd>
             </button>
           </div>
@@ -311,7 +312,7 @@ export function StreamingMcpAppPlaceholder({ title }: { title?: string }) {
   return (
     <div className={css.streamingPlaceholder}>
       <span className={css.pulseDot} aria-hidden="true" />
-      <span>正在生成交互组件{title ? `（${title}）` : ''}...</span>
+      <span>{title ? t('mcp.generatingNamed', { title }) : t('mcp.generating')}</span>
     </div>
   );
 }

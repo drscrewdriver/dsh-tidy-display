@@ -6,6 +6,7 @@ import type { LiveStep, LiveTurnItem } from './live-turn.js';
 import { collapseRows, containsNewUser, flowRows, FOLD_TIMING, retiringKeys } from './fold-choreography.js';
 import type { FoldPhase } from './fold-choreography.js';
 import { Disclosure } from './motion.js';
+import { t } from './locales.js';
 import { FoldSummaryText } from './LiveFold.js';
 import { DiffStat } from './DiffPanel.js';
 import { StreamMotionContext } from './streaming.js';
@@ -32,7 +33,7 @@ function Summary({ item, open, onChange, motion }: {
   const button = useRef<HTMLButtonElement>(null);
   return <div data-reader-live-fold data-expanded={open} data-reader-live-fold-summary={item.summary}>
     <div className={css.summaryRow}>
-      <Disclosure open={open} onChange={onChange} buttonRef={button} ariaLabel="此前步骤"
+      <Disclosure open={open} onChange={onChange} buttonRef={button} ariaLabel={t('fold.previous')}
         label={<FoldSummaryText summary={item.summary} motion={motion} />} />
       <DiffStat steps={item.steps} label={item.summary} />
     </div>

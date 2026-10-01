@@ -1,4 +1,12 @@
 import type { DiffBlockLabels, JsonTreeLabels, MarkdownLabels, ReadBlockLabels, SearchBlockLabels, TerminalBlockLabels, WebBlockLabels } from '@deepseek-ai/dsh-client-ui-primitives';
+/**
+ * Labels handed to the official content primitives.
+ *
+ * Every plain string is a getter on purpose: the primitive components keep the
+ * object identity around, so resolving through `t()` at property-read time is
+ * what lets a mid-session language switch take effect on the next render
+ * instead of freezing the copy at module load.
+ */
 export declare const markdownLabels: MarkdownLabels;
 export declare const readBlockLabels: ReadBlockLabels;
 export declare const terminalBlockLabels: TerminalBlockLabels;

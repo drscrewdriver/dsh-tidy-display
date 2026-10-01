@@ -28,13 +28,14 @@ import type { ReaderGroup, TurnBoundary } from './projection.js';
 import type { BlockRenderProps, ReaderProps } from './types.js';
 import css from './Reader.module.css';
 import { markdownLabels, truncatedJsonLabel } from './primitive-labels.js';
+import { t } from './locales.js';
 
 function isNode<K extends ChatNodeKind>(node: ChatConversationViewNode, kind: K): node is ChatNode<K> {
   return node.kind === kind;
 }
 
 function cleanErrorMessage(raw: string | undefined): string {
-  if (!raw) return '模型服务暂时无响应或连接中断，请稍后重试。';
+  if (!raw) return t('reader.fallbackError');
   let str = raw.trim();
   if (str.includes('"error"') || str.startsWith('{')) {
     try {
@@ -63,15 +64,15 @@ const CompactionDivider = memo(function CompactionDivider({ data }: {
   const items = data.shadowedItemCount;
   const tokens = data.shadowedTokenCount;
 
-  let label = '已压缩历史上下文';
+  let label = t('compaction.label');
   if (items && tokens) {
     const kTokens = tokens >= 1000 ? `${(tokens / 1000).toFixed(1)}k` : String(tokens);
-    label = `已压缩 ${items} 条上下文 · 释放约 ${kTokens} tokens`;
+    label = t('compaction.itemsTokens', { items, tokens: kTokens });
   } else if (items) {
-    label = `已压缩 ${items} 条上下文`;
+    label = t('compaction.items', { items });
   } else if (tokens) {
     const kTokens = tokens >= 1000 ? `${(tokens / 1000).toFixed(1)}k` : String(tokens);
-    label = `已压缩上下文 · 释放约 ${kTokens} tokens`;
+    label = t('compaction.tokens', { tokens: kTokens });
   }
 
   return (
@@ -83,14 +84,14 @@ const CompactionDivider = memo(function CompactionDivider({ data }: {
             className={`${css.compactionPill} ${css.compactionButton}`}
             onClick={() => setOpen(v => !v)}
             aria-expanded={open}
-            title={open ? '收起历史记忆摘要' : '展开查看此节点提炼的记忆摘要'}
+            title={open ? t('compaction.titleCollapse') : t('compaction.titleExpand')}
           >
             <svg className={css.compactionIcon} viewBox="0 0 16 16" fill="none" stroke="currentColor">
               <path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2z" strokeWidth="1.2" />
               <path d="M8 5v3.2l2 1.8" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <span>{label}</span>
-            <span className={css.compactionToggle}>{open ? '收起备忘' : '查看备忘'}</span>
+            <span className={css.compactionToggle}>{open ? t('compaction.toggleCollapse') : t('compaction.toggleExpand')}</span>
           </button>
         ) : (
           <span className={css.compactionPill}>
@@ -104,7 +105,7 @@ const CompactionDivider = memo(function CompactionDivider({ data }: {
       </div>
       {open && hasSummary && (
         <div className={css.compactionSummaryBox} data-reader-anchor>
-          <div className={css.compactionSummaryHeader}>前期对话要点备忘</div>
+          <div className={css.compactionSummaryHeader}>{t('compaction.summaryHeader')}</div>
           <MarkdownText text={data.summary!} labels={markdownLabels} />
         </div>
       )}
@@ -112,15 +113,15 @@ const CompactionDivider = memo(function CompactionDivider({ data }: {
   );
 });
 
-const ProcessNode = memo(function ProcessNode({ useChat, t, nodeKey, open, motion, onRead, returnFocusTo }: Pick<ReaderProps, 'useChat' | 't'> & {
+const ProcessNode = memo(function ProcessNode({ useChat, t: hostT, nodeKey, open, motion, onRead, returnFocusTo }: Pick<ReaderProps, 'useChat' | 't'> & {
   nodeKey: string; open: boolean; motion: boolean; onRead: () => void; returnFocusTo: RefObject<HTMLButtonElement>;
 }) {
   const node = useChat(snapshot => snapshot.nodes.get(nodeKey));
   if (!node || node.visibility === 'hidden') return null;
   let content: ReactNode = null;
-  if (isNode(node, 'context')) content = <ContextInjectionRow {...node.data} t={t} />;
-  else if (isNode(node, 'system-prompt')) content = <details className={css.detail}><summary>系统提示词</summary><pre className={css.systemPrompt}>{node.data.text}</pre></details>;
-  else if (isNode(node, 'model-retry')) content = <JsonBlock label="模型重试记录" payload={node.data.attempts} truncatedLabel={truncatedJsonLabel} />;
+  if (isNode(node, 'context')) content = <ContextInjectionRow {...node.data} t={hostT} />;
+  else if (isNode(node, 'system-prompt')) content = <details className={css.detail}><summary>{t('reader.systemPrompt')}</summary><pre className={css.systemPrompt}>{node.data.text}</pre></details>;
+  else if (isNode(node, 'model-retry')) content = <JsonBlock label={t('reader.modelRetryRecord')} payload={node.data.attempts} truncatedLabel={truncatedJsonLabel} />;
   else if (isNode(node, 'manual-compaction')) {
     if (node.data.command.outcome?.kind === 'error') {
       content = <div className={css.error} role="alert">
@@ -129,7 +130,7 @@ const ProcessNode = memo(function ProcessNode({ useChat, t, nodeKey, open, motio
           <path d="M8 5v3.5M8 11.2h.01" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
         <div className={css.errorCopy}>
-          <div className={css.errorTitle}><strong>上下文压缩未成功</strong></div>
+          <div className={css.errorTitle}><strong>{t('compaction.errorTitle')}</strong></div>
           <p className={css.errorMessage}>{node.data.command.outcome.text}</p>
         </div>
       </div>;
@@ -138,7 +139,7 @@ const ProcessNode = memo(function ProcessNode({ useChat, t, nodeKey, open, motio
     }
   }
   else if (isNode(node, 'compaction')) content = <CompactionDivider data={node.data} />;
-  else if (isNode(node, 'command')) content = <JsonBlock label="命令记录" payload={node.data} truncatedLabel={truncatedJsonLabel} />;
+  else if (isNode(node, 'command')) content = <JsonBlock label={t('reader.commandRecord')} payload={node.data} truncatedLabel={truncatedJsonLabel} />;
   return content && <ProcessFragment open={open} motion={motion} onRead={onRead} returnFocusTo={returnFocusTo} nodeKey={nodeKey} framed>{content}</ProcessFragment>;
 });
 
@@ -172,7 +173,7 @@ const AssistantNode = memo(function AssistantNode({ useChat, nodeKey, boundary, 
     : hasVisibleBody(part.blocks) && <RetiringContent key={part.start} visible={pinned || processOpen || (!earlier && !folded)}>
       <article className={css.answer} data-reader-answer data-reader-anchor data-reader-key={nodeKey} data-chat-anchor-key={nodeKey} data-chat-flow-kind={node.kind} data-reader-source-start={part.start} data-answer-status={data.status} data-answer-phase={earlier || folded ? 'process' : 'body'}>
         <Blocks {...render} blocks={part.blocks} streaming={data.status === 'running'} holdFormatting={pinned} startedAt={data.time} interrupted={data.status === 'interrupted'} liveText />
-        {last && data.status === 'interrupted' && <span className={css.stopped}>已停止</span>}
+        {last && data.status === 'interrupted' && <span className={css.stopped}>{t('reader.stopped')}</span>}
         {last && !earlier && !folded && data.status !== 'running' && boundary.status === 'closed' && (
           <CopyAnswer blocks={body} onFork={(() => {
             // The fork anchor must be the durable closing message seq (same as
@@ -197,7 +198,7 @@ const MainNode = memo(function MainNode({ useChat, nodeKey, boundary: _boundary,
     const text = otherBlocks.filter((block): block is Extract<typeof block, { kind: 'text' }> => block.kind === 'text').map(block => block.text).join('\n\n');
     const time = node.data.time;
     return <div className={css.userCluster} data-reader-anchor data-reader-key={nodeKey} data-chat-anchor-key={nodeKey} data-chat-flow-kind={node.kind}>
-      {node.kind === 'steering' && <p className={css.meta}>补充消息</p>}
+      {node.kind === 'steering' && <p className={css.meta}>{t('reader.steering')}</p>}
       {imageBlocks.length > 0 && <div className={css.userImages}>
         <Blocks {...render} blocks={imageBlocks} source="user" />
       </div>}
@@ -216,16 +217,16 @@ const MainNode = memo(function MainNode({ useChat, nodeKey, boundary: _boundary,
     </svg>
     <div className={css.errorCopy}>
       <div className={css.errorTitle}>
-        <strong>本轮运行失败</strong>
+        <strong>{t('reader.turnError')}</strong>
         {node.data.code && <code className={css.errorCode}>{node.data.code}</code>}
       </div>
       <p className={css.errorMessage}>{cleanErrorMessage(node.data.message)}</p>
     </div>
   </div>;
-  if (isNode(node, 'turn-max-tokens')) return <div className={css.notice}>已到达输出长度限制，回答尚未完整。</div>;
+  if (isNode(node, 'turn-max-tokens')) return <div className={css.notice}>{t('reader.maxTokens')}</div>;
   if (isNode(node, 'model-retry')) return node.data.current.retryState === 'scheduled'
-    ? <div className={css.notice} role="status">模型请求未成功，正在等待重试。详情保留在执行过程中。</div> : null;
-  if (isNode(node, 'command') && render.official) return <OfficialNode {...render} node={node} fallback={<JsonBlock label="命令记录" payload={node.data} truncatedLabel={truncatedJsonLabel} />} />;
+    ? <div className={css.notice} role="status">{t('reader.retryNotice')}</div> : null;
+  if (isNode(node, 'command') && render.official) return <OfficialNode {...render} node={node} fallback={<JsonBlock label={t('reader.commandRecord')} payload={node.data} truncatedLabel={truncatedJsonLabel} />} />;
   if (isNode(node, 'command')) {
     if (node.data.outcome?.kind === 'error') return <div className={css.error} role="alert">
       <svg className={css.errorIcon} viewBox="0 0 16 16" fill="none" stroke="currentColor">
@@ -233,8 +234,8 @@ const MainNode = memo(function MainNode({ useChat, nodeKey, boundary: _boundary,
         <path d="M8 5v3.5M8 11.2h.01" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
       <div className={css.errorCopy}>
-        <div className={css.errorTitle}><strong>命令执行未成功</strong></div>
-        <p className={css.errorMessage}>{node.data.outcome.text ?? node.data.name ?? '查看原对话中的命令记录'}</p>
+        <div className={css.errorTitle}><strong>{t('reader.commandError')}</strong></div>
+        <p className={css.errorMessage}>{node.data.outcome.text ?? node.data.name ?? t('reader.commandRecordFallback')}</p>
       </div>
     </div>;
     return node.data.outcome?.text ? <MarkdownText text={node.data.outcome.text} labels={markdownLabels} /> : null;
@@ -246,9 +247,9 @@ const MainNode = memo(function MainNode({ useChat, nodeKey, boundary: _boundary,
   // as 'command' above and is rendered there. Keeping the branch only made the file
   // look like it handled a case that cannot occur.
   return <OfficialNode {...render} node={node} fallback={<div className={css.unknown} data-reader-anchor data-chat-anchor-key={nodeKey} data-chat-flow-kind={node.kind}>
-    <p>此记录类型暂未接入阅读页：{node.kind}</p>
-    {render.official && <button type="button" className={css.textButton} onClick={() => render.official!.openView('chat', node.key)}>在对话中查看</button>}
-    <JsonBlock label="查看原始记录" payload={node.data} truncatedLabel={truncatedJsonLabel} />
+    <p>{t('reader.unknownNode', { kind: node.kind })}</p>
+    {render.official && <button type="button" className={css.textButton} onClick={() => render.official!.openView('chat', node.key)}>{t('reader.viewInChat')}</button>}
+    <JsonBlock label={t('reader.rawRecord')} payload={node.data} truncatedLabel={truncatedJsonLabel} />
   </div>} />;
 });
 
@@ -274,28 +275,28 @@ function GroupStatus({ group, sessionId: _sessionId, useChat, pending, motion }:
   const text = useChat(snapshot => {
     const turn = group.turn === null ? undefined : snapshot.timeline.turns.get(group.turn);
     if (turn?.status === 'closed') {
-      if (turn.end?.data.reason.kind !== 'completed') return '执行过程';
+      if (turn.end?.data.reason.kind !== 'completed') return t('status.process');
       const elapsed = turn.start && turn.end ? Math.max(0, Math.round((turn.end.time - turn.start.time) / 1000)) : null;
-      return elapsed === null ? '执行过程' : elapsed < 60 ? `用时 ${elapsed} 秒` : `用时 ${Math.floor(elapsed / 60)} 分 ${elapsed % 60} 秒`;
+      return elapsed === null ? t('status.process') : elapsed < 60 ? t('status.elapsedSec', { n: elapsed }) : t('status.elapsedMin', { m: Math.floor(elapsed / 60), s: elapsed % 60 });
     }
-    if (turn?.status !== 'open') return '执行过程';
-    if (pending !== undefined) return '等待你的操作';
+    if (turn?.status !== 'open') return t('status.process');
+    if (pending !== undefined) return t('status.awaitUser');
     const current = turn.steps.at(-1)?.data.get('assistant-step');
     const last = current?.blocks.at(-1);
     if (current?.status === 'running' && last?.kind === 'tool-call') {
       const spawned = subagentCount(snapshot, group.keys);
-      return spawned ? `${preparingLabel(last.name)}·${spawned} 个子代理` : preparingLabel(last.name);
+      return spawned ? `${preparingLabel(last.name)}·${t('status.subagents', { count: spawned })}` : preparingLabel(last.name);
     }
     for (let index = group.keys.length - 1; index >= 0; index--) {
       const node = snapshot.nodes.get(group.keys[index]);
       if (!node) continue;
-      if (isNode(node, 'tool-call') && !('kind' in node.data.root)) return '正在使用工具';
+      if (isNode(node, 'tool-call') && !('kind' in node.data.root)) return t('status.usingTool');
       if (isNode(node, 'assistant-step') && node.data.status === 'running') {
         const last = node.data.blocks.at(-1);
-        return last?.kind === 'reasoning' ? '正在思考' : last?.kind === 'text' ? '正在输出' : '正在准备回复';
+        return last?.kind === 'reasoning' ? t('status.thinking') : last?.kind === 'text' ? t('status.outputting') : t('status.preparingReply');
       }
     }
-    return '正在处理';
+    return t('status.processing');
   });
   const busy = useChat(snapshot => group.turn !== null && snapshot.timeline.turns.get(group.turn)?.status === 'open' && pending === undefined);
   return <StatusText text={text} motion={motion} shimmer={busy} />;
@@ -360,7 +361,7 @@ const DeliverableChip = memo(function DeliverableChip({ path, openFile, revealFi
         className={css.chipMain}
         onClick={onOpen}
         onDoubleClick={onOpen}
-        aria-label={openMode === 'sidebar' ? `在内置面板中打开 ${path}` : `用系统应用打开 ${path}`}
+        aria-label={openMode === 'sidebar' ? t('deliverables.openSidebar', { path }) : t('deliverables.openExternal', { path })}
       >
         {status === 'opened' ? (
           <svg className={css.statusIcon} viewBox="0 0 16 16" fill="none" stroke="currentColor">
@@ -373,16 +374,16 @@ const DeliverableChip = memo(function DeliverableChip({ path, openFile, revealFi
           </svg>
         )}
         <span className={css.deliverableName}>
-          {status === 'opened' ? (openMode === 'sidebar' ? '已在面板打开' : '已在外部打开') : name}
+          {status === 'opened' ? (openMode === 'sidebar' ? t('deliverables.openedSidebar') : t('deliverables.openedExternal')) : name}
         </span>
       </button>
 
-      <div className={css.chipActions} aria-label="文件操作">
+      <div className={css.chipActions} aria-label={t('deliverables.fileActions')}>
         <button
           type="button"
           className={css.chipActionBtn}
-          title={`在访达中定位所在目录 (${folder})`}
-          aria-label="在访达中显示所在目录"
+          title={t('deliverables.revealTitle', { folder })}
+          aria-label={t('deliverables.revealAria')}
           onClick={onReveal}
         >
           {status === 'revealed' ? (
@@ -398,8 +399,8 @@ const DeliverableChip = memo(function DeliverableChip({ path, openFile, revealFi
         <button
           type="button"
           className={css.chipActionBtn}
-          title="复制相对路径"
-          aria-label="复制相对路径"
+          title={t('deliverables.copyPath')}
+          aria-label={t('deliverables.copyPath')}
           onClick={onCopy}
         >
           {status === 'copied' ? (
@@ -437,7 +438,7 @@ function DeliverablesRow({ deliverables, openFile, revealFile, openMode }: {
 
   return (
     <div className={css.deliverablesRoot} data-reader-deliverables>
-      <span className={css.deliverablesLabel}>产物</span>
+      <span className={css.deliverablesLabel}>{t('deliverables.label')}</span>
       <div className={css.deliverablesLane}>
         <div className={css.deliverablesRow}>
           {deliverables.slice(0, 8).map(path => (
@@ -445,7 +446,7 @@ function DeliverablesRow({ deliverables, openFile, revealFile, openMode }: {
           ))}
           {deliverables.length > 8 && (
             <span className={css.deliverablesMore}>
-              + {deliverables.length - 8} 个文件
+              {t('deliverables.more', { count: deliverables.length - 8 })}
             </span>
           )}
           {deliverables.length > 1 && (
@@ -454,14 +455,14 @@ function DeliverablesRow({ deliverables, openFile, revealFile, openMode }: {
               className={css.deliverablesShowFolder}
               data-status={folderStatus}
               onClick={onOpenWorkspace}
-              title="在访达中打开整个工作区目录"
+              title={t('deliverables.workspaceTitle')}
             >
               {folderStatus === 'opened' && (
                 <svg className={css.statusIcon} viewBox="0 0 16 16" fill="none" stroke="currentColor">
                   <path d="M3.5 8.5l3 3 6-7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
-              <span>{folderStatus === 'opened' ? '已打开访达' : '在文件夹中显示'}</span>
+              <span>{folderStatus === 'opened' ? t('deliverables.workspaceOpened') : t('deliverables.showInFolder')}</span>
             </button>
           )}
         </div>
@@ -733,18 +734,18 @@ export function Reader(props: ReaderProps) {
             props.actions.setAutoFold(!autoFold);
             props.openPrefs?.actions?.setAutoFold?.(!autoFold);
           }}
-          title="新思考产生时，是否自动将此前步骤收拢为一行汇总。关闭后完整保留原始过程与流式输出。"
+          title={t('toolbar.autoFoldTitle')}
         >
-          {`自动折叠${autoFold ? '开' : '关'}`}
+          {autoFold ? t('toolbar.autoFoldOn') : t('toolbar.autoFoldOff')}
         </button>
       </StickyLane>
       {hasMore && <button type="button" className={css.historyButton} disabled={loadingOlder} onClick={async () => {
         setHistoryError(false);
         try { await props.loadOlder(); } catch { setHistoryError(true); }
-      }}>{loadingOlder ? '正在加载更早记录' : '加载更早记录'}</button>}
-      {historyError && <div className={css.notice}>历史记录加载失败，可再次尝试；现有内容未改变。</div>}
-      {openError && <div className={css.error} role="alert">会话暂时无法读取：{openError.message}</div>}
-      {loading && groups.length === 0 && <p className={css.empty} role="status">正在读取会话…</p>}
+      }}>{loadingOlder ? t('history.loading') : t('history.load')}</button>}
+      {historyError && <div className={css.notice}>{t('history.error')}</div>}
+      {openError && <div className={css.error} role="alert">{t('reader.sessionError', { message: openError.message })}</div>}
+      {loading && groups.length === 0 && <p className={css.empty} role="status">{t('reader.loading')}</p>}
       {groups.map(group => <TurnGroup key={group.key} {...props} group={group} motion={motion} autoFold={autoFold} pinnedKeys={pinnedKeys} selectedProcessKeys={selectedProcessKeys} isAwaitingModel={isAwaitingModel && group.key === groups.at(-1)?.key} />)}
       {visibleSubmissions.map(submission => {
         const images = pendingSubmissionImages(submission);
@@ -755,7 +756,7 @@ export function Reader(props: ReaderProps) {
               {images.map((item, idx) => (
                 <figure key={idx} className={css.imageFigure}>
                   <div className={css.imageFrame} style={{ aspectRatio: `${item.width || 4} / ${item.height || 3}` }}>
-                    <img src={item.previewUrl} alt={item.name ?? '发送的图片'} className={css.pendingImage} />
+                    <img src={item.previewUrl} alt={item.name ?? t('image.altPending')} className={css.pendingImage} />
                   </div>
                 </figure>
               ))}
@@ -770,12 +771,12 @@ export function Reader(props: ReaderProps) {
         </div>
         );
       })}
-      {isAwaitingModel && <WaitingStatus anchor={waitAnchor} label={props.t ? props.t('chat.deepDiving') : '深度求索中...'} />}
+      {isAwaitingModel && <WaitingStatus anchor={waitAnchor} label={props.t ? props.t('chat.deepDiving') : t('reader.deepDiving')} />}
       {pending !== undefined && <div className={css.attention} role="alert" data-reader-attention>
-        <strong>{pending.kind === 'question' ? '需要你回答一个问题' : '需要你的确认'}</strong>
-        <span>请在下方原生操作区处理。此提示不会收进执行过程。</span>
+        <strong>{pending.kind === 'question' ? t('reader.pendingQuestion') : t('reader.pendingConfirm')}</strong>
+        <span>{t('reader.pendingHint')}</span>
       </div>}
-      {scroll.detached && <div className={css.jumpDock}><button type="button" className={css.jump} aria-label="回到底部" title="回到底部" onClick={scroll.jump}>
+      {scroll.detached && <div className={css.jumpDock}><button type="button" className={css.jump} aria-label={t('reader.jumpBottom')} title={t('reader.jumpBottom')} onClick={scroll.jump}>
         <svg viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M3 5.5 7 9.5 11 5.5" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button></div>}
     </div>

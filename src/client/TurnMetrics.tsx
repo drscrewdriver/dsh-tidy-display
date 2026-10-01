@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import type { TurnTailChatData } from '@deepseek-ai/dsh-client-ui-chat/client';
 import { formatRanFor, formatRunDuration } from './message-chrome.js';
+import { t } from './locales.js';
 import css from './TurnMetrics.module.css';
 
 type TurnTokenUsage = NonNullable<TurnTailChatData['tokenUsage']>;
@@ -63,14 +64,14 @@ export const TurnMetrics = memo(function TurnMetrics({
           data-active={open}
           onClick={() => setOpen(v => !v)}
           aria-expanded={open}
-          title="查看本轮 Token 消耗"
+          title={t('metrics.tokensTitle')}
         >
           <svg className={css.pillIcon} viewBox="0 0 16 16" fill="none" stroke="currentColor">
             <ellipse cx="8" cy="4.2" rx="5" ry="2.2" strokeWidth="1.2" />
             <path d="M3 4.2v7.6c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2V4.2" strokeWidth="1.2" />
             <path d="M3 8c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2" strokeWidth="1.2" />
           </svg>
-          <span>用量 {formatTokens(totalTokens)}</span>
+          <span>{t('metrics.usage', { tokens: formatTokens(totalTokens) })}</span>
         </button>
       )}
       {hasTiming && typeof runMs === 'number' && (
@@ -81,7 +82,7 @@ export const TurnMetrics = memo(function TurnMetrics({
           onClick={() => setOpen(v => !v)}
           aria-expanded={open}
           aria-label={formatRanFor(runMs)}
-          title="查看本轮用时和速度"
+          title={t('metrics.timingTitle')}
         >
           <svg className={css.pillIcon} viewBox="0 0 16 16" fill="none" stroke="currentColor">
             <circle cx="8" cy="8" r="6.5" strokeWidth="1.2" />
@@ -92,28 +93,28 @@ export const TurnMetrics = memo(function TurnMetrics({
       )}
 
       {open && (
-        <div className={css.metricsPop} role="dialog" aria-label="本轮概况">
+        <div className={css.metricsPop} role="dialog" aria-label={t('metrics.dialogAria')}>
           <div className={css.popHeader}>
-            <span>本轮性能与用量概况</span>
+            <span>{t('metrics.header')}</span>
           </div>
 
           {hasTiming && typeof runMs === 'number' && (
             <div className={css.popSection}>
-              <div className={css.popSectionTitle}>耗时与生成速度</div>
+              <div className={css.popSectionTitle}>{t('metrics.timingSection')}</div>
               <div className={css.popGrid}>
-                <span className={css.popLabel}>总用时</span>
+                <span className={css.popLabel}>{t('metrics.totalTime')}</span>
                 <span className={css.popValue}>{formatRunDuration(runMs)}</span>
 
                 {typeof tokensPerSecond === 'number' && tokensPerSecond > 0 && (
                   <>
-                    <span className={css.popLabel}>生成吞吐 (TPS)</span>
+                    <span className={css.popLabel}>{t('metrics.tps')}</span>
                     <span className={css.popValue}>{tokensPerSecond.toFixed(1)} tok/s</span>
                   </>
                 )}
 
                 {typeof ttftMs === 'number' && ttftMs > 0 && (
                   <>
-                    <span className={css.popLabel}>首字延迟 (TTFT)</span>
+                    <span className={css.popLabel}>{t('metrics.ttft')}</span>
                     <span className={css.popValue}>{(ttftMs / 1000).toFixed(2)}s</span>
                   </>
                 )}
@@ -123,30 +124,30 @@ export const TurnMetrics = memo(function TurnMetrics({
 
           {hasTokens && usage && (
             <div className={css.popSection}>
-              <div className={css.popSectionTitle}>Token 消耗分解</div>
+              <div className={css.popSectionTitle}>{t('metrics.tokenSection')}</div>
               <div className={css.popGrid}>
-                <span className={css.popLabel}>总消耗</span>
+                <span className={css.popLabel}>{t('metrics.total')}</span>
                 <span className={css.popValue}>{usage.totalTokens.toLocaleString()} tok</span>
 
                 <span className={css.popLabel}>
-                  输入
+                  {t('metrics.input')}
                   {cacheHitPercent !== null && (
-                    <span className={css.popBadge}>命中 {cacheHitPercent}%</span>
+                    <span className={css.popBadge}>{t('metrics.cacheHit', { pct: cacheHitPercent })}</span>
                   )}
                 </span>
                 <span className={css.popValue}>{(usage.totalTokens - usage.outputTokens).toLocaleString()} tok</span>
 
                 {typeof usage.cacheReadTokens === 'number' && usage.cacheReadTokens > 0 && (
                   <>
-                    <span className={css.popLabel}>缓存读取</span>
+                    <span className={css.popLabel}>{t('metrics.cacheRead')}</span>
                     <span className={css.popValue}>{usage.cacheReadTokens.toLocaleString()} tok</span>
                   </>
                 )}
 
                 <span className={css.popLabel}>
-                  输出
+                  {t('metrics.output')}
                   {typeof usage.reasoningTokens === 'number' && usage.reasoningTokens > 0 && (
-                    <span className={css.popBadge}>思考 {usage.reasoningTokens.toLocaleString()}</span>
+                    <span className={css.popBadge}>{t('metrics.thinkingTokens', { n: usage.reasoningTokens.toLocaleString() })}</span>
                   )}
                 </span>
                 <span className={css.popValue}>{usage.outputTokens?.toLocaleString() ?? 0} tok</span>

@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ReactNode, RefObject } from 'react';
 import css from './Reader.module.css';
+import { t } from './locales.js';
 import { StreamMotionContext } from './streaming.js';
 
 const EASING = 'cubic-bezier(.22,1,.36,1)';
@@ -92,9 +93,9 @@ export function Disclosure({ open, onChange, label, controls, buttonRef, ariaLab
   controls?: string; buttonRef: RefObject<HTMLButtonElement>;
   ariaLabel?: string;
 }) {
-  const name = ariaLabel ?? '思考与过程';
+  const name = ariaLabel ?? t('disclosure.process');
   return <div className={css.disclosure} data-reader-disclosure data-expanded={open}>
-    <button ref={buttonRef} type="button" className={css.disclosureButton} aria-label={`${open ? '收起' : '展开'}${name}`} aria-expanded={open} {...(controls ? { 'aria-controls': controls } : {})} onClick={() => onChange(!open)}>
+    <button ref={buttonRef} type="button" className={css.disclosureButton} aria-label={open ? t('disclosure.collapseAria', { name }) : t('disclosure.expandAria', { name })} aria-expanded={open} {...(controls ? { 'aria-controls': controls } : {})} onClick={() => onChange(!open)}>
       {label}
       <svg className={css.chevron} data-open={open} viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m6 4 4 4-4 4" /></svg>
     </button>

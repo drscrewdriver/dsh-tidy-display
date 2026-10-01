@@ -1,6 +1,7 @@
 import type { AssistantChatData, ChatConversationViewNode } from '@deepseek-ai/dsh-client-ui-chat/client';
 import type { AssistantBlock } from '@deepseek-ai/dsh-client-ui-conversation/client';
 import { assistantSegments, hasVisibleBody } from './projection.js';
+import { t } from './locales.js';
 import type { TurnBoundary } from './projection.js';
 import type { ReaderFlowEntry, ToolActivityEntry } from './tool-activity.js';
 
@@ -32,11 +33,11 @@ export function foldSummary(steps: readonly LiveStep[]): string {
     else if (step.kind !== 'user') extra += 1;
   }
   const parts: string[] = [];
-  if (reasoning) parts.push(`思考×${reasoning}`);
-  if (body) parts.push(`输出×${body}`);
-  if (tool) parts.push(`工具×${tool}`);
-  if (extra) parts.push(`记录×${extra}`);
-  return parts.join(' · ') || '此前步骤';
+  if (reasoning) parts.push(t('fold.reasoning', { n: reasoning }));
+  if (body) parts.push(t('fold.body', { n: body }));
+  if (tool) parts.push(t('fold.tool', { n: tool }));
+  if (extra) parts.push(t('fold.record', { n: extra }));
+  return parts.join(' · ') || t('fold.previous');
 }
 
 /** One chain: fold only when a new reasoning step has prior body/tool/reasoning. */

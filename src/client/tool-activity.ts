@@ -2,6 +2,7 @@ import type { AssistantBlock, ToolCallBlock, TurnLocation } from '@deepseek-ai/d
 import type { ChatConversationViewNode } from '@deepseek-ai/dsh-client-ui-chat/client';
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type { ReaderGroup } from './projection.js';
+import { t } from './locales.js';
 
 export type ToolDraft = Extract<AssistantBlock, { kind: 'tool-call' }>;
 export type ToolPhase = 'preparing' | 'running' | 'returned' | 'succeeded' | 'failed' | 'interrupted';
@@ -282,17 +283,22 @@ export function activitySummary(entry: Pick<ToolActivityEntry, 'block' | 'draft'
     // and stayed outside every fold.
     : /^(run_code|execute_code|code_interpreter|python|node|eval|repl)$/.test(name) ? 'code'
     : 'other';
-  const title = category === 'write' ? `${name === 'write' ? '写入' : '修改'}${file ? ` ${file}` : name === 'apply_patch' ? '代码补丁' : '文件'}`
-    : category === 'read' ? `读取${file ? ` ${file}` : '文件'}`
-    : category === 'terminal' ? description || '运行命令'
-    : category === 'search' ? name === 'glob' ? '查找文件' : '搜索内容'
-    : category === 'web' ? name === 'web_search' ? '搜索网页' : '读取网页'
-    : category === 'code' ? (description || '运行代码')
+  const verb = name === 'write' ? t('tool.verbWrite') : t('tool.verbEdit');
+  const title = category === 'write' ? (file ? `${verb} ${file}` : name === 'apply_patch' ? t('tool.titleEditPatch') : name === 'edit' ? t('tool.titleEditFile') : t('tool.titleWriteFile'))
+    : category === 'read' ? (file ? `${t('tool.verbRead')} ${file}` : t('tool.titleReadFile'))
+    : category === 'terminal' ? description || t('tool.runCommand')
+    : category === 'search' ? name === 'glob' ? t('tool.findFiles') : t('tool.searchContent')
+    : category === 'web' ? name === 'web_search' ? t('tool.webSearch') : t('tool.webFetch')
+    : category === 'code' ? (description || t('tool.runCode'))
     : name;
   return { name, raw, args, category, title, target: target ?? command ?? stringValue(args, 'query', 'pattern', 'url'), command,
     cwd: stringValue(args, 'workdir', 'cwd'), content: stringValue(args, 'content', 'new_string', 'newText', 'file_text') };
 }
 
 export function preparingLabel(name: string): string {
-  return /^(write|edit|apply_patch)$/.test(name) ? '正在生成文件内容' : /^(bash|shell|exec_command|pwsh)$/.test(name) ? '正在准备命令' : '正在准备工具输入';
+  return /^(write|edit|apply_patch)$/.test(name)
+    ? t('tool.preparingFile')
+    : /^(bash|shell|exec_command|pwsh)$/.test(name)
+      ? t('tool.preparingCommand')
+      : t('tool.preparingInput');
 }

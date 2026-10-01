@@ -6,6 +6,7 @@ import { JsonBlock, MarkdownText, writeClipboard } from '@deepseek-ai/dsh-client
 import { ComposerFillContext, McpAppFrame } from './McpAppFrame.js';
 import { formatMessageClock } from './message-chrome.js';
 import { markdownLabels, truncatedJsonLabel } from './primitive-labels.js';
+import { t } from './locales.js';
 import type { BlockRenderProps, ReaderBlockOwner } from './types.js';
 import { useStreamingText } from './streaming.js';
 import { MotionMarkdown, MotionPlainText } from './word-motion.js';
@@ -23,7 +24,7 @@ export class BlockBoundary extends Component<{ children: ReactNode }, { failed: 
   }
   render() {
     return this.state.failed
-      ? <div className={css.notice}>此内容暂时无法在阅读页显示；原对话中的记录未受影响。<span data-reader-block-error style={{ opacity: .65 }}>（{this.state.detail}）</span></div>
+      ? <div className={css.notice}>{t('reader.blockError')}<span data-reader-block-error style={{ opacity: .65 }}>{t('reader.blockErrorDetail', { detail: this.state.detail })}</span></div>
       : this.props.children;
   }
 }
@@ -56,18 +57,18 @@ export const ImageBlock = memo(function ImageBlock({ attachment, loadImage }: {
   const height = Number.isFinite(attachment.height) && attachment.height > 0 ? attachment.height : 3;
   return <figure className={css.imageFigure} data-reader-image data-image-state={error ? 'error' : decoded ? 'ready' : 'loading'}>
     <div className={css.imageFrame} style={{ aspectRatio: `${width} / ${height}` }}>
-      {!error && url && <button ref={opener} type="button" className={css.imageOpen} aria-label={`放大图片${attachment.name ? `：${attachment.name}` : ''}`} onClick={() => dialog.current?.showModal()}>
-        <img src={url} alt={attachment.name ?? '会话图片'} width={width} height={height} onLoad={() => setDecoded(true)} onError={() => setError(true)} data-ready={decoded} />
+      {!error && url && <button ref={opener} type="button" className={css.imageOpen} aria-label={attachment.name ? t('image.zoomNamed', { name: attachment.name }) : t('image.zoom')} onClick={() => dialog.current?.showModal()}>
+        <img src={url} alt={attachment.name ?? t('image.alt')} width={width} height={height} onLoad={() => setDecoded(true)} onError={() => setError(true)} data-ready={decoded} />
       </button>}
       {(!decoded || error) && <div className={css.imagePlaceholder}>
-        <span>{error ? '图片未能加载' : '正在加载图片'}</span>
-        {error && <button type="button" className={css.textButton} onClick={() => setAttempt(value => value + 1)}>重试</button>}
+        <span>{error ? t('image.error') : t('image.loading')}</span>
+        {error && <button type="button" className={css.textButton} onClick={() => setAttempt(value => value + 1)}>{t('image.retry')}</button>}
       </div>}
     </div>
     {attachment.name && <figcaption>{attachment.name}</figcaption>}
-    <dialog ref={dialog} className={css.imageDialog} aria-label="图片预览" onClose={() => opener.current?.focus()} onClick={event => { if (event.target === dialog.current) dialog.current?.close(); }}>
-      <button type="button" autoFocus className={css.dialogClose} aria-label="关闭图片预览" onClick={() => dialog.current?.close()}>×</button>
-      {url && <img src={url} alt={attachment.name ?? '会话图片'} />}
+    <dialog ref={dialog} className={css.imageDialog} aria-label={t('image.preview')} onClose={() => opener.current?.focus()} onClick={event => { if (event.target === dialog.current) dialog.current?.close(); }}>
+      <button type="button" autoFocus className={css.dialogClose} aria-label={t('image.close')} onClick={() => dialog.current?.close()}>×</button>
+      {url && <img src={url} alt={attachment.name ?? t('image.alt')} />}
     </dialog>
   </figure>;
 });
@@ -110,7 +111,7 @@ function fallback(block: AssistantBlock, streaming: boolean, source: ReaderBlock
     case 'text': return source === 'user' ? <MarkdownText text={block.text} labels={markdownLabels} /> : <ReadingMarkdown text={block.text} streaming={streaming} holdFormatting={holdFormatting} {...presentation} fileMentions={fileMentions} />;
     case 'image': return <ImageBlock attachment={block.attachment} loadImage={loadImage} />;
     case 'reasoning': return <ReadingReasoning text={block.text} streaming={streaming} holdFormatting={holdFormatting} {...presentation} />;
-    case 'tool-call': return <JsonBlock label={`工具参数 · ${block.name}`} payload={block.argsRaw} truncatedLabel={truncatedJsonLabel} />;
+    case 'tool-call': return <JsonBlock label={t('reader.toolArgs', { name: block.name })} payload={block.argsRaw} truncatedLabel={truncatedJsonLabel} />;
     case 'other': {
       const raw = block.block;
       if (raw && typeof raw === 'object') {
@@ -120,8 +121,8 @@ function fallback(block: AssistantBlock, streaming: boolean, source: ReaderBlock
         }
       }
       return <div className={css.unknown}>
-        <p>此内容类型尚未接入阅读页，原始内容已保留。</p>
-        <JsonBlock label="查看原始内容" payload={block.block} truncatedLabel={truncatedJsonLabel} />
+        <p>{t('reader.unknownBlock')}</p>
+        <JsonBlock label={t('reader.rawContent')} payload={block.block} truncatedLabel={truncatedJsonLabel} />
       </div>;
     }
   }
@@ -151,7 +152,7 @@ function useCopyReceipt() {
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
   const copy = async (text: string) => {
     const accepted = await writeClipboard(text);
-    setReceipt(accepted ? '已复制' : '未能复制，请手动选择文字');
+    setReceipt(accepted ? t('common.copied') : t('reader.copyFailed'));
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setReceipt(''), 2000);
   };
@@ -170,7 +171,7 @@ export function CopyAnswer({ blocks, onFork, metrics, extraActions }: { blocks: 
   if (!text.trim() && !onFork && !hasMetrics) return null;
   return <div className={css.answerActions}>
     {text.trim() !== '' && (
-      <button type="button" className={css.iconButton} aria-label="复制回答" title="复制回答" onClick={() => { void copy(text); }}>
+      <button type="button" className={css.iconButton} aria-label={t('reader.copyAnswer')} title={t('reader.copyAnswer')} onClick={() => { void copy(text); }}>
         <CopyGlyph />
       </button>
     )}
@@ -179,8 +180,8 @@ export function CopyAnswer({ blocks, onFork, metrics, extraActions }: { blocks: 
       <button
         type="button"
         className={css.iconButton}
-        aria-label="以此处为基础创建分叉会话"
-        title="以此处为基础创建分叉会话 (Fork)"
+        aria-label={t('reader.forkAria')}
+        title={t('reader.forkTitle')}
         onClick={onFork}
       >
         <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.2">
@@ -204,7 +205,7 @@ export function UserMessageActions({ text, time }: { text: string; time?: number
   return <div className={css.userActions}>
     {time !== undefined && <MessageClock time={time} />}
     {hasText && (
-      <button type="button" className={css.iconButton} aria-label="复制消息" title="复制消息" onClick={() => { void copy(text); }}>
+      <button type="button" className={css.iconButton} aria-label={t('reader.copyMessage')} title={t('reader.copyMessage')} onClick={() => { void copy(text); }}>
         <CopyGlyph />
       </button>
     )}
