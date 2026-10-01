@@ -7,7 +7,7 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public",
-    "tag": "dsh-0.1.7"
+    "tag": "dsh-0.2.0"
   },
   "main": "lib/dsh-tidy-display.js",
   "types": "lib/types/dsh-tidy-display.d.ts",
