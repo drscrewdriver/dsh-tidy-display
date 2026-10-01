@@ -2,6 +2,7 @@ import type { Context } from '@deepseek-ai/cordis';
 import type {} from './settings-slots.js';
 import { settingsCopyFor, zh, en, ja, ko, fr, de, it, ru, es } from './settings-copy.js';
 import { SettingsSection, type BetterDisplaySettingsInjected, type OpenPrefs } from './SettingsSection.js';
+import { installPluginConfigCard } from './config-card.js';
 import { firstSessionId, skillsFromListResult, type SkillStatusProbe } from './skill-status.js';
 import type { HostSkillStatus } from '../skill-status.js';
 
@@ -70,4 +71,5 @@ export function installBetterDisplaySettings(ctx: Context, prefs: OpenPrefs): vo
     locale: locale?.bind ? 'tidy-display' : undefined,
     inject: injected,
   }, SettingsSection));
+  installPluginConfigCard(ctx, injected);
 }

@@ -20,6 +20,14 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      * standalone settings.section.
      */
     'dsh-family.tab': { kind: 'list'; scope: 'root'; owner: Record<string, unknown> };
+    /**
+     * Plugins-page configuration card (official ui-plugin-manager contract):
+     * keyed by the bundle's package name, rendered on the bundle's page with
+     * `{ view: 'page', form }` owner props. This plugin ignores the page's
+     * `form` (its namespace is the entry id `tidy-display`, not the package
+     * name) and renders over the shared OpenPrefs face instead.
+     */
+    'plugins.bundle.config': { kind: 'keyed'; scope: 'root'; owner: Record<string, unknown> };
   }
   interface LocaleNamespaceMap {
     'tidy-display': SettingsCopyKey;
