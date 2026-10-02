@@ -11,10 +11,11 @@
 }
 .column { max-width: var(--dsh-chat-content-width, 748px); width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 .toolbar { position: sticky; top: 0; display: flex; justify-content: flex-end; align-items: center; gap: 6px; min-height: 32px; padding: 0; color: var(--dsw-alias-label-tertiary); font-size: 12px; background: var(--dsw-alias-bg-base); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-/* 吸顶带第二车道：左「正在处理」+ 右「自动折叠」共享同一条 40px 水平基线。
-   top / z-index 由下方 measured-flow 段统一定义：这一道永远钉在工具栏车道
-   之下、且永远低于宿主输入卡（composerSeat z-index 7）。 */
-.turnProcessSticky { position: sticky; background: var(--dsw-alias-bg-base); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); min-height: 32px; display: flex; align-items: center; }
+/* 轮次内的行都是普通文档流：折叠摘要与状态行随内容滚动，不悬浮、不吸顶
+   （设计裁定：它们是内容的一部分，不是工具栏）。底板、-14px 补缝阴影、
+   z-index 和 --reader-control-width 右侧让位一并撤掉——那整套几何只在
+   吸顶时有意义，留在页面上只会变成一条条悬空的色带。 */
+.turnProcessSticky { box-sizing: border-box; width: 100%; min-height: 40px; display: flex; align-items: center; }
 .turnProcessSticky .disclosureButton { min-height: 32px; }
 /* 第二车道：折叠胶囊吸附在第一车道正下方，互不重叠 */
 .textButton, .historyButton, .iconButton, .jump, .disclosureButton, .imageOpen, .dialogClose { font: inherit; cursor: pointer; }
@@ -533,35 +534,13 @@
    first lane and its containing block always ends above the seat, so it can
    never reach the band, and 7 keeps it above the host's code-block banners. */
 .toolbar { width: 100%; max-width: 100%; align-self: stretch; box-sizing: border-box; min-height: 40px; z-index: 7; border-bottom: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
-/* Every sticky lane used to pin to the SAME top: the status row, the folded
-   summary row and the live-fold container all sat at
-   max(toolbar-height, status-height) with z-index 6. Three siblings competing
-   for one slot paint over each other in scroll order, which is what "展开以后
-   内容被盖住、看不见" was: the disclosure opened, and the row that followed
-   pinned straight on top of it. Give each lane its own band instead, stacked
-   from the measured top: status first, then the summary, then the fold body. */
-/* top is the toolbar's measured height alone. max()'ing in --reader-status-height
-   made the lane use its OWN height as its pin offset, so a wrapped (taller) status
-   row pinned lower and opened a hole under the toolbar that the -14px shadow
-   plate could not cover. */
-.turnProcessSticky { box-sizing: border-box; width: calc(100% - var(--reader-control-width, 148px)); top: var(--reader-toolbar-height, 40px); min-height: 40px; padding-right: 0; z-index: 6; border-bottom: 1px solid transparent; background-clip: padding-box; backdrop-filter: none; -webkit-backdrop-filter: none; }
-/* A pinned lane's in-flow gap stays visible as an uncovered scrollport strip
-   while the lane itself paints opaque. Cast each plate upward over its strip
-   (the .turn 14px gap / the prior cell's 16px flowCellInner padding) so the
-   lanes read as one band instead of solid plates with notches between them.
-   The status lane reserves --reader-control-width on its right for the
-   toolbar's control group, which leaves the same kind of strip there; paint
-   it too. The toolbar is z-index 7, above the lane's 6, so its buttons still
-   render on top of the extension. */
-.turnProcessSticky { box-shadow: 0 -14px 0 var(--dsw-alias-bg-base), var(--reader-control-width, 148px) 0 0 var(--dsw-alias-bg-base); }
-/* The same summary row stays in flow until it reaches the measured top lane.
-   The second band is the status lane's MEASURED height (--reader-status-height),
-   not a hardcoded 40px: --reader-sticky-lane was never assigned anywhere, so any
-   status row taller than 40px (wrapped text, coarse-pointer 44px buttons) made
-   the summary pin under the status plate and get buried by it. */
-.flowCell[data-flow-summary], .closedProcessSummary { position: sticky; top: calc(var(--reader-toolbar-height, 40px) + var(--reader-status-height, 40px)); z-index: 5; overflow: visible; box-sizing: border-box; min-height: 40px; padding-block: 4px; background: var(--dsw-alias-bg-base); border-bottom: 0; }
-.flowCell[data-flow-summary] { box-shadow: 0 -16px 0 var(--dsw-alias-bg-base); }
-.closedProcessSummary { box-shadow: 0 -14px 0 var(--dsw-alias-bg-base); }
+/* Only the toolbar sticks (top: 0, z-index 7). The turn-level rows used to pin
+   into measured lanes under it — status at the toolbar height, the fold summary
+   at +40px — but the lanes were one bug factory: self-referential pin offsets,
+   a never-assigned --reader-sticky-lane fallback, buried summary rows and
+   uncovered strips that showed content scrolling through. The rows are content;
+   they scroll with the transcript now. */
+.flowCell[data-flow-summary], .closedProcessSummary { overflow: visible; box-sizing: border-box; min-height: 40px; padding-block: 4px; border-bottom: 0; }
 .foldControl { display: inline-flex; align-items: center; gap: 0; padding: 2px; border-radius: 8px; background: var(--dsw-alias-bg-module-platform); }
 .foldStop { border: 0; background: transparent; color: var(--dsw-alias-label-secondary); padding: 2px 8px; border-radius: 6px; white-space: nowrap; font: inherit; font-size: 12px; line-height: 18px; cursor: pointer; }
 .foldStop[data-on] { background: var(--dsw-alias-bg-base); color: var(--dsw-alias-label-primary); }
