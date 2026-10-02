@@ -67,11 +67,26 @@ function bundledDeclarations(className: string): Map<string, string> {
   return declarations;
 }
 
+/** Turn-level rows are content: they scroll with the transcript and never pin. */
+const FLOW_ROWS = ['.turnProcessSticky', '.flowCell[data-flow-summary]', '.closedProcessSummary'];
+
+test('turn-level rows scroll in flow — only the toolbar lane may pin', () => {
+  for (const lane of FLOW_ROWS) {
+    const declarations = mergedDeclarations(css, lane);
+    const position = declarations.get('position');
+    assert.ok(
+      position !== 'sticky' && position !== 'fixed',
+      `${lane} must scroll with the transcript, not pin (got position: ${position})`,
+    );
+    assert.equal(declarations.get('top'), undefined, `${lane} must not declare a pin offset`);
+  }
+});
+
 test('clamped reader lanes stay strictly below the host footer band', () => {
   for (const lane of CLAMPED_LANES) {
     const declarations = mergedDeclarations(css, lane);
     const zIndex = declarations.get('z-index');
-    assert.ok(zIndex, `${lane} still declares its lane z-index`);
+    if (zIndex === undefined) continue; // flow rows no longer declare a lane z-index
     assert.ok(
       Number(zIndex) < HOST_FOOTER_Z,
       `${lane} must stay below the host composer seat (z-index ${HOST_FOOTER_Z}), got ${zIndex}`,
@@ -85,18 +100,10 @@ test('the top toolbar lane stays at 7 and pins to the scrollport top', () => {
   assert.equal(declarations.get('top'), '0');
 });
 
-test('the live status lane pins below the toolbar lane instead of over it', () => {
-  const declarations = mergedDeclarations(css, '.turnProcessSticky');
-  assert.match(
-    declarations.get('top') ?? '',
-    /var\(--reader-toolbar-height/,
-    'the status lane shares the measured lane below the toolbar',
-  );
-});
-
-test('the closed summary lane shares that same measured lane', () => {
-  const declarations = mergedDeclarations(css, '.flowCell[data-flow-summary]');
-  assert.match(declarations.get('top') ?? '', /var\(--reader-toolbar-height/);
+test('the live status row and the closed summary row do not pin', () => {
+  for (const lane of FLOW_ROWS) {
+    assert.notEqual(mergedDeclarations(css, lane).get('position'), 'sticky', `${lane} must not be sticky`);
+  }
 });
 
 test('skin mode does not reintroduce a lane above the footer band', () => {
@@ -116,14 +123,13 @@ test('skin mode does not reintroduce a lane above the footer band', () => {
 });
 
 test('the committed client bundle carries the same lane ladder', () => {
-  for (const lane of ['turnProcessSticky', 'liveFoldContainer']) {
-    const bundled = bundledDeclarations(lane);
-    const zIndex = bundled.get('z-index');
-    assert.ok(zIndex, `${lane} is present in the built bundle`);
-    assert.ok(
-      Number(zIndex) < HOST_FOOTER_Z,
-      `${lane} in lib/client.js must stay below ${HOST_FOOTER_Z}, got ${zIndex}`,
-    );
-  }
+  const statusRow = bundledDeclarations('turnProcessSticky');
+  assert.notEqual(statusRow.get('position'), 'sticky', 'turnProcessSticky must not pin in lib/client.js either');
+  const liveFold = bundledDeclarations('liveFoldContainer');
+  assert.ok(liveFold.get('z-index'), 'liveFoldContainer is present in the built bundle');
+  assert.ok(
+    Number(liveFold.get('z-index')) < HOST_FOOTER_Z,
+    `liveFoldContainer in lib/client.js must stay below ${HOST_FOOTER_Z}, got ${liveFold.get('z-index')}`,
+  );
   assert.equal(bundledDeclarations('toolbar').get('z-index'), String(HOST_FOOTER_Z));
 });
