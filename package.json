@@ -1,6 +1,6 @@
 {
   "name": "dsh-tidy-display",
-  "version": "0.1.2-beta.1",
+  "version": "0.1.2-beta.2",
   "description": "One plugin for a calmer DeepSeek Harness: reading view + message rail + smart history loading, for Harness 0.1.7.",
   "type": "module",
   "license": "MIT",
