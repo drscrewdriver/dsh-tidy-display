@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2-beta.1 — 2026-10-03
+
+- 修复折叠吸顶车道错位（滚动时「用时 ×分×秒」与「思考×…」两行之间夹进回答内容、摘要行被状态行盖住）：`.turnProcessSticky` 的 `top` 不再 `max()` 进它自身的实测高度——状态行换行变高后会把自己钉得更低，工具栏下方露出一条滚动内容的缝（`-14px` 阴影补板盖不住的部分）；`.flowCell[data-flow-summary]` / `.closedProcessSummary` 的吸顶偏移改为 `工具栏实测高度 + 状态行实测高度`，不再依赖从未被赋值、永远走 40px 兜底的 `--reader-sticky-lane`——状态行只要不是恰好 40px（长状态文字换行、`pointer: coarse` 的 44px 按钮），摘要行就钉在状态行底板之下被埋住。真实组件浏览器 fixture 全程逐 40px 滚动回归：换行到 56.8px 的状态下三车道 0 缝隙、0 重叠。`data-reader-build` 戳与 package 版本重新对齐。
+- `eslint` 忽略 `.delivery/**`（fixture 构建产物）：此前 `npm run check` 会把 1.5MB 压缩 bundle 当源码 lint 出 631 个假错误。
+- 新增复现 fixture `tests/browser-fold-scroll-issue.tsx`（闭合轮 + 双吸顶车道 + 长回答表格），`node scripts/build-motion-fixture.mjs tests/browser-fold-scroll-issue.tsx` 构建。
+
 ## Unreleased
 
 - Package renamed to the unscoped **`dsh-tidy-display`** and republished: `package.json` name, `src/dsh-tidy-display.ts` module id, tsdown bundle id, and the `cordis.patch.yml` insert row all move together (the module-id-equals-package-name invariant is unchanged, just re-pinned to the new name). The earlier scoped publish `@drscrewdriver/dsh-tidy-display@0.1.0` remains on npm but is superseded — install by the bare name (`dsh plugin --profile web add dsh-tidy-display`). dist-tags: `dsh-0.1.7` and `latest`, both → 0.1.0.
