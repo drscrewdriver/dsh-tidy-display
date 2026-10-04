@@ -67,6 +67,12 @@ html:not([data-tidychat-hide-official-nav]) nav[class*="_frame"]:has([class*="_m
   document.head.appendChild(style);
 }
 
+// 接管属性是 documentElement 上的全局单例，而 RailView 同时挂在原生视图
+// （conversation.session.header.utilities）和阅读视图两处——任一实例卸载时
+// 无条件删属性会把另一处活实例的接管状态一起删掉（阅读→对话切换即复现）。
+// 用模块级引用计数：属性存在当且仅当 owners > 0。
+let takeoverOwners = 0;
+
 const findScrollContainer = (): Element | null => document.querySelector('[data-conversation-scroll]')
 
 const scopedRows = (selector: string): Element[] => {
@@ -144,11 +150,22 @@ export function RailView({ enabled, side, style: railStyle, ring, hideOfficialNa
   // 接管官方消息轨：切根元素属性，官方轨 CSS 隐藏（隐藏≠卸载，宿主 React 仍挂载它）。
   // 本轨关闭（enabled=false）时必须一并放开官方轨——接管的前提是"本轨在"，否则两条
   // 轨全无（hideOfficialNav 默认 true，单独 gate 它会在关轨后留下零轨死状态）。
+  // 清理走引用计数（见 takeoverOwners 注释），卸载只减计数、计数归零才删属性。
   React.useEffect(() => {
-    if (enabled && hideOfficialNav) document.documentElement.setAttribute('data-tidychat-hide-official-nav', '')
-    else document.documentElement.removeAttribute('data-tidychat-hide-official-nav')
-    return () => { document.documentElement.removeAttribute('data-tidychat-hide-official-nav') }
-  }, [enabled, hideOfficialNav])
+    const owned = enabled && hideOfficialNav;
+    if (owned) {
+      takeoverOwners += 1;
+      document.documentElement.setAttribute('data-tidychat-hide-official-nav', '');
+    }
+    return () => {
+      if (!owned) return;
+      takeoverOwners -= 1;
+      if (takeoverOwners <= 0) {
+        takeoverOwners = 0;
+        document.documentElement.removeAttribute('data-tidychat-hide-official-nav');
+      }
+    };
+  }, [enabled, hideOfficialNav]);
   const [pos, setPos] = React.useState<{ left: number; top: number; gutter: number } | null>(null)
   const [tip, setTip] = React.useState<{ x: number; y: number; head?: string | null; num: number | null; time: string; text: string; mirror: boolean } | null>(null)
   const [hover, setHover] = React.useState<number | null>(null)
