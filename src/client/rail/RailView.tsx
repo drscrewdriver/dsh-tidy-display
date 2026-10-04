@@ -51,10 +51,17 @@ function ensureRailCss(): void {
 }
 .tidychat-nav-tip-head { color: var(--tidychat-nav-tip-head, var(--dsw-alias-label-secondary, #666)) !important; font-size: 11px; margin-bottom: 2px; }
 /* 接管官方消息轨：官方 TurnNavigator 的类名是 CSS Module 产物（hash 随构建变化），
-   双重锚定保证跨 hash 稳定；隐藏而非卸载（宿主 React 会还原被删节点）。 */
+   双重锚定保证跨 hash 稳定；隐藏而非卸载（宿主 React 会还原被删节点）。
+   恢复向规则：0.2.0 起宿主自带 @container (width<=900px) { frame: display:none }，
+   接管关闭时若不显式压回，窄容器下官方轨被宿主自藏、用户只见本轨（"开关无用"的
+   根因）。恢复锚定 frame 内的 _marks 子元素（TurnNavigator 模块表语义键，跨 hash
+   稳定），不会误伤宿主其他被响应式隐藏的组件。 */
 html[data-tidychat-hide-official-nav] [class*="_slot"]:has(> nav[class*="_frame"]),
 html[data-tidychat-hide-official-nav] nav[class*="_frame"]:has([style*="--turn-natural-position"]) {
   display: none !important;
+}
+html:not([data-tidychat-hide-official-nav]) nav[class*="_frame"]:has([class*="_marks"]) {
+  display: revert !important;
 }
 `;
   document.head.appendChild(style);
@@ -135,11 +142,13 @@ export function RailView({ enabled, side, style: railStyle, ring, hideOfficialNa
 }): React.ReactElement | null {
   ensureRailCss()
   // 接管官方消息轨：切根元素属性，官方轨 CSS 隐藏（隐藏≠卸载，宿主 React 仍挂载它）。
+  // 本轨关闭（enabled=false）时必须一并放开官方轨——接管的前提是"本轨在"，否则两条
+  // 轨全无（hideOfficialNav 默认 true，单独 gate 它会在关轨后留下零轨死状态）。
   React.useEffect(() => {
-    if (hideOfficialNav) document.documentElement.setAttribute('data-tidychat-hide-official-nav', '')
+    if (enabled && hideOfficialNav) document.documentElement.setAttribute('data-tidychat-hide-official-nav', '')
     else document.documentElement.removeAttribute('data-tidychat-hide-official-nav')
     return () => { document.documentElement.removeAttribute('data-tidychat-hide-official-nav') }
-  }, [hideOfficialNav])
+  }, [enabled, hideOfficialNav])
   const [pos, setPos] = React.useState<{ left: number; top: number; gutter: number } | null>(null)
   const [tip, setTip] = React.useState<{ x: number; y: number; head?: string | null; num: number | null; time: string; text: string; mirror: boolean } | null>(null)
   const [hover, setHover] = React.useState<number | null>(null)
