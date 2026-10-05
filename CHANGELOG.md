@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4-beta.5 — 2026-10-05
+
+- **修复 0.1.2/0.1.5 整页砖化与阅读视图空白（跨代兼容三连）**：① client 金丝雀对 `conversation.chat.turnTail` 的契约校验只认 0.1.7+ 代的 `list/session`，而 0.1.2–0.1.5 宿主声明 `chain/session` → throw 杀死 client entry → web-boot 门禁整页拒绝启动；改为按代白名单并绑定宿主实时 spec，镜像注入处第二处金丝雀同样降级为告警。② `pendingInteraction` 的 `useSessionStatus` 是 0.1.7+ 改名，0.1.2–0.1.5 叫 `useSessionPendingInteraction`——Reader 双代探测、缺席 fail-open。③ tail 座位按实测代际分发渲染器（chain 槽必须 `renderSlotChain`）；老投影附加的 `input-message` 节点阅读页不再镜像渲染（崩 React #130）。已知残留：0.1.2 阅读页用户消息下偶现一张 React #130 优雅降级卡（正文/轨道不受影响）。
+
 ## 0.2.3 — 2026-10-03
 
 - **设计裁定：轮次内的行不再悬浮。** 「用时 ×分×秒」状态行与「思考×…」折叠摘要行是内容的一部分，不是工具栏——`position: sticky`、吸顶偏移、`z-index`、`--dsw-alias-bg-base` 底板和 `-14px` 补缝阴影全部撤掉，随内容滚动。只有顶部工具栏（自动折叠开关）保留吸顶。0.2.3-beta.1 只修了吸顶几何，但用户反馈的「折叠内容滚动时异常固定位置」本意就是这些行不该固定；宿主主题里 token 半透明时底板遮不住内容、文字叠文字的问题也随之消失（不再有底板）。

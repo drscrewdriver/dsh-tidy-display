@@ -1,5 +1,9 @@
 # Journal des modifications
 
+## 0.2.4-beta.5 — 2026-10-05
+
+- **Corrige le blocage complet sur 0.1.2/0.1.5** : le canari client dans `officialChildren` n’acceptait que le contrat `list/session` de la génération 0.1.7+ pour `conversation.chat.turnTail`, alors que les hôtes 0.1.2–0.1.5 déclarent `chain/session` — le throw tuait tout l’entrée client et la porte de démarrage web refusait la page entière. Désormais liste blanche par génération (tail accepte les specs list et chain) et liaison à la spec en vivo de l’hôte ; le deuxième canari du miroir avertit au lieu de lancer.
+
 ## Non publié
 
 - Le paquet est renommé en **`dsh-tidy-display`** sans scope et republié : le nom dans `package.json`, l'id de module `src/dsh-tidy-display.ts`, l'id de bundle tsdown et la ligne d'insert de `cordis.patch.yml` avancent tous ensemble (l'invariant id-de-module-=-nom-de-paquet ne change pas, il est simplement réancré sur le nouveau nom). La publication antérieure avec scope `@drscrewdriver/dsh-tidy-display@0.1.0` reste sur npm mais est supplantée — installez par le nom simple (`dsh plugin --profile web add dsh-tidy-display`). dist-tags : `dsh-0.1.7` et `latest`, tous deux → 0.1.0.

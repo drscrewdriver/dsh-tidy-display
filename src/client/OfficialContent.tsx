@@ -4,7 +4,7 @@ import { createSnapshotStore } from '@deepseek-ai/dsh-client-store';
 import type { ToolCallBlock } from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type { AssistantActionOwnerProps } from '@deepseek-ai/dsh-client-ui-chat/client';
 type MessageId = AssistantActionOwnerProps['messageId'];
-import { OFFICIAL_SEATS } from './official-slots.js';
+import { OFFICIAL_SEATS, tailSeatKind } from './official-slots.js';
 import type { BlockRenderProps } from './types.js';
 
 export function OfficialActions({ official, messageId }: Pick<BlockRenderProps, 'official'> & { messageId?: MessageId }) {
@@ -63,7 +63,13 @@ export function OfficialNode({ node, fallback, ...render }: BlockRenderProps & {
 
 export function OfficialTail({ official, owner, produced }: Pick<BlockRenderProps, 'official'> & { owner?: TurnTailOwnerProps; produced: readonly string[] }) {
   const tailOwner = owner && official ? { ...owner, openFile: official.officialPreviewFile, readerProducedPaths: produced } : undefined;
-  return official && tailOwner ? <div data-reader-official-tail style={{ display: 'contents' }}>
-    {official.renderSlot(OFFICIAL_SEATS.tail, tailOwner)}
-  </div> : null;
+  if (!official || !tailOwner) return null;
+  // tail 槽按代分发：0.1.2–0.1.5 声明 chain（必须 renderSlotChain），0.1.7+ 声明
+  // list（renderSlot）。用错渲染器宿主直接抛 "declared 'chain' — use renderSlotChain"。
+  const render = (tailSeatKind() === 'chain'
+    ? (official.renderSlotChain ?? official.renderSlot)
+    : official.renderSlot) as (key: string, owner: object, options?: object) => ReactNode;
+  return <div data-reader-official-tail style={{ display: 'contents' }}>
+    {render(OFFICIAL_SEATS.tail, tailOwner)}
+  </div>;
 }

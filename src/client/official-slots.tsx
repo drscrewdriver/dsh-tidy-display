@@ -59,12 +59,16 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 // Existing Reader presentations own these rows. All other node kinds, including
 // future registrations, reach the official renderer through the fallback seat.
 const READER_NODES = new Set(['user', 'steering', 'assistant-step', 'tool-call', 'turn-tail', 'turn-process']);
-const EXPECTED: Record<OfficialFamily, Spec> = {
-  actions: { kind: 'list', scope: 'session' },
-  tools: { kind: 'keyed', scope: 'session' },
-  tail: { kind: 'list', scope: 'session' },
-  nodes: { kind: 'keyed', scope: 'session' },
-  images: { kind: 'single', scope: 'session' },
+const EXPECTED: Record<OfficialFamily, Spec[]> = {
+  actions: [{ kind: 'list', scope: 'session' }],
+  tools: [{ kind: 'keyed', scope: 'session' }],
+  // turnTail 是代际分叉点：0.1.2–0.1.5 宿主声明 chain/session，0.1.7 起改为
+  // list/session。两代都按宿主实时 spec 绑定（回退值只服务 spec 缺席的宿主），
+  // 白名单仅作漂移金丝雀——记录并继续，不再 throw：client entry 失败会触发
+  // web-boot 门禁整页拒绝启动（0.1.2/0.1.5 砖化事故，2026-10-05）。
+  tail: [{ kind: 'list', scope: 'session' }, { kind: 'chain', scope: 'session' }],
+  nodes: [{ kind: 'keyed', scope: 'session' }],
+  images: [{ kind: 'single', scope: 'session' }],
 };
 
 /**
@@ -95,12 +99,21 @@ export function officialChildren(slots: Pick<CompositionRegistry, 'spec'>): { [K
   return Object.fromEntries(Object.entries(OFFICIAL_SLOTS).map(([name, source]) => {
     const family = name as OfficialFamily;
     const spec = slots.spec(source);
-    if (spec && (spec.kind !== EXPECTED[family].kind || spec.scope !== EXPECTED[family].scope)) {
-      throw new Error(`Official slot contract changed: ${source} (${spec.kind}/${spec.scope})`);
+    if (spec && !EXPECTED[family].some((expected) => expected.kind === spec.kind && expected.scope === spec.scope)) {
+      // 金丝雀降级为告警：绑定宿主实时 spec 继续（throw 会杀死整个 client
+      // entry 并触发 web-boot 门禁整页拒绝启动——0.1.2/0.1.5 砖化事故）。
+      console.warn(`[dsh-tidy-display] official slot contract drift, binding live spec: ${source} (${spec.kind}/${spec.scope})`);
     }
+    if (family === 'tail') boundTailKind = (spec?.kind ?? EXPECTED[family][0].kind) as 'list' | 'chain';
     // In particular, retain conversation.chat.node's contextual turn-data hook.
-    return [officialSeat(family), spec ?? EXPECTED[family]];
+    return [officialSeat(family), spec ?? EXPECTED[family][0]];
   })) as { [K in OfficialSeat]: SlotSpec<SlotMap[K]> };
+}
+
+/** tail 座位实测绑定的槽形（list=0.1.7+，chain=0.1.2–0.1.5）。渲染分发用。 */
+let boundTailKind: 'list' | 'chain' | undefined;
+export function tailSeatKind(): 'list' | 'chain' {
+  return boundTailKind ?? 'list';
 }
 
 function translatedComponent(entry: StoredEntry, names: ReadonlyMap<string, string>) {
@@ -195,7 +208,9 @@ export function installOfficialSlots(ctx: Context): () => void {
         const target = officialSeat(family);
         const declared = slots.spec(target);
         if (spec.kind !== declared?.kind || spec.scope !== declared.scope) {
-          throw new Error(`Official slot contract changed: ${source}`);
+          // 金丝雀降级为告警（同 officialChildren）：throw 会杀死整个 client
+          // entry，触发 web-boot 门禁整页拒绝启动（0.1.2/0.1.5 砖化事故）。
+          console.warn(`[dsh-tidy-display] official slot contract drift on mirror: ${source} (${spec.kind}/${spec.scope} vs ${declared?.kind ?? 'none'}/${declared?.scope ?? 'none'})`);
         }
         return mirrorOfficialSlot(slots, source, target, `dsh-tidy-display.official.${family}`,
           family === 'nodes' ? entry => !READER_NODES.has(entry.options.key ?? '') : undefined);
