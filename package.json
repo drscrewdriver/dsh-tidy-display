@@ -41,6 +41,7 @@
   },
   "scripts": {
     "build": "node scripts/check-harness-compat.mjs && tsc -p tsconfig.json && tsdown",
+    "prepack": "npm run build",
     "check:harness": "node scripts/check-harness-compat.mjs",
     "test:official": "node scripts/verify-official-bridge.mjs",
     "test:auto-fold": "node scripts/verify-auto-fold.mjs",
