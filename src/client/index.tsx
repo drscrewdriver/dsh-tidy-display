@@ -21,6 +21,14 @@ import type { ReaderInjected } from './types.js';
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import * as React from 'react';
 import { installOfficialSlots, officialChildren, type CompositionRegistry } from './official-slots.js';
+import { NS, dictionaries, installTranslate, t } from './locales.js';
+import { softSvc, safeSeat } from './soft-svc.js';
+
+/** Structural face of the host locale service (optional on every line). */
+interface LocaleLike {
+  register?: (ns: string, dicts: Record<string, Record<string, string>>) => () => void;
+  bind?: (ns: string) => (key: string) => string;
+}
 
 /** Structural face of the sanctioned per-session composer writer. */
 interface ComposerShell {
@@ -42,7 +50,7 @@ async function openWorkspacePath(
   ctx: Context,
   path: string,
 ): Promise<void> {
-  const remote = ctx.remote as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } } | undefined;
+  const remote = softSvc(ctx, 'remote') as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } } | undefined;
   const remoteSession = remote?.session
     ?? (ctx.get?.('remote.session') as unknown as { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } | undefined)
     ?? ((ctx.get?.('remote') as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } })?.session);
@@ -59,9 +67,29 @@ async function openWorkspacePath(
 export type { ReaderBlockOwner } from './types.js';
 export { McpAppFrame } from './McpAppFrame.js';
 export const name = 'dsh-tidy-display-client';
-export const inject = ['slots', 'sessions', 'conversation', 'uiConversation', 'remote', 'remote.session'];
+// Generation-neutral trio only: declaring an absent old-line service in the
+// top-level list pends the whole client entry forever (web boot refuses to
+// render). conversation/uiConversation/remote/remote.session ride softSvc.
+export const inject = ['slots', 'sessions', 'locale'];
 
 export function apply(ctx: Context): void {
+  // One registration activates all nine shipped languages; bind is resolved
+  // lazily and cached, so helper modules can translate at render time too.
+  const locale = (ctx.get?.('locale') ?? (ctx as unknown as { locale?: LocaleLike }).locale) as LocaleLike | undefined;
+  if (locale?.register) {
+    ctx.effect(() => locale.register!(NS, dictionaries), 'dsh-tidy-display: dictionaries');
+  }
+  let bound: ((key: string) => string) | undefined;
+  installTranslate(locale?.bind
+    ? (key) => {
+        try {
+          bound ??= locale.bind!(NS);
+          return bound?.(key) ?? key;
+        } catch {
+          return key;
+        }
+      }
+    : null);
   const store = createReaderStore();
   // conversation.view is session-scoped, so session persist keys are
   // `dsh.reader.v1.<sessionId>`. One root instance keeps glass, fold
@@ -108,19 +136,24 @@ export function apply(ctx: Context): void {
       },
     });
   }
+  safeSeat('conversation.session.header.utilities', () =>
   (ctx.slots as unknown as { inject: (name: string, cb: () => unknown) => void }).inject(
     'conversation.session.header.utilities',
     () => (ctx.slots as unknown as { register: (options: Record<string, unknown>, component: unknown) => unknown }).register(
       { name: 'conversation.session.header.utilities', id: 'tidy-display-nav' },
       NativeRailView,
     ),
-  );
+  ));
+  // The reader view declares official children (conversation.chat.turnTail ...)
+  // whose contracts don't exist on 0.1.0/0.1.1 - the registration throws there;
+  // the reader degrades with the line and the settings surfaces must survive.
+  safeSeat('conversation.chat.node/reader', () =>
   ctx.slots.inject('conversation.chat.node', function* () {
     yield ctx.slots.register({
     name: 'conversation.view',
     id: 'reader',
     order: -5,
-    label: () => '阅读',
+    label: () => t('view.reader'),
     locale: 'chat',
     children: {
       'dsh-tidy-display.block': { kind: 'chain', scope: 'session' },
@@ -136,8 +169,8 @@ export function apply(ctx: Context): void {
       return {
         openPrefs: prefs,
         officialImageLoader: Object.assign(
-          (attachment: ImageAttachmentRef) => ctx.uiConversation.imageUrl(sessionId, attachment),
-          { peek: (attachment: ImageAttachmentRef) => ctx.uiConversation.peekImageUrl(sessionId, attachment) },
+          (attachment: ImageAttachmentRef) => softSvc(ctx, 'uiConversation')?.imageUrl?.(sessionId, attachment),
+          { peek: (attachment: ImageAttachmentRef) => softSvc(ctx, 'uiConversation')?.peekImageUrl?.(sessionId, attachment) },
         ),
         officialFileMentions: owner => ctx.get('chatFileMentions')?.forClosing(owner, sessionId),
         officialPreviewFile: path => {
@@ -147,7 +180,7 @@ export function apply(ctx: Context): void {
           sidebar.openResource((officialFileAddressFor ?? fileAddressFor)(sessionId, cwd, path));
         },
         officialHost: {
-          getSnapshot: () => ctx.remote.$host,
+          getSnapshot: () => (softSvc(ctx, 'remote') as { $host: { home?: string } } | undefined)?.$host ?? {},
           subscribe: listener => ctx.on('connection/reset', listener),
         },
         loadOlder: async () => { await session().loadOlder(); },
@@ -201,7 +234,7 @@ export function apply(ctx: Context): void {
 
             // 2. Fallback to official opener with parent directory
             const parentDir = dirname(targetPath);
-            const remote = ctx.remote as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } } | undefined;
+            const remote = softSvc(ctx, 'remote') as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } } | undefined;
             const remoteSession = remote?.session
               ?? (ctx.get?.('remote.session') as unknown as { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } | undefined);
             if (remoteSession?.openWorkspacePath) {
@@ -248,7 +281,7 @@ export function apply(ctx: Context): void {
           // Sanctioned path: the conversation input shell owns the Lexical
           // editor, so setDraft lands in the draft store deterministically.
           try {
-            const conversation = (ctx as unknown as { conversation?: ConversationFace }).conversation;
+            const conversation = softSvc(ctx, 'conversation') as ConversationFace | undefined;
             const shell = conversation?.input?.shell?.(sessionId);
             if (shell && typeof shell.setDraft === 'function') {
               shell.setDraft(text);
@@ -269,5 +302,5 @@ export function apply(ctx: Context): void {
     }, Reader);
     yield installOfficialSlots(ctx);
     yield installReaderEntry(ctx);
-  });
+  }));
 }

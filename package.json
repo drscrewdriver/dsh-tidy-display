@@ -1,6 +1,6 @@
 {
   "name": "dsh-tidy-display",
-  "version": "0.2.4-beta.5",
+  "version": "0.3.0",
   "description": "One plugin for a calmer DeepSeek Harness: reading view + message rail + smart history loading, for Harness 0.1.0-0.2.0 (all rc).",
   "type": "module",
   "license": "MIT",
@@ -46,7 +46,8 @@
     "test": "node --import tsx/esm --test tests/*.test.ts",
     "link:harness": "node scripts/link-harness-dependencies.mjs",
     "lint": "eslint .",
-    "check": "npm run typecheck && npm run lint && npm test"
+    "check": "npm run typecheck && npm run lint && npm test",
+    "prepack": "npm run build"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",

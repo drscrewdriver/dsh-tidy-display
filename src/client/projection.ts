@@ -1,6 +1,7 @@
 import type { AssistantBlock, ToolCallBlock, TurnLocation } from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type { AssistantChatData, ChatConversationViewNode } from '@deepseek-ai/dsh-client-ui-chat/client';
 import { activityPhase } from './tool-activity.js';
+import { t } from './locales.js';
 
 export interface ReaderGroup { key: string; turn: number | null; keys: readonly string[] }
 export interface TurnBoundary { status: 'open' | 'closed' | 'unknown'; reason: string | null; latestStep: number; closingStep: number | null }
@@ -92,12 +93,12 @@ export function toolName(block: ToolCallBlock): string {
 export function terminalLabel(reason: string | null): string | null {
   switch (reason) {
     case 'completed': return null;
-    case 'aborted': case 'interrupted': return '本轮已停止，已生成的内容仍保留。';
-    case 'blocked': return '本轮需要处理阻塞事项；请查看原对话与下方操作区。';
-    case 'max-tokens': return '输出达到本轮长度限制，内容可能尚未完整。';
-    case 'error': return '本轮未完成；错误信息保留在下方。';
+    case 'aborted': case 'interrupted': return t('turn.aborted');
+    case 'blocked': return t('turn.blocked');
+    case 'max-tokens': return t('turn.maxTokens');
+    case 'error': return t('turn.error');
     case null: return null;
-    default: return `本轮结束状态：${reason}。请在原对话中核对完整记录。`;
+    default: return t('turn.unknown', { reason });
   }
 }
 

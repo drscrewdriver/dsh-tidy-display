@@ -1,4 +1,4 @@
-import { defineStore } from '@deepseek-ai/dsh-client-store';
+import { defineStore } from './store-face.js';
 import type { EngineStoreHandle } from '@deepseek-ai/dsh-client-store';
 import {
   FOLD_INTENSITY_DEFAULT,
@@ -126,5 +126,5 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       setRailAccentCustom: (draft, value: string) => { draft.railAccentCustom = value; },
       setRailAccentLight: (draft, value: string) => { draft.railAccentLight = value; },
     },
-  });
+  }) as unknown as EngineStoreHandle<ReaderState, ReaderActions>;
 }

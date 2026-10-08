@@ -59,6 +59,7 @@ export declare function readerTailMatch(value: unknown, displayedPaths?: readonl
 export declare function officialChildren(slots: Pick<CompositionRegistry, 'spec'>): {
     [K in OfficialSeat]: SlotSpec<SlotMap[K]>;
 };
+export declare function tailSeatKind(): 'list' | 'chain';
 /**
  * Mirror one elected contribution set incrementally. Unrelated additions do not
  * remount existing cards or recreate their subscriptions. A source unload/HMR

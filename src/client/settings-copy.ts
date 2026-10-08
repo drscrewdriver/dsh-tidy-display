@@ -319,12 +319,92 @@ export const es: SettingsCopy = {
   skillUnavailable: 'No se pudo consultar el catálogo de habilidades del host. Copia en .dsh/skills o .agents/skills (home o proyecto) y vuelve a comprobar.',
 };
 
-export type SettingsLanguage = 'zh' | 'en' | 'fr' | 'de' | 'it' | 'ru' | 'es';
+export const ja: SettingsCopy = {
+  nav: 'すっきり表示',
+  openTitle: '成果物を内蔵パネルで開く',
+  openDescription: 'デフォルト off：チップや本文内のファイル言及はシステムアプリで開かれます。on にすると公式チャットと同じように右サイドバーでプレビューされます。Finder / エクスプローラー での表示やフォルダーを開く操作はこのスイッチの影響を受けません。',
+  glassTitle: '半透明のすりガラス',
+  glassDescription: 'デフォルト off：閲覧バーは不透明のままで、現在の Host の見た目と同じです。on にするとホストの壁紙やスキンが透けて見えます。パスや行数のラベルは静止している間は透明のまま、ホバーまたはフォーカスしたときだけ輪郭が出ます。',
+  bubbleTitle: 'メッセージバブル',
+  bubbleDescription: 'デフォルト on：最終回答は角丸バブルに収まり、ページ背景と区別されます。すりガラス mode では半透明になります。off にすると回答はページにそのまま並びます。',
+  foldTitle: 'プロセスを自動折りたたみ',
+  foldDescription: 'デフォルト on：新しい思考が出るとそれまでのステップを自動的にたたみます。off にすると思考とツールフローを展開したまま完全に残します。',
+  foldNone: 'オフ',
+  foldStandard: 'オン',
+  foldSummary: '要約',
+  railTitle: 'メッセージレール',
+  railDescription: 'デフォルト on：会話領域の縁に canvas のナビゲーションレールを表示——フィッシュアイホバーで要約、クリックで移動、現在のターンをハイライト。',
+  railSide: '表示位置',
+  railSideLeft: '左端',
+  railSideRight: '右端（ミラー）',
+  railStyle: '表示スタイル',
+  railStyleBar: '横線',
+  railStyleDot: 'ドット',
+  railRingTitle: '外側のやわらかい光',
+  railRingDescription: 'デフォルト on：現在のターンとホバー中のターンの目印の下に白いやわらかい光を敷き、複雑な壁紙でも目印を読みやすくします。',
+  takeoverTitle: '公式メッセージレールを代行',
+  takeoverDescription: 'デフォルト on：公式の右端 TurnNavigator を非表示にします（アンマウントではなく非表示）ので、このレールだけが残り、off にすると両方のレールが出ます。',
+  colorBarTitle: '目印の色',
+  colorAccentTitle: 'アクセントカラー',
+  colorAuto: '自動',
+  colorCustom: 'カスタム',
+  skillTitle: 'generative-mcpapps スキル',
+  skillInstalled: 'インストール済み',
+  skillMissing: '未検出',
+  skillPurpose: 'このインストールは、モデルが MCP Apps を自動選択するためのものです。読み取りビューはモデルが mcp-app コードブロックを出力した時点で描画するため、スキルのホストインストール有無には依存しません。',
+  skillPluginNote: 'スキルパックがこのプラグイン リポジトリに同梱されていることは、現在の Agent に読み込まれていることとは別です。',
+  skillInstall: 'generative-mcpapps フォルダー全体（references と examples を含む）を .dsh/skills または .agents/skills（ホームでもプロジェクトでも、お好みで）へコピーし、その後にもう一度検出してください。すべてのホストで動くワンクリックインストールはありません。',
+  skillRecheck: '再検出',
+  skillChecking: '検出中…',
+  skillUnavailable: 'ホストのスキルカタログを照会できませんでした。.dsh/skills または .agents/skills（ホームまたはプロジェクト）へコピーして、もう一度検出してください。',
+};
 
-const dictionaries: Record<SettingsLanguage, SettingsCopy> = { zh, en, fr, de, it, ru, es };
+export const ko: SettingsCopy = {
+  nav: '깔끔한 보기',
+  openTitle: '산출물을 내장 패널에서 열기',
+  openDescription: '기본 끔: 칩과 본문 안의 파일 언급은 시스템 앱으로 열립니다. 켜면 공식 대화와 마찬가지로 오른쪽 사이드바에 미리 봅니다. Finder / 탐색기의 표시나 폴더 열기는 이 스위치의 영향을 받지 않습니다.',
+  glassTitle: '반투명 뿌연 유리',
+  glassDescription: '기본 끔: 읽기 막대는 불투명한 그대로, 현재 Host 의 느낌과 같습니다. 켜면 호스트 배경화면과 스킨이 비칩니다. 경로, 줄 수 같은 라벨은 가만히 있을 때는 투명하고, 호버 또는 포커스해야 윤곽이 나타납니다.',
+  bubbleTitle: '메시지 말풍선',
+  bubbleDescription: '기본 켬: 최종 답변을 둥근 말풍선에 담아 페이지 배경과 구분합니다. 뿌연 유리 모드에서는 반투명이 됩니다. 끄면 답변이 페이지에 그대로 펼쳐집니다.',
+  foldTitle: '과정 자동 접기',
+  foldDescription: '기본 켬: 새 사고가 생성되면 이전 단계를 자동으로 접습니다. 끄면 끝까지 펼쳐 두고 원본 사고와 도구 흐름을 그대로 남깁니다.',
+  foldNone: '끔',
+  foldStandard: '켬',
+  foldSummary: '요약',
+  railTitle: '메시지 레일',
+  railDescription: '기본 켬: 대화 영역 가장자리의 canvas 탐색 레일 — 물고기눈 호버로 요약 보기, 클릭으로 이동, 현재 턴 강조.',
+  railSide: '표시 위치',
+  railSideLeft: '왼쪽 끝',
+  railSideRight: '오른쪽 끝 (반전)',
+  railStyle: '표시 스타일',
+  railStyleBar: '가로선',
+  railStyleDot: '점',
+  railRingTitle: '바깥 고리 은은한 빛',
+  railRingDescription: '기본 켬: 현재 턴과 호버 중인 턴의 표시 아래에 흰색 은은한 빛을 깔아 복잡한 배경화면에서도 표시를 읽기 쉽게 합니다.',
+  takeoverTitle: '공식 메시지 레일 대체',
+  takeoverDescription: '기본 켬: 공식 오른쪽 끝 TurnNavigator 를 숨깁니다(제거가 아니라 숨김). 이 레일만 남기고, 끄면 두 레일이 함께 나타납니다.',
+  colorBarTitle: '표시 색',
+  colorAccentTitle: '강조 색',
+  colorAuto: '자동',
+  colorCustom: '사용자 지정',
+  skillTitle: 'generative-mcpapps 스킬',
+  skillInstalled: '설치됨',
+  skillMissing: '감지되지 않음',
+  skillPurpose: '이 설치는 모델이 MCP Apps 를 자동으로 고르도록 하기 위한 것입니다. 읽기 뷰는 모델이 mcp-app 코드 블록을 출력하면 이미 렌더링하므로, 스킬의 호스트 설치 여부에 의존하지 않습니다.',
+  skillPluginNote: '스킬 패키지가 이 플러그인 저장소에 포함되어 있는 것은, 현재 Agent 가 이를 로드했다는 뜻이 아닙니다.',
+  skillInstall: 'generative-mcpapps 폴더 전체(references 와 examples 포함)를 .dsh/skills 또는 .agents/skills(홈이나 프로젝트, 직접 선택)에 복사한 뒤 다시 감지하세요. 모든 호스트에서 되는 원클릭 설치는 없습니다.',
+  skillRecheck: '다시 감지',
+  skillChecking: '감지 중…',
+  skillUnavailable: '호스트 스킬 카탈로그를 조회할 수 없습니다. .dsh/skills 또는 .agents/skills(홈 또는 프로젝트)에 복사한 뒤 다시 감지하세요.',
+};
+
+export type SettingsLanguage = 'zh' | 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'it' | 'ru' | 'es';
+
+const dictionaries: Record<SettingsLanguage, SettingsCopy> = { zh, en, ja, ko, fr, de, it, ru, es };
 
 const languageByPrefix: ReadonlyArray<readonly [string, SettingsLanguage]> = [
-  ['zh', 'zh'], ['en', 'en'], ['fr', 'fr'], ['de', 'de'], ['it', 'it'], ['ru', 'ru'], ['es', 'es'],
+  ['zh', 'zh'], ['en', 'en'], ['ja', 'ja'], ['ko', 'ko'], ['fr', 'fr'], ['de', 'de'], ['it', 'it'], ['ru', 'ru'], ['es', 'es'],
 ];
 
 export function settingsLanguage(tag: string | undefined): SettingsLanguage {

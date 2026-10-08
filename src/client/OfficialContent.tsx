@@ -1,6 +1,6 @@
 import { useCallback, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { ChatConversationViewNode, ChatNodeOwnerProps, TurnTailOwnerProps, UseDisclosure } from '@deepseek-ai/dsh-client-ui-chat/client';
-import { createSnapshotStore } from '@deepseek-ai/dsh-client-store';
+import { createSnapshotStore } from './store-face.js';
 import type { ToolCallBlock } from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type { AssistantActionOwnerProps } from '@deepseek-ai/dsh-client-ui-chat/client';
 type MessageId = AssistantActionOwnerProps['messageId'];

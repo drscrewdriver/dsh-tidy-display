@@ -1,6 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from './settings-slots.js';
-import { settingsCopyFor, zh, en, fr, de, it, ru, es } from './settings-copy.js';
+import { settingsCopyFor, zh, en, ja, ko, fr, de, it, ru, es } from './settings-copy.js';
+import { softSvc, safeSeat } from './soft-svc.js';
 import { SettingsSection, type BetterDisplaySettingsInjected, type OpenPrefs } from './SettingsSection.js';
 import { installPluginConfigCard } from './config-card.js';
 import { firstSessionId, skillsFromListResult, type SkillStatusProbe } from './skill-status.js';
@@ -39,7 +40,7 @@ function createSkillProbe(ctx: Context): SkillStatusProbe {
       return await res.json() as HostSkillStatus;
     },
     listRemoteSkills: async () => {
-      const remote = ctx.remote as unknown as { skills?: RemoteSkillsFace } | undefined;
+      const remote = softSvc(ctx, 'remote') as unknown as { skills?: RemoteSkillsFace } | undefined;
       const skills = remote?.skills
         ?? (ctx.get?.('remote.skills') as RemoteSkillsFace | undefined)
         ?? ((ctx.get?.('remote') as { skills?: RemoteSkillsFace } | undefined)?.skills);
@@ -54,7 +55,7 @@ function createSkillProbe(ctx: Context): SkillStatusProbe {
 export function installBetterDisplaySettings(ctx: Context, prefs: OpenPrefs): void {
   const locale = (ctx.get?.('locale') ?? (ctx as unknown as { locale?: LocaleFace }).locale) as LocaleFace | undefined;
   if (locale?.register) {
-    ctx.effect(() => locale.register!('tidy-display', { zh, en, fr, de, it, ru, es }), 'dsh-tidy-display: settings copy');
+    ctx.effect(() => locale.register!('tidy-display', { zh, en, ja, ko, fr, de, it, ru, es }), 'dsh-tidy-display: settings copy');
   }
   const checkSkill = createSkillProbe(ctx);
   const injected = (): BetterDisplaySettingsInjected => ({
@@ -63,6 +64,7 @@ export function installBetterDisplaySettings(ctx: Context, prefs: OpenPrefs): vo
     languageTag: languageTag(ctx),
     checkSkill,
   });
+  safeSeat('dsh-family.tab', () =>
   ctx.slots.inject('dsh-family.tab', () => ctx.slots.register({
     name: 'dsh-family.tab',
     id: 'tidy-display',
@@ -70,6 +72,6 @@ export function installBetterDisplaySettings(ctx: Context, prefs: OpenPrefs): vo
     label: () => locale?.bind?.('tidy-display')?.('nav') || settingsCopyFor(languageTag(ctx)).nav,
     locale: locale?.bind ? 'tidy-display' : undefined,
     inject: injected,
-  }, SettingsSection));
-  installPluginConfigCard(ctx, injected);
+  }, SettingsSection)));
+  safeSeat('plugins.bundle.config/row.config', () => installPluginConfigCard(ctx, injected));
 }
