@@ -11,6 +11,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client';
 import { Reader } from './Reader.js';
 import { NS, dictionaries, installTranslate, t } from './locales.js';
 import { createReaderStore } from './store.js';
+import { softSvc, safeSeat } from './soft-svc.js';
 import { installReaderEntry } from './entry.js';
 import { installBetterDisplaySettings } from './settings.js';
 import { installConfigBridge } from './config-bridge.js';
@@ -52,7 +53,7 @@ async function openWorkspacePath(
   ctx: Context,
   path: string,
 ): Promise<void> {
-  const remote = ctx.remote as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } } | undefined;
+  const remote = softSvc(ctx, 'remote') as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } } | undefined;
   const remoteSession = remote?.session
     ?? (ctx.get?.('remote.session') as unknown as { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } | undefined)
     ?? ((ctx.get?.('remote') as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } })?.session);
@@ -69,7 +70,7 @@ async function openWorkspacePath(
 export type { ReaderBlockOwner } from './types.js';
 export { McpAppFrame } from './McpAppFrame.js';
 export const name = 'dsh-tidy-display-client';
-export const inject = ['slots', 'sessions', 'conversation', 'uiConversation', 'remote', 'remote.session', 'locale'];
+export const inject = ['slots', 'sessions', 'locale'];
 
 export function apply(ctx: Context): void {
   // One registration activates all nine shipped languages; `bind` is resolved
@@ -133,14 +134,21 @@ export function apply(ctx: Context): void {
       },
     });
   }
-  (ctx.slots as unknown as { inject: (name: string, cb: () => unknown) => void }).inject(
-    'conversation.session.header.utilities',
-    () => (ctx.slots as unknown as { register: (options: Record<string, unknown>, component: unknown) => unknown }).register(
-      { name: 'conversation.session.header.utilities', id: 'tidy-display-nav' },
-      NativeRailView,
+  safeSeat('conversation.session.header.utilities', () =>
+    (ctx.slots as unknown as { inject: (name: string, cb: () => unknown) => void }).inject(
+      'conversation.session.header.utilities',
+      () => (ctx.slots as unknown as { register: (options: Record<string, unknown>, component: unknown) => unknown }).register(
+        { name: 'conversation.session.header.utilities', id: 'tidy-display-nav' },
+        NativeRailView,
+      ),
     ),
   );
-  ctx.slots.inject('conversation.chat.node', function* () {
+  // The reader view declares official children (conversation.chat.turnTail …)
+  // whose contracts don't exist on 0.1.0/0.1.1 — the registration throws
+  // there; the reader degrades with the line and the settings surfaces below
+  // must survive it (safeSeat keeps apply from failing).
+  safeSeat('conversation.chat.node/reader', () =>
+    ctx.slots.inject('conversation.chat.node', function* () {
     yield ctx.slots.register({
     name: 'conversation.view',
     id: 'reader',
@@ -161,8 +169,8 @@ export function apply(ctx: Context): void {
       return {
         openPrefs: prefs,
         officialImageLoader: Object.assign(
-          (attachment: ImageAttachmentRef) => ctx.uiConversation.imageUrl(sessionId, attachment),
-          { peek: (attachment: ImageAttachmentRef) => ctx.uiConversation.peekImageUrl(sessionId, attachment) },
+          (attachment: ImageAttachmentRef) => softSvc(ctx, 'uiConversation')?.imageUrl?.(sessionId, attachment),
+          { peek: (attachment: ImageAttachmentRef) => softSvc(ctx, 'uiConversation')?.peekImageUrl?.(sessionId, attachment) },
         ),
         officialFileMentions: owner => ctx.get('chatFileMentions')?.forClosing(owner, sessionId),
         officialPreviewFile: path => {
@@ -172,7 +180,7 @@ export function apply(ctx: Context): void {
           sidebar.openResource((officialFileAddressFor ?? fileAddressFor)(sessionId, cwd, path));
         },
         officialHost: {
-          getSnapshot: () => ctx.remote.$host,
+          getSnapshot: () => (softSvc(ctx, 'remote') as { $host: { home?: string } } | undefined)?.$host ?? {},
           subscribe: listener => ctx.on('connection/reset', listener),
         },
         loadOlder: async () => { await session().loadOlder(); },
@@ -226,7 +234,7 @@ export function apply(ctx: Context): void {
 
             // 2. Fallback to official opener with parent directory
             const parentDir = dirname(targetPath);
-            const remote = ctx.remote as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } } | undefined;
+            const remote = softSvc(ctx, 'remote') as unknown as { session?: { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } } | undefined;
             const remoteSession = remote?.session
               ?? (ctx.get?.('remote.session') as unknown as { openWorkspacePath: (arg: { path: string }) => Promise<{ ok: boolean; error?: { message: string } }> } | undefined);
             if (remoteSession?.openWorkspacePath) {
@@ -294,5 +302,5 @@ export function apply(ctx: Context): void {
     }, Reader);
     yield installOfficialSlots(ctx);
     yield installReaderEntry(ctx);
-  });
+  }));
 }

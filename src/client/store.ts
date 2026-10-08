@@ -1,5 +1,5 @@
-import { defineStore } from '@deepseek-ai/dsh-client-store';
 import type { EngineStoreHandle } from '@deepseek-ai/dsh-client-store';
+import { defineStore } from './store-face.js';
 import {
   FOLD_INTENSITY_DEFAULT,
   autoFoldFromIntensity,
@@ -76,6 +76,8 @@ function applyFoldIntensity(draft: ReaderState, value: FoldIntensity): void {
 }
 
 export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderActions> {
+  // The face returns the host engine on modern lines (identical type) and the
+  // structural fallback on old lines — one cast covers the structural face.
   return defineStore({
     init: (): ReaderState => ({
       expanded: {},
@@ -126,5 +128,5 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       setRailAccentCustom: (draft, value: string) => { draft.railAccentCustom = value; },
       setRailAccentLight: (draft, value: string) => { draft.railAccentLight = value; },
     },
-  });
+  }) as unknown as EngineStoreHandle<ReaderState, ReaderActions>;
 }
