@@ -63,3 +63,8 @@ Author: Jakub Antalik. Source: the public [Thinking states recipe](https://githu
 ## Transitions.dev Reasoning stream
 
 Author: Jakub Antalik. Source: the public [Reasoning stream recipe](https://github.com/Jakubantalik/transitions.dev/blob/ef497bb64867ce569689730198fc66f49db56317/cli/free/reasoning-stream.md). This adaptation retains the 28px viewport mask, 840ms cadence, 500ms cubic-bezier(0.22,1,0.36,1) CSS transform and fixed two-line steps, clamped only at the real transcript's current end. One real text tree replaces the demo's cloned loop. Body and tool phases do not prematurely stop the current step's motion; manual reading receives the painted offset through native scrolling, preserving selection and keyboard access. Bursts never increase the step distance. Reduced motion and closed historical turns remain static.
+
+## License scope
+
+Third-party material retains its original license and terms as identified in
+this file. This license does not relicense that material.
