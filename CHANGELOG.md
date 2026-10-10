@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 — 2026-10-10
+
+- **Fixed: tool-call rows had no bubble background — text floated over skinned wallpapers.** The message-bubbles plate only covered answers and reasoning cards; collapsed tool-call rows (and their expanded detail box) sat flat on the page, so under a skin their summary text hovered directly over the wallpaper. Under `data-reader-bubbles=on` the top-level tool row now gets the same plate as the answer (row + expanded detail in one card; sub-calls stay flat inside the parent plate, no nested bubbles).
+- **Bubble plates are now three layers deep.** Wallpaper skins may publish `--dsw-alias-bg-layer-1` as fully transparent, which left every bubble a border around nothing. Each plate now lays an always-on neutral tint, and the tool-call plate additionally carries a 76% page-base-color scrim (`color-mix` on `--dsw-alias-bg-base`, theme-aware), so frame ⟹ floor holds regardless of what the skin zeroes. The expanded detail box got its own light tint for the bubbles-off path.
+- **Turn-metrics and fold-summary counts are legible in both themes.** The token-usage / elapsed-time pills and the 「思考×N · 工具×N」 digest moved from the faintest label tiers to `--dsw-alias-label-primary` (inverts with the theme), and on light canvases (`body:not([data-ds-dark-theme])`) they render full black.
+
 ## 0.2.4-beta.5 — 2026-10-05
 
 - **修复 0.1.2/0.1.5 整页砖化与阅读视图空白（跨代兼容三连）**：① client 金丝雀对 `conversation.chat.turnTail` 的契约校验只认 0.1.7+ 代的 `list/session`，而 0.1.2–0.1.5 宿主声明 `chain/session` → throw 杀死 client entry → web-boot 门禁整页拒绝启动；改为按代白名单并绑定宿主实时 spec，镜像注入处第二处金丝雀同样降级为告警。② `pendingInteraction` 的 `useSessionStatus` 是 0.1.7+ 改名，0.1.2–0.1.5 叫 `useSessionPendingInteraction`——Reader 双代探测、缺席 fail-open。③ tail 座位按实测代际分发渲染器（chain 槽必须 `renderSlotChain`）；老投影附加的 `input-message` 节点阅读页不再镜像渲染（崩 React #130）。已知残留：0.1.2 阅读页用户消息下偶现一张 React #130 优雅降级卡（正文/轨道不受影响）。

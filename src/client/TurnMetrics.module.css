@@ -5,7 +5,9 @@
   position: relative;
   font-size: 13px;
   line-height: 24px;
-  color: var(--dsw-alias-label-tertiary);
+  /* Counts ride label-primary: the token inverts with the theme, so the
+     readout darkens in light mode and brightens in dark for free. */
+  color: var(--dsw-alias-label-primary);
 }
 
 .pillButton {
@@ -16,7 +18,7 @@
   border-radius: 12px;
   border: 1px solid var(--dsw-alias-border-l1);
   background: var(--dsw-alias-bg-module-platform);
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-primary);
   font-size: 11px;
   cursor: pointer;
   outline: none;
@@ -39,7 +41,7 @@
   border: none;
   border-radius: 28px;
   background: transparent;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--dsw-alias-label-primary);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   line-height: 24px;
@@ -50,8 +52,19 @@
 
 .timeButton:hover, .timeButton[data-active=true] {
   background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-secondary);
+  color: var(--dsw-alias-label-primary);
 }
+
+/* Light canvas only: the host marks dark with body[data-ds-dark-theme], so
+   its absence is the light theme — push the readout to full black there.
+   Dark mode keeps label-primary, which is already the bright end. */
+:global(body:not([data-ds-dark-theme])) .container,
+:global(body:not([data-ds-dark-theme])) .pillButton,
+:global(body:not([data-ds-dark-theme])) .pillButton:hover,
+:global(body:not([data-ds-dark-theme])) .pillButton[data-active=true],
+:global(body:not([data-ds-dark-theme])) .timeButton,
+:global(body:not([data-ds-dark-theme])) .timeButton:hover,
+:global(body:not([data-ds-dark-theme])) .timeButton[data-active=true] { color: #000; }
 
 .pillIcon {
   width: 12px;

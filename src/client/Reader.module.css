@@ -293,7 +293,11 @@
 .toolState[data-phase=interrupted] { color: inherit; opacity: .7; }
 .toolLedger { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; padding: 10px 14px 0; color: var(--dsw-alias-label-secondary); font-size: 11px; line-height: 18px; font-variant-numeric: tabular-nums; }
 .toolEngine { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.toolDetails { margin: 6px 0 0 22px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; min-width: 0; overflow: hidden; }
+.toolDetails { margin: 6px 0 0 22px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; min-width: 0; overflow: hidden;
+  /* The framed detail box used to carry no plate of its own: with bubbles off
+     (or under a skin that zeroes the layer token) its bordered box sat hollow
+     over the wallpaper. A light always-on tint keeps frame ⟹ floor true. */
+  background-image: linear-gradient(rgba(127, 127, 127, .07), rgba(127, 127, 127, .07)); }
 .toolTabs { display: flex; align-items: center; gap: 15px; padding: 0 14px; }
 .toolTabs > button { background: transparent; border: 0; border-bottom: 2px solid transparent; padding: 10px 1px 8px; font: inherit; font-size: 12px; line-height: 20px; color: var(--dsw-alias-label-secondary); cursor: pointer; }
 .toolTabs > button[aria-selected=true] { color: var(--dsw-alias-label-primary); border-bottom-color: var(--dsw-alias-state-business-primary); }
@@ -484,7 +488,13 @@
 /* The digest is a single line. nowrap on the parent does not stop the parts
    from wrapping, so each part is pinned too and the run clips with an ellipsis
    when the column is narrow. */
-.foldSummary { display: inline-flex; align-items: baseline; white-space: nowrap !important; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.foldSummary { display: inline-flex; align-items: baseline; white-space: nowrap !important; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+  /* The step counts are the digest's payload: label-primary inverts with the
+     theme, keeping them legible on both the light and the dark canvas. */
+  color: var(--dsw-alias-label-primary); }
+/* Light canvas only (see TurnMetrics): the absence of the host's dark marker
+   is the light theme — blacken the digest counts there. */
+:global(body:not([data-ds-dark-theme])) .foldSummary { color: #000; }
 .foldSummaryPart { display: inline-flex; align-items: baseline; white-space: nowrap !important; flex: none; }
 .numberRollRoot { display: inline-flex; position: relative; overflow: hidden; vertical-align: baseline; line-height: inherit; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; white-space: nowrap !important; flex-shrink: 0; min-width: 1.45em; justify-content: center; text-align: center; }
 .numberRollSizer { visibility: hidden; user-select: none; pointer-events: none; line-height: inherit; white-space: nowrap; }
@@ -665,10 +675,16 @@
    when off. The plate borrows the official chat's answer-panel token — the
    skin's translucent layer color (#121f43e6 in the navy skin), already
    semi-transparent by design — so the bubble matches the host look and lets
-   the skin read through; glass mode only adds the frosted blur. */
+   the skin read through; glass mode only adds the frosted blur.
+   Wall-paper skins may publish --dsw-alias-bg-layer-1 as FULLY transparent,
+   which left every bubble a border around nothing — frame without a floor.
+   So each plate also lays an always-on neutral tint as a background-image
+   under the token color: images composite over the color and a transparent
+   token can never erase them. */
 .root[data-reader-bubbles=on] .answer {
   box-sizing: border-box;
   background: var(--dsw-alias-bg-layer-1, rgba(127, 127, 127, .08));
+  background-image: linear-gradient(rgba(127, 127, 127, .10), rgba(127, 127, 127, .10));
   border: 1px solid var(--dsw-alias-border-l2, rgba(128, 128, 128, .22));
   border-radius: 16px;
   padding: 12px 16px;
@@ -689,6 +705,7 @@
    rules below because the flat look zeroes them for a plate-less layout. */
 .root[data-reader-bubbles=on] .reasonCard {
   background: var(--dsw-alias-bg-layer-1, rgba(127, 127, 127, .08));
+  background-image: linear-gradient(rgba(127, 127, 127, .10), rgba(127, 127, 127, .10));
   border-color: var(--dsw-alias-border-l2, rgba(128, 128, 128, .22));
   border-radius: 16px;
 }
@@ -699,3 +716,30 @@
 .root[data-reader-bubbles=on] .reasonCard[data-overflow=false][data-expanded=false] { padding-bottom: 10px; }
 .root[data-reader-bubbles=on] .reasonCard[data-overflow=false][data-expanded=false] .reasonHeading { padding: 10px 16px 0; }
 .root[data-reader-bubbles=on] .reasonCard[data-overflow=false][data-expanded=false] .reasonText { padding: 8px 16px 0; }
+
+/* Tool rows share the answer's plate. The collapsed call line sat flat on the
+   page, so under a skin its summary text hovered over the wallpaper with no
+   surface of its own while the answer above it was bubbled. The plate covers
+   the whole card — row plus its expanded detail — and only the top-level row
+   gets one: sub-calls live inside .toolChildren under the parent plate,
+   not as a nested stack of bubbles. Same tokens as the answer bubble; glass
+   mode adds the same frosted blur.
+   The plate is three layers deep because one token is not enough trust:
+   a scrim of the page base color (theme-aware: near-white in light, near-
+   dark in dark) so raw blocks inside the card stop out-floating a bare
+   wallpaper; a neutral tint that survives a skin zeroing the layer token;
+   and the skin's own layer-1 color underneath both. */
+.root[data-reader-bubbles=on] .processFrame > .toolActivity {
+  box-sizing: border-box;
+  background:
+    linear-gradient(color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent), color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent)),
+    linear-gradient(rgba(127, 127, 127, .10), rgba(127, 127, 127, .10));
+  background-color: var(--dsw-alias-bg-layer-1, rgba(127, 127, 127, .08));
+  border: 1px solid var(--dsw-alias-border-l2, rgba(128, 128, 128, .22));
+  border-radius: 12px;
+  padding: 6px 12px;
+}
+.root[data-reader-bubbles=on][data-reader-glass] .processFrame > .toolActivity {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
