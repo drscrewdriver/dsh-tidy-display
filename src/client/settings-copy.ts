@@ -1,3 +1,10 @@
+/**
+ * Settings copy dictionaries for the dsh-tidy-display settings page.
+ * One flat key set per locale (zh/en/ja/ko/fr/de/it/ru/es), consumed by
+ * settings.tsx via settingsCopyFor(); no logic lives here, only literals.
+ */
+
+/** Identifier of every translatable label/description on the settings page. */
 export type SettingsCopyKey =
   | 'nav'
   | 'openTitle'
@@ -38,8 +45,10 @@ export type SettingsCopyKey =
   | 'skillChecking'
   | 'skillUnavailable';
 
+/** A complete settings copy for one locale (every SettingsCopyKey required). */
 export type SettingsCopy = Record<SettingsCopyKey, string>;
 
+/** English dictionary (nav stays in Chinese, matching the host nav label). */
 export const en: SettingsCopy = {
   nav: '整洁显示',
   openTitle: 'Open deliverables in built-in panel',
@@ -409,6 +418,7 @@ export const ko: SettingsCopy = {
   skillUnavailable: '호스트 스킬 카탈로그를 조회할 수 없습니다. .dsh/skills 또는 .agents/skills(홈 또는 프로젝트)에 복사한 뒤 다시 감지하세요.',
 };
 
+/** Supported settings locales, keyed by BCP-47 prefix. */
 export type SettingsLanguage = 'zh' | 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'it' | 'ru' | 'es';
 
 const dictionaries: Record<SettingsLanguage, SettingsCopy> = { zh, en, ja, ko, fr, de, it, ru, es };
@@ -417,6 +427,7 @@ const languageByPrefix: ReadonlyArray<readonly [string, SettingsLanguage]> = [
   ['zh', 'zh'], ['en', 'en'], ['ja', 'ja'], ['ko', 'ko'], ['fr', 'fr'], ['de', 'de'], ['it', 'it'], ['ru', 'ru'], ['es', 'es'],
 ];
 
+/** Resolve a language tag (e.g. 'zh-CN', 'en-US') to a supported locale; falls back to 'en'. */
 export function settingsLanguage(tag: string | undefined): SettingsLanguage {
   const lower = (tag ?? '').toLowerCase();
   for (const [prefix, language] of languageByPrefix) {
@@ -425,6 +436,7 @@ export function settingsLanguage(tag: string | undefined): SettingsLanguage {
   return 'en';
 }
 
+/** Look up the full copy dictionary for a language tag. */
 export function settingsCopyFor(tag: string | undefined): SettingsCopy {
   return dictionaries[settingsLanguage(tag)];
 }

@@ -1,3 +1,10 @@
+/**
+ * Client-side wiring for the dsh-tidy-display settings page.
+ * Registers the 9-locale copy with the host locale service, probes the
+ * generative-mcpapps skill status, and injects the settings tab + plugin
+ * config card into the host slots. Pure assembly: UI lives in
+ * SettingsSection.tsx, copy in settings-copy.ts.
+ */
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from './settings-slots.js';
 import { settingsCopyFor, zh, en, ja, ko, fr, de, it, ru, es } from './settings-copy.js';
@@ -52,6 +59,7 @@ function createSkillProbe(ctx: Context): SkillStatusProbe {
   };
 }
 
+/** Entry point: install the tidy-display settings tab (order 60 in dsh-family.tab) and the config card. */
 export function installBetterDisplaySettings(ctx: Context, prefs: OpenPrefs): void {
   const locale = (ctx.get?.('locale') ?? (ctx as unknown as { locale?: LocaleFace }).locale) as LocaleFace | undefined;
   if (locale?.register) {
