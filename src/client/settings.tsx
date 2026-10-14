@@ -6,6 +6,7 @@ import { SettingsSection, type BetterDisplaySettingsInjected, type OpenPrefs } f
 import { installPluginConfigCard } from './config-card.js';
 import { firstSessionId, skillsFromListResult, type SkillStatusProbe } from './skill-status.js';
 import type { HostSkillStatus } from '../skill-status.js';
+import { claimFamilyHostIfOrphaned, type FamilyHostSlots } from './family-host.js';
 
 interface LocaleFace {
   register?: (ns: string, dicts: { zh: unknown; en: unknown } & Record<string, unknown>) => () => void;
@@ -64,14 +65,31 @@ export function installBetterDisplaySettings(ctx: Context, prefs: OpenPrefs): vo
     languageTag: languageTag(ctx),
     checkSkill,
   });
+  // 探针：宿主执行过本工厂 == 有人声明了 `dsh-family.tab`（插件侧唯一合法的
+  // 「容器在不在」判据：槽门面不暴露 spec 查询）。
+  let familyTabHeld = false
   safeSeat('dsh-family.tab', () =>
-  ctx.slots.inject('dsh-family.tab', () => ctx.slots.register({
-    name: 'dsh-family.tab',
-    id: 'tidy-display',
-    order: 60,
-    label: () => locale?.bind?.('tidy-display')?.('nav') || settingsCopyFor(languageTag(ctx)).nav,
-    locale: locale?.bind ? 'tidy-display' : undefined,
-    inject: injected,
-  }, SettingsSection)));
+  ctx.slots.inject('dsh-family.tab', () => {
+    familyTabHeld = true
+    return ctx.slots.register({
+      name: 'dsh-family.tab',
+      id: 'tidy-display',
+      order: 60,
+      label: () => locale?.bind?.('tidy-display')?.('nav') || settingsCopyFor(languageTag(ctx)).nav,
+      locale: locale?.bind ? 'tidy-display' : undefined,
+      inject: injected,
+    }, SettingsSection)
+  }));
+  // 家族容器兜底：owner 全部让位/声明失败时上面的 inject 静默等待，本卡整轮启动
+  // 不可见且不报错。到分级时刻仍无人持有则自己上位（declare-or-withdraw）。
+  ctx.effect(
+    () => claimFamilyHostIfOrphaned(
+      ctx.slots as unknown as FamilyHostSlots,
+      () => familyTabHeld,
+      () => '起子插件设置',
+      '[dsh-tidy-display]',
+    ),
+    'dsh-tidy-display: family host backstop',
+  );
   safeSeat('plugins.bundle.config/row.config', () => installPluginConfigCard(ctx, injected));
 }
