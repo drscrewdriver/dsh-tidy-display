@@ -1,2 +1,8 @@
+# pnpm 10+ refuses to run a dependency's lifecycle scripts unless it is approved
+# here; `pnpm approve-builds esbuild` is what writes this entry. The previous
+# value was the unfilled template text `set this to true or false`, which pnpm
+# does not treat as approval, so `pnpm install` aborted with
+# ERR_PNPM_IGNORED_BUILDS. esbuild is the bundler this repo builds with and its
+# postinstall is what links the platform binary (@esbuild/win32-x64).
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true
