@@ -10,6 +10,7 @@ export interface ReaderPrefsSnapshot {
   deliverableOpenMode?: DeliverableOpenMode;
   frostedGlass?: boolean;
   bubbles?: boolean;
+  pinReasoningBottom?: boolean;
   foldIntensity?: FoldIntensity;
   autoFold?: boolean;
   processOnly?: boolean;
@@ -33,6 +34,7 @@ export interface OpenPrefs {
     setDeliverableOpenMode: (value: DeliverableOpenMode) => void;
     setFrostedGlass: (value: boolean) => void;
     setBubbles?: (value: boolean) => void;
+    setPinReasoningBottom?: (value: boolean) => void;
     setFoldIntensity?: (value: FoldIntensity) => void;
     setAutoFold?: (value: boolean) => void;
     setRailEnabled?: (value: boolean) => void;
@@ -155,6 +157,7 @@ export function SettingsSection(props: SettingsProps) {
   const mode = deliverableOpenModeOf(snap.deliverableOpenMode);
   const glass = frostedGlassOf(snap);
   const bubbles = bubblesOf(snap);
+  const pinBottom = snap.pinReasoningBottom === true;
   const autoFold = snap.autoFold !== false && snap.foldIntensity !== 0;
   const railOn = snap.railEnabled !== false;
   const railSide = snap.railSide === 'right' ? 'right' : 'left';
@@ -234,6 +237,22 @@ export function SettingsSection(props: SettingsProps) {
           data-on={bubbles || undefined}
           data-tidy-display-bubbles={bubbles ? 'on' : 'off'}
           onClick={() => { props.prefs.actions.setBubbles?.(!bubbles); }}
+        />
+      </div>
+
+      <div className={css.row}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'pinTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'pinDescription')}</div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={pinBottom}
+          className={css.switch}
+          data-on={pinBottom || undefined}
+          data-tidy-display-pin-bottom={pinBottom ? 'on' : 'off'}
+          onClick={() => { props.prefs.actions.setPinReasoningBottom?.(!pinBottom); }}
         />
       </div>
 

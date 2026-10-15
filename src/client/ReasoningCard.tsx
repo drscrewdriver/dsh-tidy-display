@@ -7,8 +7,8 @@ import css from './Reader.module.css';
 const EASING = 'cubic-bezier(.22,1,.36,1)';
 
 /** One real transcript: reference transform while following, native scroll while reading. */
-export function ReasoningCard({ children, step, active, motion, selected, onRead }: {
-  children: ReactNode; step: number; active: boolean; motion: boolean; selected: boolean; onRead: () => void;
+export function ReasoningCard({ children, step, active, motion, selected, pinBottom, onRead }: {
+  children: ReactNode; step: number; active: boolean; motion: boolean; selected: boolean; pinBottom: boolean; onRead: () => void;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
@@ -23,7 +23,8 @@ export function ReasoningCard({ children, step, active, motion, selected, onRead
   const previousExpanded = useRef(expanded);
   const stopFollow = useRef<() => void>(() => {});
   const { paused = false } = useContext(StreamMotionContext);
-  const allowed = following && active && motion && !selected && !paused;
+  const followIntent = following && !selected && !paused;
+  const allowed = followIntent && active && motion;
 
   const pause = useCallback(() => {
     stopFollow.current();
@@ -122,7 +123,7 @@ export function ReasoningCard({ children, step, active, motion, selected, onRead
       if (recordHeight && !resize.current) lastHeight.current = port.clientHeight;
     };
     stopFollow.current = () => { cancel(); manual(); measure(false); };
-    const canFollow = () => allowed && alive && !document.hidden && !hasSelection();
+    const canFollow = () => allowed && !pinBottom && alive && !document.hidden && !hasSelection();
     const schedule = () => {
       if (!canFollow() || frame || timer !== undefined) return;
       follow();
@@ -209,7 +210,24 @@ export function ReasoningCard({ children, step, active, motion, selected, onRead
       document.removeEventListener('visibilitychange', onVisibility);
       stopFollow.current = () => {};
     };
-  }, [allowed, pause]);
+  }, [allowed, pause, pinBottom]);
+
+  // 开关打开时：折叠态恒贴底——原生滚动 + 内容增高即拉到底；followIntent 尊重
+  // 手工接管（wheel/选中经既有监听置 following=false，本效果随之卸载，不再拉回）。
+  useLayoutEffect(() => {
+    if (!pinBottom || expanded || !followIntent) return;
+    const port = viewport.current;
+    const text = content.current;
+    if (!port || !text) return;
+    port.style.overflow = 'auto';
+    const tr = track.current;
+    if (tr) { tr.style.transition = 'none'; tr.style.transform = 'none'; }
+    const pin = () => { port.scrollTop = port.scrollHeight; };
+    pin();
+    const observer = new ResizeObserver(pin);
+    observer.observe(text);
+    return () => { observer.disconnect(); };
+  }, [pinBottom, expanded, followIntent]);
 
   useLayoutEffect(() => {
     const port = viewport.current;

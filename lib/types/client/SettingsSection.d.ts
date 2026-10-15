@@ -6,6 +6,7 @@ export interface ReaderPrefsSnapshot {
     deliverableOpenMode?: DeliverableOpenMode;
     frostedGlass?: boolean;
     bubbles?: boolean;
+    pinReasoningBottom?: boolean;
     foldIntensity?: FoldIntensity;
     autoFold?: boolean;
     processOnly?: boolean;
@@ -28,6 +29,7 @@ export interface OpenPrefs {
         setDeliverableOpenMode: (value: DeliverableOpenMode) => void;
         setFrostedGlass: (value: boolean) => void;
         setBubbles?: (value: boolean) => void;
+        setPinReasoningBottom?: (value: boolean) => void;
         setFoldIntensity?: (value: FoldIntensity) => void;
         setAutoFold?: (value: boolean) => void;
         setRailEnabled?: (value: boolean) => void;

@@ -47,6 +47,7 @@ export interface ReaderInjected {
       foldIntensity?: import('./fold-intensity.js').FoldIntensity;
       autoFold?: boolean;
       processOnly?: boolean;
+      pinReasoningBottom?: boolean;
     };
     subscribe: (fn: () => void) => () => void;
     actions?: {

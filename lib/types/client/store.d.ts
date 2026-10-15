@@ -17,6 +17,11 @@ export interface ReaderState {
     frostedGlass: boolean;
     /** Rounded answer bubbles. Default on; off lays answers flat on the page. */
     bubbles: boolean;
+    /**
+     * 折叠态思考卡始终贴底显示最新一行（含流式）；手工上翻 / 选中时让位、不被拉回。
+     * Default off so the pre-change reading behavior is unchanged.
+     */
+    pinReasoningBottom: boolean;
     /** Derived from foldIntensity === 2; kept for older #14 snapshots. */
     processOnly: boolean;
     /** Canvas message rail (ported from dsh-tidychat). */
@@ -49,6 +54,7 @@ type ReaderActions = {
     setFoldIntensity: (draft: ReaderState, value: FoldIntensity) => void;
     setFrostedGlass: (draft: ReaderState, value: boolean) => void;
     setBubbles: (draft: ReaderState, value: boolean) => void;
+    setPinReasoningBottom: (draft: ReaderState, value: boolean) => void;
     setRailEnabled: (draft: ReaderState, value: boolean) => void;
     setRailSide: (draft: ReaderState, value: 'left' | 'right') => void;
     setRailStyle: (draft: ReaderState, value: 'bar' | 'dot') => void;

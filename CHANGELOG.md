@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 — 2026-10-15
+
+- **新增「思考卡始终贴底」开关（默认关）**：折叠态思考卡持续滚到内容末尾、展示最新一行；流式进行中的卡同样贴底（绕过原有的 840ms/500ms 跟随节拍）。用户 wheel 上滚 / 选中文本 / 点击卡内时让位——卡停在用户位置，不被拉回。落点全局偏好 `dsh.reader.v1` 的 `pinReasoningBottom`；设置面板新增 `role="switch"` 开关（`data-tidy-display-pin-bottom`），9 语本地化。
+- **修复：开关写入全局 prefs 而阅读器读 scoped store 导致不生效**：读取顺序改为「全局 `prefsSnap` 优先、scoped store 回落」，与 `autoFold` 同范式；`openPrefs.getSnapshot` 内联类型同步补字段；构建戳 `data-reader-build` 重新对齐本版本。
+
 ## 0.3.1 — 2026-10-10
 
 - **Fixed: tool-call rows had no bubble background — text floated over skinned wallpapers.** The message-bubbles plate only covered answers and reasoning cards; collapsed tool-call rows (and their expanded detail box) sat flat on the page, so under a skin their summary text hovered directly over the wallpaper. Under `data-reader-bubbles=on` the top-level tool row now gets the same plate as the answer (row + expanded detail in one card; sub-calls stay flat inside the parent plate, no nested bubbles).
