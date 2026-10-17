@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 — 2026-10-17
+
+- **适配 DSH 0.2.1-rc.1（七仓缺口补票批次，守卫项：代码面与清单同一 release）**：① 终端卡标签补齐 rc.1 必填的 `commandLine(line)`（可访问名，文案与官方 zh 同串「命令第 N 行」）；② 官方图槽随宿主改名：`conversation.message.images` → `conversation.chat.message.images`（`OFFICIAL_SLOTS`/`OFFICIAL_SEATS`/SlotMap 声明键与浏览器 fixture 同步；注入旧槽是静默失效，grep 旧名=0 双向核验；旧线宿主仍收 `renderMessageImages`/`openSkill` 两字段，经 cast 逃逸对 rc.1 类型面保持绿色）；③ 新增 `compat/harness-0.2.1-rc.1.json` 基线（对 rc.1 tag 检出 worktree 记录，`--path-separator=/` 防 Windows 假 removed）并接管 build 默认基线。装载判据：hosts.mjs 追加 `0.2.1-rc.1`，engines.dsh + 12 个 dsh-* peers + 七语 README 管理块同串精确枚举（16 项，禁区间/caret）；semver 双向验证：命中 0.2.1-rc.1 / 拒绝 0.3.0-rc.1。devDeps 宿主面钉 0.2.1-rc.1（验证盲区①：node_modules 实装=目标线），typecheck/build/155 单测全绿。
+
 ## 0.4.0 — 2026-10-15
 
 - **新增「思考卡始终贴底」开关（默认关）**：折叠态思考卡持续滚到内容末尾、展示最新一行；流式进行中的卡同样贴底（绕过原有的 840ms/500ms 跟随节拍）。用户 wheel 上滚 / 选中文本 / 点击卡内时让位——卡停在用户位置，不被拉回。落点全局偏好 `dsh.reader.v1` 的 `pinReasoningBottom`；设置面板新增 `role="switch"` 开关（`data-tidy-display-pin-bottom`），9 语本地化。

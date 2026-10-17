@@ -1,5 +1,6 @@
 import { useCallback, useState, useSyncExternalStore, type ReactNode } from 'react';
 import type { ChatConversationViewNode, ChatNodeOwnerProps, TurnTailOwnerProps, UseDisclosure } from '@deepseek-ai/dsh-client-ui-chat/client';
+import type { MessageImagesOwnerProps } from '@deepseek-ai/dsh-client-ui-conversation/client';
 import { createSnapshotStore } from './store-face.js';
 import type { ToolCallBlock } from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type { AssistantActionOwnerProps } from '@deepseek-ai/dsh-client-ui-chat/client';
@@ -41,18 +42,21 @@ export function OfficialNode({ node, fallback, ...render }: BlockRenderProps & {
   const official = render.official;
   const [disclosureReset] = useState(() => createSnapshotStore(0));
   if (!official) return fallback;
-  const owner: ChatNodeOwnerProps = {
+  // rc.1 起 ChatNodeOwnerProps 移除了 openSkill/renderMessageImages（消息图改走
+  // conversation.chat.message.images 子槽）；旧线宿主仍要求这两字段，继续供给，
+  // 类型对开发线（rc.1）编译，旧线字段经 cast 逃逸。
+  const owner = {
     cwd: render.cwd,
     openFile: render.openFile ?? (() => {}),
     openSkill: () => {},
     forkAt: render.forkAt ?? (() => {}),
-    inspectCall: callId => official.openView('trajectory', callId),
+    inspectCall: (callId: Parameters<NonNullable<ChatNodeOwnerProps['inspectCall']>>[0]) => official.openView('trajectory', callId),
     loadImage: official.officialImageLoader,
-    renderMessageImages: images => official.renderSlot(OFFICIAL_SEATS.images, {
+    renderMessageImages: (images: MessageImagesOwnerProps) => official.renderSlot(OFFICIAL_SEATS.images, {
       ...images, loadImage: official.officialImageLoader,
     }),
     fileMentions: official.officialFileMentions,
-  };
+  } as unknown as ChatNodeOwnerProps;
   const turn = node.location.kind === 'turn' || node.location.kind === 'step' ? node.location.turn : undefined;
   // The runtime node domain is open; the public SlotMap enumerates the known kinds.
   const renderNode = official.renderSlot as unknown as (key: string, owner: object, options: object) => ReactNode;

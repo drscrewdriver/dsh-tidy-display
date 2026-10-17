@@ -8,6 +8,7 @@
  * 与 0.1.6-alpha.1/2 为未成线 alpha，不入列），由本地隔离矩阵逐格验证后**删红留绿**；
  * 矩阵结论落 `.compat-results/`。
  * 升级流程：本数组加版本 → `node scripts/sync-hosts.mjs --write` → 矩阵绿 → 发版。
+ * 2026-10-17 补票：追加 0.2.1-rc.1（七仓缺口补票批次，同串精确枚举纪律）。
  *
  * 本数组与由它生成的声明写点（package.json peerDependencies 的 12 个 dsh-* 项 /
  * package.json engines.dsh / 各 README 的 host-compat 管理块）**禁止手改**，
@@ -37,13 +38,15 @@ export const supportedHosts = Object.freeze([
   // 0.2.0 线（2 个 rc）
   '0.2.0-rc.1',
   '0.2.0-rc.2',
+  // 0.2.1 线（1 个 rc）
+  '0.2.1-rc.1',
 ])
 
 /** peerDependencies / engines.dsh 共用的枚举串（精确枚举无暗坑，INDEX §B）。 */
 export const peerRange = supportedHosts.join(' || ')
 
 /** 本地开发与矩阵默认宿主（devDependencies 若引入宿主包一律钉这里）。 */
-export const developmentHost = '0.2.0-rc.2'
+export const developmentHost = '0.2.1-rc.1'
 
 /**
  * peer 闸指向的宿主子包（本插件消费的全部宿主面：peerDependencies 里的 12 个

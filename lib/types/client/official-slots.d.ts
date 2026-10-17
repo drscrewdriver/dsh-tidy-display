@@ -15,7 +15,7 @@ export declare const OFFICIAL_SLOTS: {
     readonly tools: "tool.call.toolview";
     readonly tail: "conversation.chat.turnTail";
     readonly nodes: "conversation.chat.node";
-    readonly images: "conversation.message.images";
+    readonly images: "conversation.chat.message.images";
 };
 export type OfficialFamily = keyof typeof OFFICIAL_SLOTS;
 export declare const OFFICIAL_SEATS: {
@@ -23,7 +23,7 @@ export declare const OFFICIAL_SEATS: {
     readonly tools: "dsh-tidy-display.official.tools/tool.call.toolview";
     readonly tail: "dsh-tidy-display.official.tail/conversation.chat.turnTail";
     readonly nodes: "dsh-tidy-display.official.nodes/conversation.chat.node";
-    readonly images: "dsh-tidy-display.official.images/conversation.message.images";
+    readonly images: "dsh-tidy-display.official.images/conversation.chat.message.images";
 };
 export type OfficialSeat = typeof OFFICIAL_SEATS[OfficialFamily];
 export declare const officialSeat: (family: OfficialFamily, source?: string) => string;
@@ -45,7 +45,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
         'dsh-tidy-display.official.tools/tool.call.toolview': SlotMap['tool.call.toolview'];
         'dsh-tidy-display.official.tail/conversation.chat.turnTail': SlotMap['conversation.chat.turnTail'];
         'dsh-tidy-display.official.nodes/conversation.chat.node': SlotMap['conversation.chat.node'];
-        'dsh-tidy-display.official.images/conversation.message.images': SlotMap['conversation.message.images'];
+        'dsh-tidy-display.official.images/conversation.chat.message.images': SlotMap['conversation.chat.message.images'];
     }
 }
 /**

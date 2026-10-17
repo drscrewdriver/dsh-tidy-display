@@ -8,11 +8,12 @@ import { createRequire } from 'node:module';
 
 const root = resolve(import.meta.dirname, '..');
 const harness = resolve(process.env.DSHX_HARNESS?.trim() || readFileSync(join(homedir(), '.config/dshx/harness'), 'utf8').trim());
-// Per-host-version baselines (`--host 0.2.0-rc.2` -> compat/harness-0.2.0-rc.2.json);
-// no --host keeps the committed build-gate baseline. Matrix cells pass --host once a
+// Per-host-version baselines (`--host 0.2.1-rc.1` -> compat/harness-0.2.1-rc.1.json);
+// no --host keeps the committed build-gate baseline (currently the 0.2.1-rc.1 line).
+// Matrix cells pass --host once a
 // monorepo checkout of that host version exists (npm packages ship no sources to hash).
 const hostArg = process.argv.includes('--host') ? process.argv[process.argv.indexOf('--host') + 1] : undefined;
-const baselineFile = join(root, 'compat', hostArg ? `harness-${hostArg}.json` : 'harness-020rc2.json');
+const baselineFile = join(root, 'compat', hostArg ? `harness-${hostArg}.json` : 'harness-0.2.1-rc.1.json');
 const ts = createRequire(join(root, 'package.json'))('typescript');
 const files = [
   'packages/client/ui-slots/src/index.ts',

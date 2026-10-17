@@ -21,6 +21,8 @@ export const readBlockLabels: ReadBlockLabels = {
 };
 
 export const terminalBlockLabels: TerminalBlockLabels = {
+  // rc.1 起必填：多行命令逐行渲染时给溢出行的可访问名（官方 zh 文案同串）。
+  commandLine: line => `命令第 ${line} 行`,
   signal: signal => `信号 ${signal}`, exitCode: code => `退出码 ${code}`, noExitCode: '无退出码',
   running: '执行中', failed: '失败', done: '已完成', copy: '复制', copied: '已复制',
   noOutput: '没有输出', collapseAria: '收起命令输出', collapse: '收起',
