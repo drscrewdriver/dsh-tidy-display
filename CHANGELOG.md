@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.2 — 2026-10-18
+
+- **半透明毛玻璃底板改革：单旋钮关联开关**。此前 glass 分支里工具卡内容面（`.toolDetails/.notice/.unknown/.toolRaw/.systemPrompt/.compactionSummaryBox/.attention/.imageFrame/.imageDialog`）只设了「透」没补底板，文字直接糊在壁纸上；现统一挂 `--reader-plate-wash: 35%` 旋钮（主题自适应 bg-base 洗色 + 常驻中性洗色 background-image 防皮肤清零 token + blur 12px），输入泡 `.user` 与新增的过程评论 `.processCommentary` 同走该旋钮。开关关闭时玻璃分支整体不生效，回落不透明宿主原生底，默认外观零改动。修复方向源自 `findings/glass-mode-opacity-fix.md`（其 55%/45% 起点经实机目测收敛为统一 35%）。
+- **支持表追加 0.2.1-rc.2**：hosts.mjs 枚举 16→17 项，engines.dsh + 12 个 dsh-* peers + 七语 README 管理块同串下发；存在域逐一 npm 实测（12/12 包 rc.2 在版），semver 双向验证：命中 0.2.1-rc.2/0.2.1-rc.1，拒绝 0.3.0-rc.1/0.2.2。注：本项为声明面支持，rc.2 断裂面未做整矩阵实机。
+
 ## 0.4.1 — 2026-10-17
 
 - **适配 DSH 0.2.1-rc.1（七仓缺口补票批次，守卫项：代码面与清单同一 release）**：① 终端卡标签补齐 rc.1 必填的 `commandLine(line)`（可访问名，文案与官方 zh 同串「命令第 N 行」）；② 官方图槽随宿主改名：`conversation.message.images` → `conversation.chat.message.images`（`OFFICIAL_SLOTS`/`OFFICIAL_SEATS`/SlotMap 声明键与浏览器 fixture 同步；注入旧槽是静默失效，grep 旧名=0 双向核验；旧线宿主仍收 `renderMessageImages`/`openSkill` 两字段，经 cast 逃逸对 rc.1 类型面保持绿色）；③ 新增 `compat/harness-0.2.1-rc.1.json` 基线（对 rc.1 tag 检出 worktree 记录，`--path-separator=/` 防 Windows 假 removed）并接管 build 默认基线。装载判据：hosts.mjs 追加 `0.2.1-rc.1`，engines.dsh + 12 个 dsh-* peers + 七语 README 管理块同串精确枚举（16 项，禁区间/caret）；semver 双向验证：命中 0.2.1-rc.1 / 拒绝 0.3.0-rc.1。devDeps 宿主面钉 0.2.1-rc.1（验证盲区①：node_modules 实装=目标线），typecheck/build/155 单测全绿。

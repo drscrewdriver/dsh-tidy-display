@@ -9,6 +9,8 @@
  * 矩阵结论落 `.compat-results/`。
  * 升级流程：本数组加版本 → `node scripts/sync-hosts.mjs --write` → 矩阵绿 → 发版。
  * 2026-10-17 补票：追加 0.2.1-rc.1（七仓缺口补票批次，同串精确枚举纪律）。
+ * 2026-10-18 补票：追加 0.2.1-rc.2（12 个 host peer 包逐一 npm 实测 rc.2 均在版；
+ * 声明面支持，断裂面未做整矩阵实机——见 CHANGELOG 0.4.2 注记）。
  *
  * 本数组与由它生成的声明写点（package.json peerDependencies 的 12 个 dsh-* 项 /
  * package.json engines.dsh / 各 README 的 host-compat 管理块）**禁止手改**，
@@ -38,8 +40,9 @@ export const supportedHosts = Object.freeze([
   // 0.2.0 线（2 个 rc）
   '0.2.0-rc.1',
   '0.2.0-rc.2',
-  // 0.2.1 线（1 个 rc）
+  // 0.2.1 线（2 个 rc）
   '0.2.1-rc.1',
+  '0.2.1-rc.2',
 ])
 
 /** peerDependencies / engines.dsh 共用的枚举串（精确枚举无暗坑，INDEX §B）。 */

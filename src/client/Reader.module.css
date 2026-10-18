@@ -570,6 +570,11 @@
    decorative chrome (border, 16px radius, floating shadow) is dropped, so the
    skin stays visible across the whole reading view. Off keeps the pre-#14 /
    current-main opaque chrome. */
+/* One plate knob for the whole glass branch: the frosted switch IS the
+   translucent switch, so On washes every reader-painted plate at 35%. Off
+   paints no wash at all — the reader falls back to opaque host-derived
+   surfaces, which clear the "no less than 45% solid" floor by construction. */
+.root[data-reader-glass] { --reader-plate-wash: 35%; }
 .root[data-reader-glass] .toolbar,
 .root[data-reader-glass] .turnProcessSticky,
 .root[data-reader-glass] .liveFoldContainer {
@@ -594,9 +599,12 @@
   padding-left: 10px;
   border-radius: 0;
 }
-/* User bubble becomes a sleek translucent frosted pill in skin mode */
+/* User bubble becomes a sleek translucent frosted pill in skin mode, riding
+   the shared --reader-plate-wash knob. The bubble token is a dark low-alpha
+   color, so its wash stays a lighter touch than the content plates'; the
+   blur layer carries contrast against busy wallpapers. */
 .root[data-reader-glass] .user {
-  background: color-mix(in srgb, var(--dsw-specific-bubble, rgba(0,0,0,.08)) 25%, transparent);
+  background: color-mix(in srgb, var(--dsw-specific-bubble, rgba(0,0,0,.14)) var(--reader-plate-wash), transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid color-mix(in srgb, var(--dsw-alias-border-l1, rgba(128,128,128,.3)) 30%, transparent);
@@ -607,6 +615,16 @@
   background: transparent;
   border-color: color-mix(in srgb, var(--dsw-alias-border-l1, rgba(128,128,128,.35)) 65%, transparent);
 }
+/* Content surfaces are the exception to "paint no plates": full transparency
+   put tool results, notices and raw blocks straight onto the wallpaper and
+   the text smeared against the picture. They get a translucent wash of the
+   theme-aware page base (bg-base: near-white in light, near-dark in dark, so
+   a dark skin does not get white boxes) plus the always-on neutral tint as a
+   background-image — the same defense as the answer bubble: a skin zeroing
+   the token cannot erase the image layer and collapse the card back to a
+   floorless frame. The modal once rode a firmer 80% tier; it now shares the
+   single knob — if it reads too thin over the photo mask backdrop, give
+   .imageDialog its own higher --reader-plate-wash override. */
 .root[data-reader-glass] .toolDetails,
 .root[data-reader-glass] .notice,
 .root[data-reader-glass] .unknown,
@@ -616,7 +634,23 @@
 .root[data-reader-glass] .attention,
 .root[data-reader-glass] .imageFrame,
 .root[data-reader-glass] .imageDialog {
-  background: transparent;
+  background: color-mix(in srgb, var(--dsw-alias-bg-base, #fff) var(--reader-plate-wash), transparent);
+  background-image: linear-gradient(rgba(127, 127, 127, .08), rgba(127, 127, 127, .08));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+/* Process commentary is real prose riding the rail, not chrome: under a skin
+   its paragraphs smeared over the wallpaper just like the tool cards did.
+   It takes the same plate knob; the block/end padding keeps the wash off the
+   text edges while the start side keeps the shared rail gutter untouched. */
+.root[data-reader-glass] .processCommentary {
+  background: color-mix(in srgb, var(--dsw-alias-bg-base, #fff) var(--reader-plate-wash), transparent);
+  background-image: linear-gradient(rgba(127, 127, 127, .08), rgba(127, 127, 127, .08));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding-block: 6px;
+  padding-right: 10px;
+  border-radius: 8px;
 }
 /* Diff overlay in skin mode */
 .root[data-reader-glass] .diffOverlay {
