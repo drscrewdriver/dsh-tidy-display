@@ -118,9 +118,37 @@ export function apply(ctx: Context): void {
   // 否则两条右缘轨重叠）。这里的 enabled 因此是 railEnabled && hideOfficialNav。
   function NativeRailView(): React.ReactElement | null {
     const snap = React.useSyncExternalStore(prefs.subscribe, () => prefs.getSnapshot());
-    const loadEarlierPattern = /^(加载更早|Load earlier|Load older)/;
-    const hasMore = [...document.querySelectorAll('button')]
-      .some((b) => loadEarlierPattern.test((b.textContent || '').trim()));
+    // The native chat view has no reactive hasMore hook (that lives in the
+    // reader's session snapshot), so we sniff the host button. Two prior bugs
+    // made the rail's top "load earlier" arrow fire only once: the pattern did
+    // not match the host's in-flight label (正在加载更早 / Loading earlier), so
+    // the arrow collapsed the instant loading began, and the sniff was
+    // re-evaluated only on a prefs change — when the host later re-offered the
+    // button the component never re-rendered, so the arrow never came back.
+    // Fix: match both idle and in-flight labels, and drive a re-render with a
+    // rAF-throttled MutationObserver scoped to the scroll container (or the
+    // document before it mounts). loadOlder still only clicks an *enabled*
+    // button, so a click during loading is a harmless no-op.
+    const loadEarlierPattern = /^(加载更早|正在加载更早|载入更早|加载历史|Load earlier|Load older|Loading earlier|Loading older)/;
+    const [, bump] = React.useReducer((x: number) => x + 1, 0);
+    React.useEffect(() => {
+      if (typeof MutationObserver === 'undefined') return;
+      let raf = 0;
+      const schedule = () => {
+        if (raf !== 0) return;
+        raf = requestAnimationFrame(() => { raf = 0; bump(); });
+      };
+      const scope = document.querySelector('[data-conversation-scroll]') ?? document.documentElement;
+      const mo = new MutationObserver(schedule);
+      mo.observe(scope, { subtree: true, childList: true, characterData: true });
+      return () => {
+        if (raf !== 0) cancelAnimationFrame(raf);
+        mo.disconnect();
+      };
+    }, []);
+    const buttons = [...document.querySelectorAll('button')];
+    const earlier = (b: HTMLButtonElement) => loadEarlierPattern.test((b.textContent || '').trim());
+    const hasMore = buttons.some((b) => earlier(b));
     const takeover = snap.hideOfficialNav !== false;
     return React.createElement(RailView, {
       enabled: snap.railEnabled !== false && takeover,
@@ -131,7 +159,7 @@ export function apply(ctx: Context): void {
       hasMore,
       loadOlder: () => {
         const btn = [...document.querySelectorAll('button')]
-          .find((b) => loadEarlierPattern.test((b.textContent || '').trim()));
+          .find((b) => earlier(b) && !(b as HTMLButtonElement).disabled);
         (btn as HTMLButtonElement | undefined)?.click();
       },
     });
@@ -152,7 +180,11 @@ export function apply(ctx: Context): void {
     yield ctx.slots.register({
     name: 'conversation.view',
     id: 'reader',
-    order: -5,
+    // R1: 对话 (native chat) registers at order 0; 审批记录 (dsh-perm-gate) at
+    // 20, with 轨迹 between. The reader used to sit at -5, which put the 阅读
+    // tab to the LEFT of 对话. Positive order 1 lands the reader immediately
+    // right of 对话 and before 轨迹, so the bar reads 对话 · 阅读 · …
+    order: 1,
     label: () => t('view.reader'),
     locale: 'chat',
     children: {

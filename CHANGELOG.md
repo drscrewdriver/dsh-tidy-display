@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.3 — 2026-10-21
+
+- **对话轨「更早载入」箭头改为可连续点击**。原生「对话」视图的消息轨顶部箭头此前只能触发一次：嗅探宿主的 `加载更早` 按钮时,① 正则不认载入态文案（正在加载更早 / Loading earlier）,箭头在加载瞬间塌掉;② `hasMore` 只在 prefs 变更时重算,宿主重新放出按钮后组件不重渲染,箭头再不回来——须切视图/改设置才能续点。改为：匹配同时覆盖空闲与载入态文案,并用 rAF 节流的 MutationObserver（作用域 `[data-conversation-scroll]`）驱动响应式重算;`loadOlder` 只点未禁用的按钮,载入中点击为无害 no-op。阅读视图轨本就走 `useSession(hasMore)` + `session().loadOlder()`,不受影响。
+- **气泡底板防塌补强（皮肤清零场景）**。无皮肤的干净环境下 `.answer` 底板本就在,真正裸文本的是只有左竖线、无底板的 `.processCommentary`——现补上 `.answer` 同款三层配方底板（bg-base 76% 洗色 scrim + 常驻中性 tint + layer-1,皮肤把 `--dsw-alias-bg-layer-1` 清零也塌不掉),半径/内距收窄让过程评论读起来比最终答复轻。`.answer` 自身同步升级为该三层防塌配方。
+- **阅读视图入口与标签栏三项调整**。① 对话标签置最左：阅读视图 `conversation.view` 的 `order` 由 `-5`（落在对话左侧）改为 `1`,落在原生对话（`order:0`）右、轨迹左,标签栏读序变为 对话 · 阅读 · …。② 默认落对话：入口策略不再无条件强制 reader,仅 `?reader=1`（或 0.1.0-trial.N）显式请求时才进阅读视图,否则保持宿主默认对话。③ 阅读态隐藏输入框区：阅读器激活时经注入的全局 CSS 以 `html[data-tidychat-reader]` 作用域隐藏宿主 `[data-composer-seat]/[data-composer-card]`,并把阅读根节点的 `--dsh-composer-height / …-side-clearance` 归零回收原先为 composer 预留的内边距、jumpDock 底偏与推理卡滚动余量;引用计数守门,reader↔chat 切换不误伤另一处轨实例。
+
 ## 0.4.2 — 2026-10-18
 
 - **半透明毛玻璃底板改革：单旋钮关联开关**。此前 glass 分支里工具卡内容面（`.toolDetails/.notice/.unknown/.toolRaw/.systemPrompt/.compactionSummaryBox/.attention/.imageFrame/.imageDialog`）只设了「透」没补底板，文字直接糊在壁纸上；现统一挂 `--reader-plate-wash: 35%` 旋钮（主题自适应 bg-base 洗色 + 常驻中性洗色 background-image 防皮肤清零 token + blur 12px），输入泡 `.user` 与新增的过程评论 `.processCommentary` 同走该旋钮。开关关闭时玻璃分支整体不生效，回落不透明宿主原生底，默认外观零改动。修复方向源自 `findings/glass-mode-opacity-fix.md`（其 55%/45% 起点经实机目测收敛为统一 35%）。

@@ -2,20 +2,24 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { ReaderEntryPolicy, readerEntryRequested } from '../src/client/entry-policy.js';
 
-test('fresh sessions default to reading, without requiring a special URL', () => {
+// R2: the default tab is 对话 — an entry with no explicit request never forces
+// the reader. A null/undefined view falls through to the host's own default.
+test('fresh sessions default to the host (对话), not the reading view', () => {
   const policy = new ReaderEntryPolicy(false);
-  assert.equal(policy.select(null), 'reader');
+  assert.equal(policy.select(null), null);
+  assert.equal(policy.select(undefined), null);
   assert.equal(policy.select('reader'), null);
-  assert.equal(policy.select(undefined), 'reader');
 });
 
 test('an explicit native or third-party tab selection is not overwritten', () => {
   const policy = new ReaderEntryPolicy(false);
   for (const view of ['chat', 'trajectory', 'other-plugin']) assert.equal(policy.select(view), null);
-  assert.equal(policy.select(null), 'reader');
+  assert.equal(policy.select(null), null);
   assert.equal(policy.select('chat'), null);
 });
 
+// With an explicit ?reader=1 request the reader lands once, then releases every
+// later tab choice — including a still-null view, because the request is spent.
 test('the trial URL enters reading once and releases later tab choices', () => {
   let consumed = 0;
   const policy = new ReaderEntryPolicy(true, () => { consumed++; });
@@ -25,7 +29,7 @@ test('the trial URL enters reading once and releases later tab choices', () => {
   assert.equal(policy.select('chat'), null);
   assert.equal(policy.select('trajectory'), null);
   assert.equal(consumed, 1);
-  assert.equal(policy.select(null), 'reader');
+  assert.equal(policy.select(null), null);
 });
 
 test('already-selected reading still consumes the entry request', () => {

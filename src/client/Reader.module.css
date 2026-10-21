@@ -717,13 +717,42 @@
    token can never erase them. */
 .root[data-reader-bubbles=on] .answer {
   box-sizing: border-box;
-  background: var(--dsw-alias-bg-layer-1, rgba(127, 127, 127, .08));
-  background-image: linear-gradient(rgba(127, 127, 127, .10), rgba(127, 127, 127, .10));
+  /* Three-layer floor, same defense the tool card uses (see processFrame >
+     .toolActivity): a theme-aware page-base scrim + an always-on neutral tint
+     as background-images, over the skin's layer-1 color. A wallpaper skin that
+     zeroes --dsw-alias-bg-layer-1 used to leave the answer a border around
+     nothing; the two image layers composite over the color, so the plate can
+     never collapse back onto the wallpaper. */
+  background:
+    linear-gradient(color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent), color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent)),
+    linear-gradient(rgba(127, 127, 127, .10), rgba(127, 127, 127, .10));
+  background-color: var(--dsw-alias-bg-layer-1, rgba(127, 127, 127, .08));
   border: 1px solid var(--dsw-alias-border-l2, rgba(128, 128, 128, .22));
   border-radius: 16px;
   padding: 12px 16px;
 }
 .root[data-reader-bubbles=on][data-reader-glass] .answer {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+/* Process commentary was the one real block that sat flat on the page in the
+   plain (no-skin) reading view: a left rule only, no floor of its own, while
+   the answer above it got a bubble. It shares the answer's plate recipe but a
+   narrower radius/padding so commentary reads lighter than the final answer,
+   and keeps its left rail gutter. */
+.root[data-reader-bubbles=on] .processCommentary {
+  box-sizing: border-box;
+  background:
+    linear-gradient(color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent), color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent)),
+    linear-gradient(rgba(127, 127, 127, .10), rgba(127, 127, 127, .10));
+  background-color: var(--dsw-alias-bg-layer-1, rgba(127, 127, 127, .08));
+  border: 1px solid var(--dsw-alias-border-l2, rgba(128, 128, 128, .22));
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-left: 0;
+  padding-left: 12px;
+}
+.root[data-reader-bubbles=on][data-reader-glass] .processCommentary {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
