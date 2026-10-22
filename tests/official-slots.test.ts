@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { memo } from 'react';
 import { SlotCore } from '@deepseek-ai/dsh-client-ui-slots';
-import { mirrorOfficialSlot, readerTailMatch, type CompositionRegistry } from '../src/client/official-slots.js';
+import { acceptOfficialNode, isShadowWinner, mirrorOfficialSlot, readerTailMatch, type CompositionRegistry } from '../src/client/official-slots.js';
 
 function registry(kind: 'keyed' | 'chain' | 'list' = 'keyed') {
   const core = new SlotCore();
@@ -10,6 +10,7 @@ function registry(kind: 'keyed' | 'chain' | 'list' = 'keyed') {
   register({ name: 'root', children: {
     source: { kind, scope: 'session' },
     reader: { kind, scope: 'session' },
+    toolview: { kind: 'keyed', scope: 'session' },
   } }, () => null);
   const slots: CompositionRegistry = {
     register,
@@ -94,6 +95,45 @@ test('new registrations do not remount existing cards; winner changes and unload
   register({ name: 'source', key: 'after-reader-unload' }, second);
   await changed();
   assert.equal(core.entriesOfSlot('reader').length, 0);
+});
+
+test('a keyed render_ui toolview registration reaches the mirror seat', () => {
+  const { core, slots, register } = registry();
+  const genui = memo(() => null);
+  register({ name: 'source', key: 'render_ui' }, genui);
+  const stop = mirrorOfficialSlot(slots, 'source', 'toolview', 'reader.toolview');
+  const mirrored = core.entriesOfSlot('toolview')[0];
+  assert.equal(mirrored.component, genui);
+  assert.equal(mirrored.options.key, 'render_ui');
+  stop();
+  assert.equal(core.entriesOfSlot('toolview').length, 0);
+});
+
+test('the host assistant-step baseline is not mirrored into the reader seat', () => {
+  const { core, slots, register } = registry();
+  register({ name: 'source', key: 'assistant-step' }, memo(() => null));
+  register({ name: 'source', key: 'command' }, memo(() => null));
+  const stop = mirrorOfficialSlot(slots, 'source', 'reader', 'reader.children', acceptOfficialNode);
+  assert.deepEqual(core.entriesOfSlot('reader').map(entry => entry.options.key), ['command']);
+  stop();
+});
+
+test('a negative-priority assistant-step shadow takeover is mirrored into the reader seat', async () => {
+  const { core, slots, register } = registry();
+  register({ name: 'source', key: 'assistant-step' }, memo(() => null));
+  const shadow = memo(() => null);
+  const stop = mirrorOfficialSlot(slots, 'source', 'reader', 'reader.children', acceptOfficialNode);
+  assert.equal(core.entriesOfSlot('reader').length, 0);
+  const dropShadow = register({ name: 'source', key: 'assistant-step', priority: -10 }, shadow);
+  await changed();
+  const taken = core.entriesOfSlot('reader')[0];
+  assert.equal(taken.component, shadow);
+  assert.equal(taken.options.key, 'assistant-step');
+  assert.equal(isShadowWinner(taken), true);
+  dropShadow();
+  await changed();
+  assert.equal(core.entriesOfSlot('reader').length, 0);
+  stop();
 });
 
 test('partial setup rolls back its own registrations on a nested contract failure', () => {

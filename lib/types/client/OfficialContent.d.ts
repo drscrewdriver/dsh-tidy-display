@@ -17,6 +17,15 @@ export declare function OfficialNode({ node, fallback, ...render }: BlockRenderP
     node: ChatConversationViewNode;
     fallback: ReactNode;
 }): string | number | boolean | Iterable<ReactNode> | import("react").JSX.Element | null | undefined;
+/**
+ * Render one assistant-step node through the official mirror seat. Only an
+ * external shadow takeover (negative priority) is mirrored there; the host's own
+ * assistant-step entry is filtered out, so the default path renders nothing and
+ * the Reader keeps its own segmentation.
+ */
+export declare function AssistantStepDelegation({ node, ...render }: BlockRenderProps & {
+    node: ChatConversationViewNode;
+}): import("react").JSX.Element | null;
 export declare function OfficialTail({ official, owner, produced }: Pick<BlockRenderProps, 'official'> & {
     owner?: TurnTailOwnerProps;
     produced: readonly string[];

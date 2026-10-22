@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.4 — 2026-10-22
+
+- **阅读视图放行 `render_ui`（与 dsh-genui 的硬冲突 B）**。`ResultView` 的绕过条件此前把 `render_ui` 与 `show_widget` 一起短路到通用结果行,GenUI 在阅读视图里永远只显示 JSON。现只保留 `show_widget` 绕过（它的 `html` 参数走 McpAppFrame,是 tidy 自有渲染）,`render_ui` 交给官方 `tool.call.toolview` 镜像座位：装了 GenUI 时其注册胜出、卡片正常出现;未装 GenUI 或带 `html` 参数的 `render_ui` 仍由座位 fallback 落回原通用行,默认终态零变化。
+- **阅读视图委托 `assistant-step` 影子接管（与 dsh-raw-html-v2 的硬冲突 A）**。新增单判据 `isShadowWinner`（`priority < 0`;宿主官方注册不写 priority）与 `acceptOfficialNode`：官方基线 `assistant-step` 仍被过滤、由 Reader 自渲染,而外部影子接管（如 raw-html-v2 开启渲染开关）会镜像进 `official.nodes` 座位,Reader 经 `AssistantStepDelegation` 委托其渲染;无影子时不挂载委托,默认路径 DOM 逐帧零漂移。开关关闭即不注册,行为与 0.4.3 完全一致。
+
 ## 0.4.3 — 2026-10-21
 
 - **对话轨「更早载入」箭头改为可连续点击**。原生「对话」视图的消息轨顶部箭头此前只能触发一次：嗅探宿主的 `加载更早` 按钮时,① 正则不认载入态文案（正在加载更早 / Loading earlier）,箭头在加载瞬间塌掉;② `hasMore` 只在 prefs 变更时重算,宿主重新放出按钮后组件不重渲染,箭头再不回来——须切视图/改设置才能续点。改为：匹配同时覆盖空闲与载入态文案,并用 rAF 节流的 MutationObserver（作用域 `[data-conversation-scroll]`）驱动响应式重算;`loadOlder` 只点未禁用的按钮,载入中点击为无害 no-op。阅读视图轨本就走 `useSession(hasMore)` + `session().loadOlder()`,不受影响。

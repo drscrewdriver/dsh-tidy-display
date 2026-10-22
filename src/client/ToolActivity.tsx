@@ -84,7 +84,9 @@ function searchFiles(value: unknown): SearchFileGroup[] | null {
 function ResultView(props: BlockRenderProps & { entry: ToolActivityEntry; model: ReturnType<typeof activitySummary>; phase: ToolPhase }) {
   const { official, entry, model } = props;
   const fallback = <ResultFallback {...props} />;
-  if (!official || !entry.block || model.name === 'render_ui' || model.name === 'show_widget') return fallback;
+  // render_ui belongs to the official toolview mirror (GenUI registers it); show_widget
+  // keeps the local path because its html argument renders through McpAppFrame.
+  if (!official || !entry.block || model.name === 'show_widget') return fallback;
   return <OfficialTool {...props} official={official} block={entry.block} toolName={model.name} cwd={props.cwd ?? model.cwd} fallback={fallback} />;
 }
 

@@ -49,6 +49,24 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
     }
 }
 /**
+ * An external takeover registers the node with a negative priority. The host's own
+ * assistant-step registration carries none (register-node-renderers.ts), so the
+ * sign of the rank is the smallest sufficient signal that someone else renders it.
+ */
+export declare const isShadowWinner: (entry: StoredEntry) => boolean;
+/**
+ * Mirror only node kinds the Reader does not present itself. assistant-step stays
+ * Reader-owned unless a shadow takeover wins its cell; then it must reach the
+ * mirror seat so the Reader can delegate to it.
+ */
+export declare const acceptOfficialNode: (entry: StoredEntry) => boolean;
+/**
+ * Reactive read for the Reader: does an external shadow takeover win the
+ * assistant-step cell? Subscribes to the source slot so enabling the takeover
+ * plugin after mount flips the answer.
+ */
+export declare function useAssistantStepShadow(): boolean;
+/**
  * Reader already presents produced paths with its copy/reveal actions. RC2's
  * official tail additionally owns explicit `present` artifacts. Leave those
  * cards, actions and state intact, and omit only the duplicate produced chips.

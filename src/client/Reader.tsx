@@ -6,7 +6,8 @@ import { JsonBlock, MarkdownText } from '@deepseek-ai/dsh-client-ui-primitives';
 import { BlockBoundary, Blocks, contentBlocks, CopyAnswer, UserMessageActions } from './Blocks.js';
 import { ReasoningCard } from './ReasoningCard.js';
 import { ToolActivity, ToolMedia } from './ToolActivity.js';
-import { OfficialActions, OfficialNode, OfficialTail } from './OfficialContent.js';
+import { AssistantStepDelegation, OfficialActions, OfficialNode, OfficialTail } from './OfficialContent.js';
+import { useAssistantStepShadow } from './official-slots.js';
 import { preparingLabel, readerFlow } from './tool-activity.js';
 import { Disclosure, ProcessFragment, RetiringContent, StatusText, useMotionAllowed, usePinnedSelection, useReadingScroll } from './motion.js';
 import { StreamMotionContext } from './streaming.js';
@@ -160,9 +161,16 @@ const AssistantNode = memo(function AssistantNode({ useChat, nodeKey, boundary, 
   motion: boolean; pinBottom: boolean; onRead: () => void; returnFocusTo: RefObject<HTMLButtonElement>; partStart?: number; folded?: boolean;
 }) {
   const node = useChat(snapshot => snapshot.nodes.get(nodeKey));
+  const shadowStep = useAssistantStepShadow();
   if (!node || node.visibility === 'hidden' || !isNode(node, 'assistant-step')) return null;
   const data = node.data;
   const parts = assistantSegments(data.blocks);
+  if (shadowStep && render.official) {
+    // AssistantNode mounts once per segment part while the delegated official
+    // render covers the whole node; only the first part renders, the rest stay quiet.
+    if (partStart !== undefined && parts.length > 0 && partStart !== parts[0].start) return null;
+    return <BlockBoundary><AssistantStepDelegation {...render} node={node} /></BlockBoundary>;
+  }
   const earlier = isEarlierNarration(data, boundary);
   const hasToolCalls = data.blocks.some(block => block.kind === 'tool-call');
   const isProcessStep = earlier || folded || hasToolCalls || (boundary.latestStep > 0 && data.step < boundary.latestStep);
@@ -743,7 +751,7 @@ export function Reader(props: ReaderProps) {
 
   // ChatView publishes data-chat-flow="" on its column. Skins treat a
   // scrollport without that hook as inspect-only and hide [data-composer-seat].
-  return <StreamMotionContext.Provider value={streamMotion}><div ref={root} className={css.root} data-reader-build="0.4.3" data-dsh-tidy-display="0.4.3" data-reader-wait-clock-version="input-v1" data-reader-wait-start={waitAnchor.time ?? undefined} data-motion={motion ? 'on' : 'off'} data-reader-glass={frostedGlass || undefined} data-reader-bubbles={bubbles ? 'on' : 'off'} data-reader-auto-fold={autoFold ? 'on' : 'off'}>
+  return <StreamMotionContext.Provider value={streamMotion}><div ref={root} className={css.root} data-reader-build="0.4.4" data-dsh-tidy-display="0.4.4" data-reader-wait-clock-version="input-v1" data-reader-wait-start={waitAnchor.time ?? undefined} data-motion={motion ? 'on' : 'off'} data-reader-glass={frostedGlass || undefined} data-reader-bubbles={bubbles ? 'on' : 'off'} data-reader-auto-fold={autoFold ? 'on' : 'off'}>
     <RailView enabled={railEnabled} side={railSide} style={railStyle} ring={railRing} hideOfficialNav={hideOfficialNav} hasMore={hasMore} loadOlder={props.loadOlder} />
     <div className={css.column} data-chat-flow="">
       <StickyLane kind="toolbar" className={css.toolbar}>

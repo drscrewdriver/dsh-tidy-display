@@ -1,4 +1,4 @@
-import { createElement, memo, useMemo, type ComponentType, type ReactNode } from 'react';
+import { createElement, memo, useCallback, useMemo, useSyncExternalStore, type ComponentType, type ReactNode } from 'react';
 import type { Context } from '@deepseek-ai/cordis';
 import type { SlotEntryDef, SlotMap, SlotSpec, StoredEntry } from '@deepseek-ai/dsh-client-ui-slots';
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client';
@@ -59,6 +59,45 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 // Existing Reader presentations own these rows. All other node kinds, including
 // future registrations, reach the official renderer through the fallback seat.
 const READER_NODES = new Set(['user', 'steering', 'assistant-step', 'tool-call', 'turn-tail', 'turn-process']);
+
+/**
+ * An external takeover registers the node with a negative priority. The host's own
+ * assistant-step registration carries none (register-node-renderers.ts), so the
+ * sign of the rank is the smallest sufficient signal that someone else renders it.
+ */
+export const isShadowWinner = (entry: StoredEntry): boolean =>
+  typeof entry.options.priority === 'number' && entry.options.priority < 0;
+
+/**
+ * Mirror only node kinds the Reader does not present itself. assistant-step stays
+ * Reader-owned unless a shadow takeover wins its cell; then it must reach the
+ * mirror seat so the Reader can delegate to it.
+ */
+export const acceptOfficialNode = (entry: StoredEntry): boolean =>
+  !READER_NODES.has(entry.options.key ?? '')
+  || (entry.options.key === 'assistant-step' && isShadowWinner(entry));
+
+/** Registry captured at install; the Reader's delegation read needs election winners. */
+let installedSlots: CompositionRegistry | undefined;
+
+/**
+ * Reactive read for the Reader: does an external shadow takeover win the
+ * assistant-step cell? Subscribes to the source slot so enabling the takeover
+ * plugin after mount flips the answer.
+ */
+export function useAssistantStepShadow(): boolean {
+  const registry = installedSlots;
+  const subscribe = useCallback(
+    (notify: () => void) => registry?.subscribe(OFFICIAL_SLOTS.nodes, notify) ?? (() => {}),
+    [registry],
+  );
+  const read = useCallback(
+    () => registry?.entriesOfSlot(OFFICIAL_SLOTS.nodes)
+      .some(entry => entry.options.key === 'assistant-step' && isShadowWinner(entry)) ?? false,
+    [registry],
+  );
+  return useSyncExternalStore(subscribe, read);
+}
 const EXPECTED: Record<OfficialFamily, Spec[]> = {
   actions: [{ kind: 'list', scope: 'session' }],
   tools: [{ kind: 'keyed', scope: 'session' }],
@@ -199,6 +238,7 @@ export function installOfficialSlots(ctx: Context): () => void {
   // The SlotMap overloads are for statically declared keys. Aliases are a
   // runtime composition, using exactly the public erased metadata contract.
   const slots = ctx.slots as unknown as CompositionRegistry;
+  installedSlots = slots;
   const disposers: (() => void)[] = [];
   try {
     for (const [name, source] of Object.entries(OFFICIAL_SLOTS)) {
@@ -213,14 +253,18 @@ export function installOfficialSlots(ctx: Context): () => void {
           console.warn(`[dsh-tidy-display] official slot contract drift on mirror: ${source} (${spec.kind}/${spec.scope} vs ${declared?.kind ?? 'none'}/${declared?.scope ?? 'none'})`);
         }
         return mirrorOfficialSlot(slots, source, target, `dsh-tidy-display.official.${family}`,
-          family === 'nodes' ? entry => !READER_NODES.has(entry.options.key ?? '') : undefined);
+          family === 'nodes' ? acceptOfficialNode : undefined);
       }));
     }
   } catch (error) {
     for (const stop of disposers.reverse()) stop();
+    if (installedSlots === slots) installedSlots = undefined;
     throw error;
   }
-  return () => { for (const stop of disposers.splice(0).reverse()) stop(); };
+  return () => {
+    for (const stop of disposers.splice(0).reverse()) stop();
+    if (installedSlots === slots) installedSlots = undefined;
+  };
 }
 
 export type OfficialSlotKey = typeof OFFICIAL_SLOTS[OfficialFamily] & keyof SlotMap;

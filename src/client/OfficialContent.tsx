@@ -38,14 +38,13 @@ export function OfficialTool({ official, block, toolName, cwd, openFile, fallbac
   </div>;
 }
 
-export function OfficialNode({ node, fallback, ...render }: BlockRenderProps & { node: ChatConversationViewNode; fallback: ReactNode }) {
-  const official = render.official;
-  const [disclosureReset] = useState(() => createSnapshotStore(0));
-  if (!official) return fallback;
-  // rc.1 起 ChatNodeOwnerProps 移除了 openSkill/renderMessageImages（消息图改走
-  // conversation.chat.message.images 子槽）；旧线宿主仍要求这两字段，继续供给，
-  // 类型对开发线（rc.1）编译，旧线字段经 cast 逃逸。
-  const owner = {
+/**
+ * Owner currency for a keyed chat node. rc.1 dropped openSkill/renderMessageImages
+ * from ChatNodeOwnerProps (message images moved to the images child slot); older
+ * hosts still read both, so keep supplying them and cast past the new shape.
+ */
+function officialNodeOwner(render: BlockRenderProps, official: NonNullable<BlockRenderProps['official']>): ChatNodeOwnerProps {
+  return {
     cwd: render.cwd,
     openFile: render.openFile ?? (() => {}),
     openSkill: () => {},
@@ -57,11 +56,36 @@ export function OfficialNode({ node, fallback, ...render }: BlockRenderProps & {
     }),
     fileMentions: official.officialFileMentions,
   } as unknown as ChatNodeOwnerProps;
+}
+
+export function OfficialNode({ node, fallback, ...render }: BlockRenderProps & { node: ChatConversationViewNode; fallback: ReactNode }) {
+  const official = render.official;
+  const [disclosureReset] = useState(() => createSnapshotStore(0));
+  if (!official) return fallback;
+  const owner = officialNodeOwner(render, official);
   const turn = node.location.kind === 'turn' || node.location.kind === 'step' ? node.location.turn : undefined;
   // The runtime node domain is open; the public SlotMap enumerates the known kinds.
   const renderNode = official.renderSlot as unknown as (key: string, owner: object, options: object) => ReactNode;
   return <div data-reader-official-node={node.kind} data-chat-anchor-key={node.key} data-chat-flow-kind={node.kind}>
     {renderNode(OFFICIAL_SEATS.nodes, { ...owner, node }, { entryKey: node.kind, hookContext: { turnData: turn?.data, disclosureReset }, fallback })}
+  </div>;
+}
+
+/**
+ * Render one assistant-step node through the official mirror seat. Only an
+ * external shadow takeover (negative priority) is mirrored there; the host's own
+ * assistant-step entry is filtered out, so the default path renders nothing and
+ * the Reader keeps its own segmentation.
+ */
+export function AssistantStepDelegation({ node, ...render }: BlockRenderProps & { node: ChatConversationViewNode }) {
+  const official = render.official;
+  const [disclosureReset] = useState(() => createSnapshotStore(0));
+  if (!official) return null;
+  const owner = officialNodeOwner(render, official);
+  const turn = node.location.kind === 'turn' || node.location.kind === 'step' ? node.location.turn : undefined;
+  const renderNode = official.renderSlot as unknown as (key: string, owner: object, options: object) => ReactNode;
+  return <div data-reader-official-node={node.kind} data-chat-anchor-key={node.key} data-chat-flow-kind={node.kind}>
+    {renderNode(OFFICIAL_SEATS.nodes, { ...owner, node }, { entryKey: 'assistant-step', hookContext: { turnData: turn?.data, disclosureReset }, fallback: null })}
   </div>;
 }
 
