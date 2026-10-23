@@ -21,6 +21,7 @@ import type { ReaderInjected } from './types.js';
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import * as React from 'react';
 import { installOfficialSlots, officialChildren, type CompositionRegistry } from './official-slots.js';
+import { ensureGenuiPlateCss } from './genui-plate.js';
 import { NS, dictionaries, installTranslate, t } from './locales.js';
 import { softSvc, safeSeat } from './soft-svc.js';
 
@@ -73,6 +74,9 @@ export const name = 'dsh-tidy-display-client';
 export const inject = ['slots', 'sessions', 'locale'];
 
 export function apply(ctx: Context): void {
+  // One-shot global plate for GenUI inline fence cards; class-keyed, no slot
+  // dependency, so it runs before any conversation renders.
+  ensureGenuiPlateCss();
   // One registration activates all nine shipped languages; bind is resolved
   // lazily and cached, so helper modules can translate at render time too.
   const locale = (ctx.get?.('locale') ?? (ctx as unknown as { locale?: LocaleLike }).locale) as LocaleLike | undefined;

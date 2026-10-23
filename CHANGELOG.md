@@ -1,4 +1,6 @@
 # Changelog
+0.4.5: host enumeration addendum for DSH 0.2.1-rc.3 (declaration-only bump; contract plane zero diff).
+
 
 ## 0.4.4 — 2026-10-22
 

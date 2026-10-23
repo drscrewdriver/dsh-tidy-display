@@ -751,7 +751,7 @@ export function Reader(props: ReaderProps) {
 
   // ChatView publishes data-chat-flow="" on its column. Skins treat a
   // scrollport without that hook as inspect-only and hide [data-composer-seat].
-  return <StreamMotionContext.Provider value={streamMotion}><div ref={root} className={css.root} data-reader-build="0.4.4" data-dsh-tidy-display="0.4.4" data-reader-wait-clock-version="input-v1" data-reader-wait-start={waitAnchor.time ?? undefined} data-motion={motion ? 'on' : 'off'} data-reader-glass={frostedGlass || undefined} data-reader-bubbles={bubbles ? 'on' : 'off'} data-reader-auto-fold={autoFold ? 'on' : 'off'}>
+  return <StreamMotionContext.Provider value={streamMotion}><div ref={root} className={css.root} data-reader-build="0.4.5-local.1" data-dsh-tidy-display="0.4.5-local.1" data-reader-wait-clock-version="input-v1" data-reader-wait-start={waitAnchor.time ?? undefined} data-motion={motion ? 'on' : 'off'} data-reader-glass={frostedGlass || undefined} data-reader-bubbles={bubbles ? 'on' : 'off'} data-reader-auto-fold={autoFold ? 'on' : 'off'}>
     <RailView enabled={railEnabled} side={railSide} style={railStyle} ring={railRing} hideOfficialNav={hideOfficialNav} hasMore={hasMore} loadOlder={props.loadOlder} />
     <div className={css.column} data-chat-flow="">
       <StickyLane kind="toolbar" className={css.toolbar}>
