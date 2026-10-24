@@ -49,7 +49,7 @@ export const supportedHosts = Object.freeze([
 export const peerRange = supportedHosts.join(' || ')
 
 /** 本地开发与矩阵默认宿主（devDependencies 若引入宿主包一律钉这里）。 */
-export const developmentHost = '0.2.1-rc.1'
+export const developmentHost = '0.2.1-rc.3'
 
 /**
  * peer 闸指向的宿主子包（本插件消费的全部宿主面：peerDependencies 里的 12 个
