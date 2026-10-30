@@ -42,14 +42,14 @@ export const supportedHosts = Object.freeze([
   '0.2.0-rc.2',
   // 0.2.1 线（3 个 rc）
   '0.2.1-rc.1',
-  '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4',
+  '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1-rc.5',
 ])
 
 /** peerDependencies / engines.dsh 共用的枚举串（精确枚举无暗坑，INDEX §B）。 */
 export const peerRange = supportedHosts.join(' || ')
 
 /** 本地开发与矩阵默认宿主（devDependencies 若引入宿主包一律钉这里）。 */
-export const developmentHost = '0.2.1-rc.4'
+export const developmentHost = '0.2.1-rc.5'
 
 /**
  * peer 闸指向的宿主子包（本插件消费的全部宿主面：peerDependencies 里的 12 个
