@@ -65,29 +65,33 @@ export function installBetterDisplaySettings(ctx: Context, prefs: OpenPrefs): vo
     languageTag: languageTag(ctx),
     checkSkill,
   });
-  // 探针：宿主执行过本工厂 == 有人声明了 `dsh-family.tab`（插件侧唯一合法的
-  // 「容器在不在」判据：槽门面不暴露 spec 查询）。
-  let familyTabHeld = false
+  // 贡献卡注册（apply 顶层无条件执行）：props 走 injected（prefs/copy/languageTag/checkSkill 皆 apply 级）。
   safeSeat('dsh-family.tab', () =>
-  ctx.slots.inject('dsh-family.tab', () => {
-    familyTabHeld = true
-    return ctx.slots.register({
-      name: 'dsh-family.tab',
-      id: 'tidy-display',
-      order: 60,
-      label: () => locale?.bind?.('tidy-display')?.('nav') || settingsCopyFor(languageTag(ctx)).nav,
-      locale: locale?.bind ? 'tidy-display' : undefined,
-      inject: injected,
-    }, SettingsSection)
-  }));
+  ctx.slots.inject('dsh-family.tab', () => ctx.slots.register({
+    name: 'dsh-family.tab',
+    id: 'tidy-display',
+    order: 60,
+    label: () => locale?.bind?.('tidy-display')?.('nav') || settingsCopyFor(languageTag(ctx)).nav,
+    locale: locale?.bind ? 'tidy-display' : undefined,
+    inject: injected,
+  }, SettingsSection)));
   // 家族容器兜底：owner 全部让位/声明失败时上面的 inject 静默等待，本卡整轮启动
   // 不可见且不报错。到分级时刻仍无人持有则自己上位（declare-or-withdraw）。
   ctx.effect(
     () => claimFamilyHostIfOrphaned(
       ctx.slots as unknown as FamilyHostSlots,
-      () => familyTabHeld,
+      // 判据：有没有一个实际在位的家族容器（id=dsh-family 的 settings.section），
+      // 而非「我的 inject 有没有触发」——后者在自宣子槽时恒 false（本 bug 成因）。
+      () => {
+        try {
+          return (ctx.slots as unknown as FamilyHostSlots).entries('settings.section')
+            .some(e => String((((e.options ?? {}) as { id?: unknown }).id) ?? '') === 'dsh-family')
+        } catch { return false }
+      },
       () => '起子插件设置',
       '[dsh-tidy-display]',
+      // 接管态内联直挂本卡：own 卡组件 + injected（apply 级，非空白）。
+      { id: 'tidy-display', component: SettingsSection as unknown, inject: injected as unknown as () => Record<string, unknown> },
     ),
     'dsh-tidy-display: family host backstop',
   );
