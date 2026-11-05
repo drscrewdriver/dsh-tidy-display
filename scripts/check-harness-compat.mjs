@@ -1,5 +1,5 @@
 /** Upgrade gate for the public composition adapter and remaining Markdown fork. */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
@@ -7,7 +7,16 @@ import { join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 
 const root = resolve(import.meta.dirname, '..');
-const harness = resolve(process.env.DSHX_HARNESS?.trim() || readFileSync(join(homedir(), '.config/dshx/harness'), 'utf8').trim());
+// The harness pointer is dev-side state: either DSHX_HARNESS env or ~/.config/dshx/harness
+// on the maintainer's machine. CI has neither ⇒ skip the upgrade gate rather than fail
+// the build (the gate hashes the host monorepo checkout, which is never present on a
+// plugin's CI runner). Local dev keeps the check because the file exists there.
+const harnessPointer = process.env.DSHX_HARNESS?.trim() || (existsSync(join(homedir(), '.config/dshx/harness')) ? readFileSync(join(homedir(), '.config/dshx/harness'), 'utf8').trim() : '');
+if (!harnessPointer) {
+  console.log('[check-harness-compat] skipped: no DSHX_HARNESS env and no ~/.config/dshx/harness (typical on a plugin CI runner).');
+  process.exit(0);
+}
+const harness = resolve(harnessPointer);
 // Per-host-version baselines (`--host 0.2.1-rc.1` -> compat/harness-0.2.1-rc.1.json);
 // no --host keeps the committed build-gate baseline (currently the 0.2.1-rc.1 line).
 // Matrix cells pass --host once a
