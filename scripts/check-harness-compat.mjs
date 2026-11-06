@@ -1,5 +1,5 @@
 /** Upgrade gate for the public composition adapter and remaining Markdown fork. */
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
@@ -42,11 +42,32 @@ const files = [
 ];
 const hashes = Object.fromEntries(files.map(file => [file, createHash('sha256').update(readFileSync(join(harness, file))).digest('hex')]));
 const registrations = [];
-// `--path-separator=/` pins the listing to forward slashes: Windows ripgrep
-// 15+ prints backslash paths, and the `/src/client/` filter below would then
-// skip every file, silently emptying `registrations` and failing the baseline
-// comparison with a wall of phantom removals.
-for (const path of execFileSync('rg', ['--path-separator=/', '--files', 'packages/client', '-g', '*.ts', '-g', '*.tsx'], { cwd: harness, encoding: 'utf8' }).trim().split('\n')) {
+// `rg --files packages/client -g '*.ts' -g '*.tsx'`, in plain Node.
+//
+// It used to shell out to ripgrep. That made the *build* depend on whatever
+// happens to be on PATH: a Windows dev box without ripgrep died with
+// `spawnSync rg ENOENT` before the gate could say anything about compatibility,
+// which reads like a regression but is only a missing binary. The walker below
+// has the same contract (skip node_modules and dot-dirs, forward-slash relative
+// paths, sorted) and cannot fail for environmental reasons.
+function listClientSources(root, prefix = 'packages/client') {
+  const found = [];
+  const walk = (absDir, relDir) => {
+    for (const entry of readdirSync(absDir, { withFileTypes: true })) {
+      if (entry.name.startsWith('.')) continue;
+      const rel = relDir ? `${relDir}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules') continue;
+        walk(join(absDir, entry.name), rel);
+      } else if (entry.isFile() && /\.(?:ts|tsx)$/u.test(entry.name)) {
+        found.push(`${prefix}/${rel}`);
+      }
+    }
+  };
+  walk(join(root, prefix), '');
+  return found.sort();
+}
+for (const path of listClientSources(harness)) {
   if (!path.includes('/src/client/')) continue;
   const text = readFileSync(join(harness, path), 'utf8');
   if (!/conversation\.chat\.|tool\.call\.|conversation\.message\./u.test(text)) continue;
