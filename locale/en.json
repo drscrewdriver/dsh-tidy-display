@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Tidy Display",
+    "description": "a community plugin for DeepSeek Harness (DSH) 0.1.0–0.2.0 that merges the reading view and the message rail into one plugin: long sessions become scannable, navigable, and resumable."
+  }
+}
