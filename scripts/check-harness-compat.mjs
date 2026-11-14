@@ -1,7 +1,6 @@
 /** Upgrade gate for the public composition adapter and remaining Markdown fork. */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
