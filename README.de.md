@@ -114,7 +114,7 @@ npm run build      # erzeugt lib/ (eingecheckt; das check-harness-compat-Gate br
 npm test
 ```
 
-Ziel ist DeepSeek Harness **alle RCs von 0.1.0 bis 0.2.0** (die Aufzählung findet sich im host-compat-Block oben). Nur Darstellung — Agent-Ausführung, SDK und Modell-Credentials bleiben unangetastet. Node.js `^22.19.0 || >=24`. Neue Sitzungen starten standardmäßig in der Leseansicht.
+Ziel ist DeepSeek Harness **alle RCs von 0.1.0 bis 0.2.0** (die Spanne findet sich im host-compat-Block oben). Nur Darstellung — Agent-Ausführung, SDK und Modell-Credentials bleiben unangetastet. Node.js `^22.19.0 || >=24`. Neue Sitzungen starten standardmäßig in der Leseansicht.
 
 ## Verhältnis zu den Originalprojekten
 
