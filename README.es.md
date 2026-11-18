@@ -1,6 +1,6 @@
 # dsh-tidy-display
 
-[简体中文](README.md) | [English](README.en.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Español](README.es.md)
+[简体中文](README.md) | [English](README.en.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Italiano](README.it.md) | [Русский](README.ru.md) | [Español](README.es.md) | [Português](README.pt.md)
 
 **Tidy Display** — un plugin comunitario para DeepSeek Harness (DSH) **0.1.0–0.2.0** que fusiona la vista de lectura y el raíl de mensajes en un solo plugin: las sesiones largas se vuelven fáciles de ojear, navegables y reanudables.
 

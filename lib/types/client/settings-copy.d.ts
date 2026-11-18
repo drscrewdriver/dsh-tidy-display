@@ -9,7 +9,8 @@ export declare const ru: SettingsCopy;
 export declare const es: SettingsCopy;
 export declare const ja: SettingsCopy;
 export declare const ko: SettingsCopy;
-export type SettingsLanguage = 'zh' | 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'it' | 'ru' | 'es';
+export declare const pt: SettingsCopy;
+export type SettingsLanguage = 'zh' | 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'it' | 'ru' | 'es' | 'pt';
 export declare function settingsLanguage(tag: string | undefined): SettingsLanguage;
 export declare function settingsCopyFor(tag: string | undefined): SettingsCopy;
 //# sourceMappingURL=settings-copy.d.ts.map

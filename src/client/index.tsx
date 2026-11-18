@@ -77,7 +77,7 @@ export function apply(ctx: Context): void {
   // One-shot global plate for GenUI inline fence cards; class-keyed, no slot
   // dependency, so it runs before any conversation renders.
   ensureGenuiPlateCss();
-  // One registration activates all nine shipped languages; bind is resolved
+  // One registration activates all ten shipped languages; bind is resolved
   // lazily and cached, so helper modules can translate at render time too.
   const locale = (ctx.get?.('locale') ?? (ctx as unknown as { locale?: LocaleLike }).locale) as LocaleLike | undefined;
   if (locale?.register) {

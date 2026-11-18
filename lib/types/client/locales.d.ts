@@ -273,6 +273,7 @@ export declare const it: Record<TidyKey, string>;
 export declare const ru: Record<TidyKey, string>;
 /** Spanish dictionary, checked complete against the zh key set. */
 export declare const es: Record<TidyKey, string>;
+export declare const pt: Record<TidyKey, string>;
 /** All languages this plugin ships, in one call to the host locale service. */
 export declare const dictionaries: Record<string, Record<string, string>>;
 /** Install the host-backed lookup; `null` unbinds it (tests, SSR, early boot). */
