@@ -126,8 +126,12 @@ async function ensureTgz(version) {
   const dest = path.join(TGZ_CACHE, `deepseek-ai-dsh-${version}.tgz`)
   if (existsSync(dest)) return dest
   console.log(`       pack host ${version}`)
-  // npm 而非 pnpm：本仓 pnpm-workspace.yaml 无 packages 字段，pnpm pack 会被
-  // workspace 解析绊倒（date-wrapper 无此文件故未踩）；npm pack 不读 workspace。
+  // npm 而非 pnpm：`pnpm pack` **不接受包名参数**（只能打包当前目录），
+  // `<pkg>@<version>` 是 npm pack 的语法；pnpm 会报参数解析错误
+  // （exit 2，"unexpected argument '@deepseek-ai/dsh@<ver>' found"）。
+  // 2026-11-19 更正：此前这里归因为"本仓 pnpm-workspace.yaml 无 packages 字段，
+  // pnpm pack 被 workspace 解析绊倒"——结论对（该用 npm）但理由是错的：空目录
+  // （无 pnpm-workspace.yaml）实测报同一个参数错误，与 workspace 完全无关。
   await run(TGZ_CACHE, NPM, ['pack', `@deepseek-ai/dsh@${version}`, '--pack-destination', TGZ_CACHE, '--registry=https://registry.npmjs.org/', '--loglevel=error'], `npm pack host ${version}`)
   return dest
 }
