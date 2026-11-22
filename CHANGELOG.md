@@ -1,4 +1,15 @@
 # Changelog
+
+## 0.5.0 — 2026-11-22(feature/segmented-rendering 分支)
+
+- **分段分发渲染层(吸收 dsh-genui 与 dsh-raw-html-v2 的核心能力,本仓原生实现)**。此前两协议在同一份回复流里互相打架:raw-html-v2 开启时 dsh-ui 围栏以 JSON 花括号裸奔、关闭时 vcp-root 裸 HTML 标签乱撒。现阅读视图按段分发:md 走原管线、` ```dsh-ui ` 围栏走 GenUI 渲染、行首 `<div id="vcp-root">` 裸 HTML 与 ` ```html ` 围栏包裹卡走 VCP 引擎,`mcp-app` 通道不变。不可渲染段(解析失败/引擎缺失)一律折叠为标题卡+源码,绝不裸撒。
+- **GenUI 组件经官方 embed 入口真渲染**。`@changfenhuang/dsh-genui` 以依赖引入,`processGenuiSpec`(别名归一+修复+校验,与 genui 插件同源守卫)→ `<GenuiBlock stateKey="reader:<段位置>">`(交互状态按消息位置持久化);失败带诊断降级折叠。重引擎(echarts/mermaid/three/maplibre)保持 genui 的懒加载 IIFE 设计,经本插件 `/tidy-display/assets/genui/` 路由伺服,主包零引擎内联。体积:client.js 1.51MB → 2.52MB(闭包 72 文件)。
+- **VCP 引擎整体移植(vcp-engine-v1.js 零改动拷贝,删 v1 localStorage 自检块)**。切段器(行首判定/标签配平/RAWTEXT 跳过/卡尾 style·script 吞并/流式半截 pending)、vc/hp shims、引擎引导(同步 XHR `/tidy-display/vendor/`,5×500ms 重试)、渲染核心(settle memo 零闪+根字体 DOM 锁权)与错误边界尽数 TS 化移植。特化:①**不移植可信模式 eval**——含 `<script>` 的卡自动改走 McpAppFrame 沙箱 iframe,主上下文永不执行模型 JS;②`onclick="input(…)"` 桥接 Reader 的 `ComposerFillContext`(回填输入框,不自动发送);③字体路由归一 `/tidy-display/fonts/`。
+- **统一协议教学(单一 systemPrompt 段)**。node 半 `inject` 扩为 `['webServer','systemPrompt']`,注入 `dsh-tidy-display:segments` 段:通道路由表(结构化数据→dsh-ui/自由视觉容器→VCP/复杂应用→mcp-app)+ 承重铁律精编 + 美学六底线(仅约束 VCP 卡)——按 findings §8.3 十条改造清单合成,消解两套原教学在表格归属(C1)/工具纪律(C2)/交付全称(C3)等六域的矛盾。教学开关经 `POST /tidy-display/protocol-state` 持久化(`~/.dsh/dsh-tidy-display-protocol.json`),关闭某协议 = 不再教新卡、历史卡照常渲染(教学端/渲染端解耦);全关注入降级文本。
+- **右下角浮动控制簇(dock)**。`position:fixed;right:14px;bottom:14px` 胶囊簇(渲染模式/分段/折叠直切)+ ⚙ 展开面板(协议教学开关 + 共存检测提示),body 直挂双视图常驻,不向 composer 注入任何节点;raw-html-v2 可信徽章同坐标时自动上移让位。
+- **渲染模式开关与共存策略**。新增设置 `segmentCards`(默认开)/`cardCollapseDefault`(默认开)/`renderMode`(native 默认/delegate);`delegate` 恢复 0.4.4 的整节点委托现行为,`native` 下阅读视图不再吃外部 shadow 接管(isShadowWinner 检测保留)。设置面板与 dock 提供共存检测提示(`__DSH_BOOT__.entries`):原生模式下建议禁用 raw-html-v2/genui(教学统一、免双引擎);委托模式标注 raw-html-v2 依赖。
+- **工程**:tsconfig 切 `emitDeclarationOnly`+`allowImportingTsExtensions`(genui 以 TS 源发布 embed 入口),lib/types 下 150 个无消费方 .js/.js.map 附带产物移除;`chat-flow-hook` 测试改读真交付包 cordis overrides 钉回 4.0.4 稳定线;36 项新单测(切段 12/挂点判定 7/原套件全量回归)。计划与调研四件套见 `docs/plans/2026-11-22-segmented-rendering/`。
+
 0.4.5: host enumeration addendum for DSH 0.2.1-rc.3 (declaration-only bump; contract plane zero diff).
 
 
