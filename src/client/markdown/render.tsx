@@ -30,6 +30,7 @@ import { isMcpAppCodeBlock, extractMcpAppTitle, extractMcpAppHeight } from '../m
 import { DshUiCard } from '../segments/DshUiCard.js'
 import { VcpSegmentCard } from '../segments/VcpSegmentCard.js'
 import { segmentPrefsSnapshot } from '../segments/prefs-gate.js'
+import { isBlockLevelLineStart, isDshUiFence, looksLikeVcpHtmlBlock, normalizeSegmentLang } from '../segments/segment-decide.js'
 import { splitVcpText, stripFenceWrapper } from '../vcp/segmentation.js'
 import { parseGfmWithMath } from './parse.js'
 import type { MarkdownPathImages } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -290,9 +291,8 @@ function renderNode(node: Md.RootContent, key: Key, context: MarkdownRenderConte
       // the segmented-rendering exception: a line-start (column 1) vcp-root
       // card or page document routes to the VCP segment card; inline mentions
       // and indented blocks keep the literal-text behavior.
-      if (segmentPrefsSnapshot().segmentCards && (node.position?.start.column ?? 2) === 1) {
-        const trimmed = node.value.trimStart()
-        if (VCP_ROOT_OPEN_RE.test(trimmed) || PAGE_OPEN_TRIM_RE.test(trimmed)) {
+      if (segmentPrefsSnapshot().segmentCards && isBlockLevelLineStart(node.position)) {
+        if (looksLikeVcpHtmlBlock(node.value)) {
           return <VcpHtmlSegments value={node.value} baseKey={`hn:${String(key)}`} streaming={context.streaming === true} />
         }
       }
@@ -336,13 +336,7 @@ function renderNode(node: Md.RootContent, key: Key, context: MarkdownRenderConte
   }
 }
 
-/** 分段围栏语言归一:小写 + 剥非字母/连字符(dsh-ui> → dshui、HTML: → html)。 */
-function normalizeSegmentLang(lang: string | null | undefined): string {
-  return String(lang ?? '').trim().toLowerCase().replace(/[^a-z-]/g, '')
-}
-
-const VCP_ROOT_OPEN_RE = /^\s*<div\b[^>]*\bid\s*=\s*["']?vcp-root["']?[^>]*>/i
-const PAGE_OPEN_TRIM_RE = /^\s*(?:<!doctype\s+html\b|<html[\s>])/i
+/** 分段围栏语言归一与 vcp 前缀判定抽到 segments/segment-decide(纯函数,可测)。 */
 
 /** 卡后余文的嵌套静态渲染:无空行分隔被吞进同一 html 块的 md 尾部。无 motion
  *  原子(余文不在源序门内),引用脚注目标独立收集。 */
@@ -416,13 +410,12 @@ function renderCode(node: Md.Code, key: Key, context: MarkdownRenderContext): Re
   // A. dsh-ui 围栏(别名容错:dshui / 尾随标点) → GenUI 卡
   // B. ```html 围栏包裹的 vcp-root 卡 / 整页(围栏容错,协议教学仍禁止) → VCP 卡
   if (segmentPrefsSnapshot().segmentCards) {
-    const norm = normalizeSegmentLang(language)
-    if (norm === 'dsh-ui' || norm === 'dshui') {
+    if (isDshUiFence(language)) {
       return <DshUiCard raw={node.value} streaming={context.streaming === true} segKey={`ui:${String(key)}`} />
     }
-    if (norm === 'html') {
+    if (normalizeSegmentLang(language) === 'html') {
       const inner = stripFenceWrapper(node.value)
-      if (VCP_ROOT_OPEN_RE.test(inner) || PAGE_OPEN_TRIM_RE.test(inner)) {
+      if (looksLikeVcpHtmlBlock(inner)) {
         return <VcpHtmlSegments value={inner} baseKey={`vh:${String(key)}`} streaming={context.streaming === true} />
       }
     }
