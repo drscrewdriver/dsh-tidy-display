@@ -38,7 +38,7 @@ import { createElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { processGenuiSpec } from '@changfenhuang/dsh-genui/embed'
 import { DshUiCard } from '../segments/DshUiCard.js'
-import { fenceIdentity, labelVerdict, looksLikeGenuiInProgress } from './discover.js'
+import { canonicalJson, fenceIdentity, labelVerdict, looksLikeGenuiInProgress } from './discover.js'
 
 /** Marker attribute set on blocks this channel has taken over (own namespace —
  * never touch genui's marker, and vice versa). */
@@ -287,7 +287,11 @@ function contentRecognized(raw: string): boolean {
     }
     const { spec } = processGenuiSpec(candidate)
     if (!spec) return false
-    return JSON.stringify(spec) === JSON.stringify(candidate)
+    // Semantic equality: the guard reorders object keys canonically, so a raw
+    // stringify comparison would reject identical specs with a different key
+    // order. Canonical comparison still rejects any body that needed an
+    // actual repair (aliases renamed, defaults filled, fields stripped).
+    return canonicalJson(spec) === canonicalJson(candidate)
   } catch {
     return false
   }

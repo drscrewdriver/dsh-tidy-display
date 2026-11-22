@@ -30,4 +30,15 @@ export declare function looksLikeGenuiInProgress(raw: string): boolean;
  * future version ever needs to reconcile state across channels.
  */
 export declare function fenceIdentity(anchorKey: string, ordinal: number): string;
+/**
+ * Key-order-insensitive JSON serialization for semantic equality. Object keys
+ * sort; array order stays semantic. The guard's normalization rebuilds
+ * objects in its own canonical key order (e.g. a model-written
+ * `{type, tone, content}` callout comes back `{type, content, tone}`), so
+ * content recognition MUST compare canonically — a raw `JSON.stringify`
+ * equality rejects semantically identical specs whose key order differs
+ * (real-world miss: one ranking card rendered, the next fell back to a code
+ * block because a callout carried `tone` before `content`).
+ */
+export declare function canonicalJson(value: unknown): string;
 //# sourceMappingURL=discover.d.ts.map

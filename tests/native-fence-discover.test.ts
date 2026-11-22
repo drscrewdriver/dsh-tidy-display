@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  canonicalJson,
   fenceIdentity,
   isDshUiLanguage,
   labelVerdict,
@@ -57,4 +58,18 @@ test('looksLikeGenuiInProgress fires only on spec-shaped JSON bodies', () => {
 test('fenceIdentity keeps the genui dom identity scheme', () => {
   assert.equal(fenceIdentity('seq-42', 1), 'dom:seq-42:1');
   assert.equal(fenceIdentity('unknown', 3), 'dom:unknown:3');
+});
+
+test('canonicalJson is key-order-insensitive but array-order-sensitive', () => {
+  // 守卫归一化会重排对象键序(真实事故:callout 的 tone 在 content 前被重排)——
+  // 语义相等必须按规范化比较,否则同一份 spec 时而接管时而让位。
+  const modelWritten = { type: 'callout', tone: 'success', content: 'x' };
+  const guardNormalized = { type: 'callout', content: 'x', tone: 'success' };
+  assert.equal(canonicalJson(modelWritten), canonicalJson(guardNormalized));
+  // 数组顺序是语义(items/rows),不得排序
+  assert.notEqual(canonicalJson({ items: [1, 2] }), canonicalJson({ items: [2, 1] }));
+  // 需修复才合法的正文仍然可见差异(别名改写/字段增删都逃不过)
+  assert.notEqual(canonicalJson({ type: 'table', headers: ['a'] }), canonicalJson({ type: 'table', columns: ['a'] }));
+  assert.notEqual(canonicalJson({ type: 'callout', content: 'x' }), canonicalJson({ type: 'callout', content: 'x', extra: 1 }));
+  assert.equal(canonicalJson({ b: 1, a: { d: [2, { c: 1 }] } }), '{"a":{"d":[2,{"c":1}]},"b":1}');
 });

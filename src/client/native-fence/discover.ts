@@ -85,3 +85,26 @@ export function looksLikeGenuiInProgress(raw: string): boolean {
 export function fenceIdentity(anchorKey: string, ordinal: number): string {
   return `dom:${anchorKey}:${ordinal}`;
 }
+
+/**
+ * Key-order-insensitive JSON serialization for semantic equality. Object keys
+ * sort; array order stays semantic. The guard's normalization rebuilds
+ * objects in its own canonical key order (e.g. a model-written
+ * `{type, tone, content}` callout comes back `{type, content, tone}`), so
+ * content recognition MUST compare canonically — a raw `JSON.stringify`
+ * equality rejects semantically identical specs whose key order differs
+ * (real-world miss: one ranking card rendered, the next fell back to a code
+ * block because a callout carried `tone` before `content`).
+ */
+export function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonicalJson).join(',')}]`;
+  }
+  if (value !== null && typeof value === 'object') {
+    const entries = Object.keys(value as Record<string, unknown>)
+      .sort()
+      .map(key => `${JSON.stringify(key)}:${canonicalJson((value as Record<string, unknown>)[key])}`);
+    return `{${entries.join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
