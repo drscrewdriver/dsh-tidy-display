@@ -118,6 +118,13 @@ function clientConfig(id, entry) {
     outputOptions: {
       entryFileNames: 'client.js',
       chunkFileNames: 'client.[name].js',
+      // 宿主 __ModuleLoader__ 的模块表只物化 client.js 一个文件:动态 import()
+      // 拆出的 chunk(如 genui embed 的 scene3d-lazy 包装)会以
+      // require('./client.xxx.js') 落在表外 → entry 整体拒激活("missed the
+      // module table")。单文件内联动态导入——被内联的只是轻量加载器包装,
+      // 重引擎(echarts/mermaid/three/maplibre)本就经 loadGenuiAsset 运行时
+      // fetch 资产路由,不受此影响。
+      inlineDynamicImports: true,
       banner: () =>
         `window.__ModuleLoader__.load({\n\tid: ${JSON.stringify(id)},\n\tfactory: (require) => {`,
       footer: 'return module.exports; } });',

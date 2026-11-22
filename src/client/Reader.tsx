@@ -158,14 +158,16 @@ const ProcessNode = memo(function ProcessNode({ useChat, t, nodeKey, open, motio
 });
 
 const AssistantNode = memo(function AssistantNode({ useChat, nodeKey, boundary, processOpen = false, pinned = false, folded = false, partStart, motion, pinBottom, onRead, returnFocusTo, ...render }: SeatProps & {
-  motion: boolean; pinBottom: boolean; onRead: () => void; returnFocusTo: RefObject<HTMLButtonElement>; partStart?: number; folded?: boolean;
+  motion: boolean; pinBottom: boolean; onRead: () => void; returnFocusTo: RefObject<HTMLButtonElement>; partStart?: number; folded?: boolean; delegateExternal?: boolean;
 }) {
   const node = useChat(snapshot => snapshot.nodes.get(nodeKey));
   const shadowStep = useAssistantStepShadow();
   if (!node || node.visibility === 'hidden' || !isNode(node, 'assistant-step')) return null;
   const data = node.data;
   const parts = assistantSegments(data.blocks);
-  if (shadowStep && render.official) {
+  // 委托门:仅 renderMode==='delegate' 时把整节点让给外部 shadow 渲染器;
+  // native(默认)下检测到接管也不吃——阅读视图自己按段分发渲染。
+  if (shadowStep && render.official && render.delegateExternal === true) {
     // AssistantNode mounts once per segment part while the delegated official
     // render covers the whole node; only the first part renders, the rest stay quiet.
     if (partStart !== undefined && parts.length > 0 && partStart !== parts[0].start) return null;
@@ -496,7 +498,7 @@ function DeliverablesRow({ deliverables, openFile, revealFile, openMode }: {
   );
 }
 
-const TurnGroup = memo(function TurnGroup({ group, motion, pinBottom, autoFold, pinnedKeys, selectedProcessKeys, isAwaitingModel = false, ...props }: ReaderProps & { group: ReaderGroup; motion: boolean; pinBottom: boolean; autoFold: boolean; pinnedKeys: readonly string[]; selectedProcessKeys: readonly string[]; isAwaitingModel?: boolean }) {
+const TurnGroup = memo(function TurnGroup({ group, motion, pinBottom, autoFold, delegateExternal = false, pinnedKeys, selectedProcessKeys, isAwaitingModel = false, ...props }: ReaderProps & { group: ReaderGroup; motion: boolean; pinBottom: boolean; autoFold: boolean; delegateExternal?: boolean; pinnedKeys: readonly string[]; selectedProcessKeys: readonly string[]; isAwaitingModel?: boolean }) {
   const snapshot = props.useChat(snapshot => snapshot);
   const nodes = snapshot.nodes;
   const turn = group.turn === null ? undefined : snapshot.timeline.turns.get(group.turn);
@@ -588,6 +590,7 @@ const TurnGroup = memo(function TurnGroup({ group, motion, pinBottom, autoFold, 
     metrics,
     official,
     cwd,
+    delegateExternal,
   };
   const terminal = terminalLabel(boundary.reason);
   const hasTurnError = flow.some(item => item.kind === 'node' && nodes.get(item.nodeKey)?.kind === 'turn-error');
@@ -669,6 +672,9 @@ export function Reader(props: ReaderProps) {
   // 再回落到本会话 scoped store——与 autoFold 同一读取顺序。
   const storePinBottom = props.useStore(state => state.pinReasoningBottom === true);
   const pinBottom = prefsSnap?.pinReasoningBottom ?? storePinBottom;
+  // 渲染模式:delegate = assistant 节点整行委托外部 shadow 渲染器(现行为);
+  // native(默认)= 阅读视图自己按段分发渲染,不吃外部接管。
+  const delegateExternal = prefsSnap?.renderMode === 'delegate';
   const previousAutoFold = useRef(autoFold);
   useLayoutEffect(() => {
     const restored = autoFold && !previousAutoFold.current;
@@ -775,7 +781,7 @@ export function Reader(props: ReaderProps) {
       {historyError && <div className={css.notice}>历史记录加载失败，可再次尝试；现有内容未改变。</div>}
       {openError && <div className={css.error} role="alert">会话暂时无法读取：{openError.message}</div>}
       {loading && groups.length === 0 && <p className={css.empty} role="status">正在读取会话…</p>}
-      {groups.map(group => <TurnGroup key={group.key} {...props} group={group} motion={motion} pinBottom={pinBottom} autoFold={autoFold} pinnedKeys={pinnedKeys} selectedProcessKeys={selectedProcessKeys} isAwaitingModel={isAwaitingModel && group.key === groups.at(-1)?.key} />)}
+      {groups.map(group => <TurnGroup key={group.key} {...props} group={group} motion={motion} pinBottom={pinBottom} autoFold={autoFold} delegateExternal={delegateExternal} pinnedKeys={pinnedKeys} selectedProcessKeys={selectedProcessKeys} isAwaitingModel={isAwaitingModel && group.key === groups.at(-1)?.key} />)}
       {visibleSubmissions.map(submission => {
         const images = pendingSubmissionImages(submission);
         return (

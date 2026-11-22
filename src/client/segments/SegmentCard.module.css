@@ -1,0 +1,158 @@
+/* Segment card shell — same three-layer anti-collapse floor as the Reader
+ * answer bubble (Reader.module.css): theme-aware page-base scrim + always-on
+ * neutral tint as background-images over the skin's layer-1 color, so a skin
+ * that zeroes the token cannot erase it. */
+
+.root {
+  box-sizing: border-box;
+  margin: 8px 0;
+  border: 1px solid var(--dsw-alias-border-l2, rgba(128, 128, 128, .22));
+  border-radius: 10px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent), color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent)),
+    linear-gradient(rgba(127, 127, 127, .10), rgba(127, 127, 127, .10));
+  background-color: var(--dsw-alias-bg-layer-1, rgba(127, 127, 127, .08));
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: var(--dsw-alias-label-secondary, #666);
+  text-align: left;
+}
+
+.headStatic {
+  cursor: default;
+}
+
+.label {
+  font-size: 12px;
+  letter-spacing: .02em;
+  color: var(--dsw-alias-label-secondary, #666);
+}
+
+.chevron {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  transition: transform .18s cubic-bezier(.22, 1, .36, 1);
+  transform: rotate(0deg);
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.badge {
+  flex: none;
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--dsw-alias-border-l2, rgba(128, 128, 128, .25));
+  color: var(--dsw-alias-label-secondary, #666);
+  background: var(--dsw-alias-interactive-bg-hover, rgba(127, 127, 127, .08));
+}
+
+.badgeError {
+  color: var(--dsw-alias-label-primary, #333);
+  border-color: rgba(220, 38, 38, .45);
+  background: rgba(220, 38, 38, .08);
+}
+
+.headSpacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.body {
+  box-sizing: border-box;
+  padding: 0 12px 10px;
+}
+
+.bodyFlush {
+  padding: 0;
+}
+
+.errorLine {
+  margin: 0 12px 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(220, 38, 38, .85);
+}
+
+.source {
+  margin: 0 12px 10px;
+  border-top: 1px dashed var(--dsw-alias-border-l2, rgba(128, 128, 128, .2));
+  padding-top: 8px;
+}
+
+.sourceHead {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  padding: 2px 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  color: var(--dsw-alias-label-tertiary, #888);
+}
+
+.sourceText {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--dsw-alias-interactive-bg-hover, rgba(127, 127, 127, .08));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 320px;
+  overflow: auto;
+  color: var(--dsw-alias-label-secondary, #666);
+}
+
+.streamingRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--dsw-alias-label-tertiary, #888);
+}
+
+.streamingDot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dsw-alias-label-tertiary, #999);
+  animation: segmentPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes segmentPulse {
+  0%, 100% { opacity: .35; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streamingDot {
+    animation: none;
+    opacity: .6;
+  }
+  .chevron {
+    transition: none;
+  }
+}

@@ -22,6 +22,12 @@ import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import * as React from 'react';
 import { installOfficialSlots, officialChildren, type CompositionRegistry } from './official-slots.js';
 import { ensureGenuiPlateCss } from './genui-plate.js';
+import { setGenuiAssetBase } from '@changfenhuang/dsh-genui/embed';
+import { setSegmentPrefsSnapshot, segmentPrefsSnapshot } from './segments/prefs-gate.js'
+import { installNativeFenceChannel } from './native-fence/channel.js';
+import { bootstrapVcpEngine } from './vcp/bootstrap.js';
+import { installRenderDock } from './dock/install.js';
+import type { DockPrefs } from './dock/RenderDock.js';
 import { NS, dictionaries, installTranslate, t } from './locales.js';
 import { softSvc, safeSeat } from './soft-svc.js';
 
@@ -99,6 +105,35 @@ export function apply(ctx: Context): void {
   // `dsh.reader.v1.<sessionId>`. One root instance keeps glass, fold
   // intensity, and open-mode on the unsuffixed `dsh.reader.v1` key.
   const prefs = store.create();
+  // 分段渲染层:把三个分段相关偏好镜像进模块级快照(mdast 渲染层无 props 通路,
+  // 卡组件同步读快照;响应性由本组件的 store 订阅重渲染保证——见 segments/prefs-gate)。
+  const mirrorSegmentPrefs = (): void => {
+    const s = prefs.getSnapshot();
+    setSegmentPrefsSnapshot({
+      segmentCards: s.segmentCards !== false,
+      cardCollapseDefault: s.cardCollapseDefault !== false,
+    });
+  };
+  mirrorSegmentPrefs();
+  prefs.subscribe(mirrorSegmentPrefs);
+  // 原生「对话」视图的 dsh-ui 围栏接管通道:Reader 的 mdast 分发只覆盖阅读视图,
+  // 宿主原生渲染器没有官方 code-block 注入点——DOM 接管通道让双视图的卡片渲染一致。
+  // segmentCards 快照是同一总闸(翻转即全量卸载并恢复原代码块)。
+  if (typeof window !== 'undefined') {
+    ctx.effect(() => {
+      const channel = installNativeFenceChannel({ getEnabled: () => segmentPrefsSnapshot().segmentCards });
+      channel.setEnabled(segmentPrefsSnapshot().segmentCards);
+      const unsubscribe = prefs.subscribe(() => channel.setEnabled(segmentPrefsSnapshot().segmentCards));
+      return () => {
+        unsubscribe();
+        channel.dispose();
+      };
+    }, 'dsh-tidy-display: native fence channel');
+  }
+  bootstrapVcpEngine();
+  // GenUI 懒引擎资产(echarts/mermaid/three/maplibre IIFE)走本插件路由——
+  // setGenuiAssetBase 后 window.__DSH_BOOT__ 完全不参与(node 半在 Phase 4 伺服)。
+  setGenuiAssetBase('/tidy-display/assets/genui/');
   installBetterDisplaySettings(ctx, prefs);
   installConfigBridge(ctx, prefs as unknown as Parameters<typeof installConfigBridge>[1]);
   installRailColors({
@@ -338,5 +373,7 @@ export function apply(ctx: Context): void {
     }, Reader);
     yield installOfficialSlots(ctx);
     yield installReaderEntry(ctx);
+    // 右下角浮动控制簇(body 直挂,双视图常驻;不向 composer 注入任何节点)
+    yield ctx.effect(() => installRenderDock(prefs as unknown as DockPrefs), 'dsh-tidy-display: render dock');
   }));
 }

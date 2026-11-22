@@ -20,6 +20,18 @@ its tooling, **not** to the transition recipes. Retain this notice and consult
 the upstream terms when redistributing or adapting the corresponding motion
 portions of `Reader.module.css`, `motion.tsx` and `word-timeline.ts`.
 
+## dsh-genui fence channel
+
+`src/client/native-fence` ports the DOM fence-takeover channel from
+[`@changfenhuang/dsh-genui`](https://github.com/omdsh-dev/dsh-genui) (MIT
+license, version 0.17.0 as vendored in `node_modules`) —
+`src/client/dom-fence.tsx` and `src/shared/fence-language.ts`, slimmed to the
+dsh-ui-only channel: svg and tag-text surfaces, the ChatSnapshot
+source-language resolver, partial-component streaming parsing, panel
+publishing and diagnostic strips are omitted; the render target is this
+plugin's own `DshUiCard`. The MIT license text below covers the ported
+portions.
+
 ## DeepSeek Harness native process presentation
 
 `src/client/native` copies the native context rows, form-specific context bodies, reference icon and pure tool summary model. `upstream.json` records the source commit and each original hash. The only adaptations are public type imports, relative ESM suffixes and a local icon path. The MIT license below covers these files. No Host, model, SDK, Agent or tool execution source is included or modified.

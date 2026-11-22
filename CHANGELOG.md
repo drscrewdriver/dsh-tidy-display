@@ -1,4 +1,20 @@
 # Changelog
+
+## 0.5.0 — 2026-11-22(feature/segmented-rendering 分支)
+
+- **修复:原生视图内容识别的键序敏感误拒(0.5.0-rc.3;「第一次出卡第二次不出」的根因)**。守卫归一化会按自己的规范序重排对象键(实测:`{type,tone,content}` 的 callout 归一化后变 `{type,content,tone}`),rc.2 的严格相等用裸 `JSON.stringify` 对比——模型写入键序与规范序不同(语义完全等价)即被判否,通道让位回代码块。表现正是同一会话里一张卡渲染、下一张退回代码块。现改 `canonicalJson`(递归键排序)语义比较:键序不敏感,数组顺序保持语义;需真实修复才合法的正文(别名改写/缺省填充/未知字段剥除)依然拒绝,防劫持口径不变。
+- **原生「对话」视图 dsh-ui 围栏接管通道(0.5.0-rc.2)**。rc.1 的分段渲染只覆盖阅读视图(mdast 分发);宿主原生渲染器没有官方 code-block 注入点,原生对话里 ` ```dsh-ui ` 围栏只能裸落代码块——genui/raw-html-v2 禁用后此缺口成为双视图回退。现移植 dsh-genui 的 DOM 接管通道(MIT,见 THIRD_PARTY_NOTICES)并精简:`MutationObserver`(body subtree + characterData)+ 1s 兜底轮询 + 行轮转网;发现走宿主稳定类 `.md-code-block` + `label+pre` 结构兜底;**先挂后藏**(issue #19 守卫,挂载失败绝不遮答案)+ 观察器微任务修复手术(容器重挂/隐藏重置/被清容器重建);身份 `dom:<anchor-key>:<ordinal>` 经 `native:` 前缀分键交互状态。渲染统一走自有 `DshUiCard`(SegmentCard 外观/校验失败折叠/折叠偏好与阅读视图同款)。无标签围栏在 settle 期经 embed 守卫**严格内容识别**(归一化前后不等即拒绝——普通 json 永不被劫持,genui #258 口径);流式期 spec 形状即换占位卡(与 Reader streaming 契约一致;不移植部分组件解析,单渲染路径,精简偏离记录在案)。`segmentCards` 为同一总闸,翻转即全量卸载并恢复原代码块;Reader 子树与 genui 自有通道(`data-genui-rendered`)共存让位。VCP 卡仍为阅读视图专属(原生视图宿主对裸 HTML 消毒,无 DOM 可接管,后置另立项)。
+- dock 共存提示文案随接管生效修订;`DshUiCard` stateKey 前缀参数化(`reader:`/`native:`);genui-plate CSS 扩展覆盖 `.tidy-dom-fence`。
+- 工程测试:discover 纯函数 6 例(含键序语义比较)+ 通道契约 4 例(先挂后藏顺序/共存排除/状态分键/总闸接线)。
+
+- **分段分发渲染层(吸收 dsh-genui 与 dsh-raw-html-v2 的核心能力,本仓原生实现)**。此前两协议在同一份回复流里互相打架:raw-html-v2 开启时 dsh-ui 围栏以 JSON 花括号裸奔、关闭时 vcp-root 裸 HTML 标签乱撒。现阅读视图按段分发:md 走原管线、` ```dsh-ui ` 围栏走 GenUI 渲染、行首 `<div id="vcp-root">` 裸 HTML 与 ` ```html ` 围栏包裹卡走 VCP 引擎,`mcp-app` 通道不变。不可渲染段(解析失败/引擎缺失)一律折叠为标题卡+源码,绝不裸撒。
+- **GenUI 组件经官方 embed 入口真渲染**。`@changfenhuang/dsh-genui` 以依赖引入,`processGenuiSpec`(别名归一+修复+校验,与 genui 插件同源守卫)→ `<GenuiBlock stateKey="reader:<段位置>">`(交互状态按消息位置持久化);失败带诊断降级折叠。重引擎(echarts/mermaid/three/maplibre)保持 genui 的懒加载 IIFE 设计,经本插件 `/tidy-display/assets/genui/` 路由伺服,主包零引擎内联。体积:client.js 1.51MB → 2.52MB(闭包 72 文件)。
+- **VCP 引擎整体移植(vcp-engine-v1.js 零改动拷贝,删 v1 localStorage 自检块)**。切段器(行首判定/标签配平/RAWTEXT 跳过/卡尾 style·script 吞并/流式半截 pending)、vc/hp shims、引擎引导(同步 XHR `/tidy-display/vendor/`,5×500ms 重试)、渲染核心(settle memo 零闪+根字体 DOM 锁权)与错误边界尽数 TS 化移植。特化:①**不移植可信模式 eval**——含 `<script>` 的卡自动改走 McpAppFrame 沙箱 iframe,主上下文永不执行模型 JS;②`onclick="input(…)"` 桥接 Reader 的 `ComposerFillContext`(回填输入框,不自动发送);③字体路由归一 `/tidy-display/fonts/`。
+- **统一协议教学(单一 systemPrompt 段)**。node 半 `inject` 扩为 `['webServer','systemPrompt']`,注入 `dsh-tidy-display:segments` 段:通道路由表(结构化数据→dsh-ui/自由视觉容器→VCP/复杂应用→mcp-app)+ 承重铁律精编 + 美学六底线(仅约束 VCP 卡)——按 findings §8.3 十条改造清单合成,消解两套原教学在表格归属(C1)/工具纪律(C2)/交付全称(C3)等六域的矛盾。教学开关经 `POST /tidy-display/protocol-state` 持久化(`~/.dsh/dsh-tidy-display-protocol.json`),关闭某协议 = 不再教新卡、历史卡照常渲染(教学端/渲染端解耦);全关注入降级文本。
+- **右下角浮动控制簇(dock)**。`position:fixed;right:14px;bottom:14px` 胶囊簇(渲染模式/分段/折叠直切)+ ⚙ 展开面板(协议教学开关 + 共存检测提示),body 直挂双视图常驻,不向 composer 注入任何节点;raw-html-v2 可信徽章同坐标时自动上移让位。
+- **渲染模式开关与共存策略**。新增设置 `segmentCards`(默认开)/`cardCollapseDefault`(默认开)/`renderMode`(native 默认/delegate);`delegate` 恢复 0.4.4 的整节点委托现行为,`native` 下阅读视图不再吃外部 shadow 接管(isShadowWinner 检测保留)。设置面板与 dock 提供共存检测提示(`__DSH_BOOT__.entries`):原生模式下建议禁用 raw-html-v2/genui(教学统一、免双引擎);委托模式标注 raw-html-v2 依赖。
+- **工程**:tsconfig 切 `emitDeclarationOnly`+`allowImportingTsExtensions`(genui 以 TS 源发布 embed 入口),lib/types 下 150 个无消费方 .js/.js.map 附带产物移除;`chat-flow-hook` 测试改读真交付包 cordis overrides 钉回 4.0.4 稳定线;36 项新单测(切段 12/挂点判定 7/原套件全量回归)。计划与调研四件套见 `docs/plans/2026-11-22-segmented-rendering/`。
+
 0.4.5: host enumeration addendum for DSH 0.2.1-rc.3 (declaration-only bump; contract plane zero diff).
 
 

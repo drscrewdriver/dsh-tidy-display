@@ -1,0 +1,1 @@
+{"version":3,"file":"DshUiCard.d.ts","sourceRoot":"","sources":["../../../../src/client/segments/DshUiCard.tsx"],"names":[],"mappings":"AAgBA,MAAM,WAAW,cAAc;IAC7B,6EAA6E;IAC7E,GAAG,EAAE,MAAM,CAAA;IACX,SAAS,EAAE,OAAO,CAAA;IAClB,2EAA2E;IAC3E,MAAM,EAAE,MAAM,CAAA;IACd;;kFAE8E;IAC9E,OAAO,CAAC,EAAE,MAAM,CAAA;CACjB;AAcD,eAAO,MAAM,SAAS,4EAA2E,cAAc,iCA4C7G,CAAA"}

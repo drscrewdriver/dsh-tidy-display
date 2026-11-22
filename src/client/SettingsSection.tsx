@@ -10,6 +10,9 @@ export interface ReaderPrefsSnapshot {
   deliverableOpenMode?: DeliverableOpenMode;
   frostedGlass?: boolean;
   bubbles?: boolean;
+  segmentCards?: boolean;
+  cardCollapseDefault?: boolean;
+  renderMode?: 'native' | 'delegate';
   pinReasoningBottom?: boolean;
   foldIntensity?: FoldIntensity;
   autoFold?: boolean;
@@ -34,6 +37,9 @@ export interface OpenPrefs {
     setDeliverableOpenMode: (value: DeliverableOpenMode) => void;
     setFrostedGlass: (value: boolean) => void;
     setBubbles?: (value: boolean) => void;
+    setSegmentCards?: (value: boolean) => void;
+    setCardCollapseDefault?: (value: boolean) => void;
+    setRenderMode?: (value: 'native' | 'delegate') => void;
     setPinReasoningBottom?: (value: boolean) => void;
     setFoldIntensity?: (value: FoldIntensity) => void;
     setAutoFold?: (value: boolean) => void;
@@ -164,12 +170,29 @@ export function SettingsSection(props: SettingsProps) {
   const railStyle = snap.railStyle === 'dot' ? 'dot' : 'bar';
   const railRing = snap.railRing === true;
   const takeover = snap.hideOfficialNav !== false;
+  const segmentCards = snap.segmentCards !== false;
+  const cardCollapse = snap.cardCollapseDefault !== false;
+  const renderMode: 'native' | 'delegate' = snap.renderMode === 'delegate' ? 'delegate' : 'native';
   const setMode = (value: DeliverableOpenMode) => {
     props.prefs.actions.setDeliverableOpenMode(value);
   };
   const on = mode === 'sidebar';
   const [skill, setSkill] = useState<SkillStatusSnapshot | undefined>();
   const [checking, setChecking] = useState(false);
+  // 共存检测(一次性):window.__DSH_BOOT__.entries 含已加载插件 id
+  // (genui asset-loader 自身即依赖该表)。协议教学统一后建议禁用原插件。
+  const coinstalled = useState(() => {
+    try {
+      const entries = (window as unknown as { __DSH_BOOT__?: { entries?: ReadonlyArray<{ id?: string }> } }).__DSH_BOOT__?.entries;
+      const ids = (entries ?? []).map(e => e.id ?? '').join(' ');
+      return {
+        rawHtmlV2: /raw-html/i.test(ids),
+        genui: /dsh-genui/i.test(ids),
+      };
+    } catch {
+      return { rawHtmlV2: false, genui: false };
+    }
+  })[0];
 
   const recheck = useCallback(async () => {
     setChecking(true);
@@ -238,6 +261,67 @@ export function SettingsSection(props: SettingsProps) {
           data-tidy-display-bubbles={bubbles ? 'on' : 'off'}
           onClick={() => { props.prefs.actions.setBubbles?.(!bubbles); }}
         />
+      </div>
+
+      <div className={css.row}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'segmentTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'segmentDescription')}</div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={segmentCards}
+          className={css.switch}
+          data-on={segmentCards || undefined}
+          data-tidy-display-segment-cards={segmentCards ? 'on' : 'off'}
+          onClick={() => { props.prefs.actions.setSegmentCards?.(!segmentCards); }}
+        />
+      </div>
+
+      <div className={css.row} data-tidy-display-segment-dependency={segmentCards ? undefined : 'off'}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'segmentCollapseTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'segmentCollapseDescription')}</div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={cardCollapse}
+          className={css.switch}
+          data-on={cardCollapse || undefined}
+          data-tidy-display-card-collapse={cardCollapse ? 'on' : 'off'}
+          onClick={() => { props.prefs.actions.setCardCollapseDefault?.(!cardCollapse); }}
+        />
+      </div>
+
+      <div className={css.row} data-tidy-display-segment-dependency={segmentCards ? undefined : 'off'}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'renderModeTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'renderModeDescription')}</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+            <Chip
+              on={renderMode === 'native'}
+              onClick={() => { props.prefs.actions.setRenderMode?.('native'); }}
+            >{text(props, copy, 'renderModeNative')}</Chip>
+            <Chip
+              on={renderMode === 'delegate'}
+              onClick={() => { props.prefs.actions.setRenderMode?.('delegate'); }}
+            >{text(props, copy, 'renderModeDelegate')}</Chip>
+          </div>
+          {(coinstalled.rawHtmlV2 || coinstalled.genui) && (
+            <div className={css.desc} style={{ marginTop: 6 }} data-tidy-display-coexistence-hint>
+              {renderMode === 'native'
+                ? `检测到 ${[coinstalled.rawHtmlV2 ? 'raw-html-v2' : '', coinstalled.genui ? 'genui' : ''].filter(Boolean).join('、')} 插件:原生分段模式自带两套渲染能力,建议禁用它们(统一协议教学,避免双引擎与全局样式冲突)。`
+                : '委托模式依赖 raw-html-v2 已安装并启用。'}
+            </div>
+          )}
+          {renderMode === 'delegate' && !coinstalled.rawHtmlV2 && (
+            <div className={css.desc} style={{ marginTop: 6 }}>
+              委托模式需要 raw-html-v2 已安装并启用,否则 assistant 节点将回退官方渲染。
+            </div>
+          )}
+        </div>
       </div>
 
       <div className={css.row}>
