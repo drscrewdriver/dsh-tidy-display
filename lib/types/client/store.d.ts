@@ -17,6 +17,12 @@ export interface ReaderState {
     frostedGlass: boolean;
     /** Rounded answer bubbles. Default on; off lays answers flat on the page. */
     bubbles: boolean;
+    /** 分段分发渲染总开关：特殊段（dsh-ui 围栏 / vcp 卡）渲染为卡片。Default on. */
+    segmentCards: boolean;
+    /** 不可渲染段默认折叠展示源码。Default on. */
+    cardCollapseDefault: boolean;
+    /** 阅读视图渲染模式：native = 原生分段；delegate = 委托外部 shadow 渲染器。 */
+    renderMode: 'native' | 'delegate';
     /**
      * 折叠态思考卡始终贴底显示最新一行（含流式）；手工上翻 / 选中时让位、不被拉回。
      * Default off so the pre-change reading behavior is unchanged.
@@ -54,6 +60,9 @@ type ReaderActions = {
     setFoldIntensity: (draft: ReaderState, value: FoldIntensity) => void;
     setFrostedGlass: (draft: ReaderState, value: boolean) => void;
     setBubbles: (draft: ReaderState, value: boolean) => void;
+    setSegmentCards: (draft: ReaderState, value: boolean) => void;
+    setCardCollapseDefault: (draft: ReaderState, value: boolean) => void;
+    setRenderMode: (draft: ReaderState, value: 'native' | 'delegate') => void;
     setPinReasoningBottom: (draft: ReaderState, value: boolean) => void;
     setRailEnabled: (draft: ReaderState, value: boolean) => void;
     setRailSide: (draft: ReaderState, value: 'left' | 'right') => void;

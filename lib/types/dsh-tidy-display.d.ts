@@ -11,6 +11,14 @@ declare module '@deepseek-ai/cordis' {
                 handler: (req: IncomingMessage, res: ServerResponse) => void | Promise<void>;
             }) => () => void;
         };
+        systemPrompt?: {
+            section: (options: {
+                name: string;
+                order?: number;
+                text: string | (() => string);
+            }) => () => void;
+            getSectionOrder?: (key: string) => number | undefined;
+        };
     }
 }
 export declare const name = "dsh-tidy-display";

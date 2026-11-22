@@ -49,6 +49,9 @@ export interface ReaderInjected {
             deliverableOpenMode?: import('./open-file.js').DeliverableOpenMode;
             frostedGlass?: boolean;
             bubbles?: boolean;
+            segmentCards?: boolean;
+            cardCollapseDefault?: boolean;
+            renderMode?: 'native' | 'delegate';
             foldIntensity?: import('./fold-intensity.js').FoldIntensity;
             autoFold?: boolean;
             processOnly?: boolean;
@@ -60,6 +63,9 @@ export interface ReaderInjected {
             setAutoFold?: (value: boolean) => void;
             setFrostedGlass?: (value: boolean) => void;
             setBubbles?: (value: boolean) => void;
+            setSegmentCards?: (value: boolean) => void;
+            setCardCollapseDefault?: (value: boolean) => void;
+            setRenderMode?: (value: 'native' | 'delegate') => void;
             setDeliverableOpenMode?: (value: import('./open-file.js').DeliverableOpenMode) => void;
         };
     };

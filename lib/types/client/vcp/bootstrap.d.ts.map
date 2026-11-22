@@ -1,0 +1,1 @@
+{"version":3,"file":"bootstrap.d.ts","sourceRoot":"","sources":["../../../../src/client/vcp/bootstrap.ts"],"names":[],"mappings":"AAmBA,eAAO,MAAM,cAAc,0CAA0C,CAAA;AAWrE,4CAA4C;AAC5C,wBAAgB,gBAAgB,IAAI,OAAO,CAG1C;AAED,iDAAiD;AACjD,wBAAgB,eAAe,IAAI,IAAI,CAuBtC;AAED,sCAAsC;AACtC,wBAAgB,kBAAkB,IAAI,IAAI,CAIzC;AAED,0BAA0B;AAC1B,wBAAgB,4BAA4B,CAAC,SAAS,EAAE,OAAO,GAAG,MAAM,CAEvE"}
