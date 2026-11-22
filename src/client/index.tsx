@@ -25,6 +25,8 @@ import { ensureGenuiPlateCss } from './genui-plate.js';
 import { setGenuiAssetBase } from '@changfenhuang/dsh-genui/embed';
 import { setSegmentPrefsSnapshot } from './segments/prefs-gate.js';
 import { bootstrapVcpEngine } from './vcp/bootstrap.js';
+import { installRenderDock } from './dock/install.js';
+import type { DockPrefs } from './dock/RenderDock.js';
 import { NS, dictionaries, installTranslate, t } from './locales.js';
 import { softSvc, safeSeat } from './soft-svc.js';
 
@@ -356,5 +358,7 @@ export function apply(ctx: Context): void {
     }, Reader);
     yield installOfficialSlots(ctx);
     yield installReaderEntry(ctx);
+    // 右下角浮动控制簇(body 直挂,双视图常驻;不向 composer 注入任何节点)
+    yield ctx.effect(() => installRenderDock(prefs as unknown as DockPrefs), 'dsh-tidy-display: render dock');
   }));
 }
