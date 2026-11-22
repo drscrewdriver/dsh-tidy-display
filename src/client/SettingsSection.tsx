@@ -179,6 +179,20 @@ export function SettingsSection(props: SettingsProps) {
   const on = mode === 'sidebar';
   const [skill, setSkill] = useState<SkillStatusSnapshot | undefined>();
   const [checking, setChecking] = useState(false);
+  // 共存检测(一次性):window.__DSH_BOOT__.entries 含已加载插件 id
+  // (genui asset-loader 自身即依赖该表)。协议教学统一后建议禁用原插件。
+  const coinstalled = useState(() => {
+    try {
+      const entries = (window as unknown as { __DSH_BOOT__?: { entries?: ReadonlyArray<{ id?: string }> } }).__DSH_BOOT__?.entries;
+      const ids = (entries ?? []).map(e => e.id ?? '').join(' ');
+      return {
+        rawHtmlV2: /raw-html/i.test(ids),
+        genui: /dsh-genui/i.test(ids),
+      };
+    } catch {
+      return { rawHtmlV2: false, genui: false };
+    }
+  })[0];
 
   const recheck = useCallback(async () => {
     setChecking(true);
@@ -295,6 +309,18 @@ export function SettingsSection(props: SettingsProps) {
               onClick={() => { props.prefs.actions.setRenderMode?.('delegate'); }}
             >{text(props, copy, 'renderModeDelegate')}</Chip>
           </div>
+          {(coinstalled.rawHtmlV2 || coinstalled.genui) && (
+            <div className={css.desc} style={{ marginTop: 6 }} data-tidy-display-coexistence-hint>
+              {renderMode === 'native'
+                ? `检测到 ${[coinstalled.rawHtmlV2 ? 'raw-html-v2' : '', coinstalled.genui ? 'genui' : ''].filter(Boolean).join('、')} 插件:原生分段模式自带两套渲染能力,建议禁用它们(统一协议教学,避免双引擎与全局样式冲突)。`
+                : '委托模式依赖 raw-html-v2 已安装并启用。'}
+            </div>
+          )}
+          {renderMode === 'delegate' && !coinstalled.rawHtmlV2 && (
+            <div className={css.desc} style={{ marginTop: 6 }}>
+              委托模式需要 raw-html-v2 已安装并启用,否则 assistant 节点将回退官方渲染。
+            </div>
+          )}
         </div>
       </div>
 

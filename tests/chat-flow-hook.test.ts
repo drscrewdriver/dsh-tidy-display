@@ -41,8 +41,9 @@ test('Reader source keeps the native ChatView chat-flow hook on its column', () 
 test('committed client bundle publishes data-chat-flow for git installs', () => {
   const client = readFileSync(resolve(root, 'lib/client.js'), 'utf8');
   assert.match(client, /"data-chat-flow":\s*""/);
-  const compiled = readFileSync(resolve(root, 'lib/types/client/Reader.js'), 'utf8');
-  assert.match(compiled, /"data-chat-flow":\s*""/);
+  // Reader 模块本体进入交付包(tsc 的 lib/types/*.js 附带发射已停——
+  // embed TS 源需要 allowImportingTsExtensions,发射收敛为 emitDeclarationOnly)
+  assert.match(client, /data-reader-turn/);
 });
 
 test('skin empty-state hide stays off when Reader mounts inside the scrollport', () => {
