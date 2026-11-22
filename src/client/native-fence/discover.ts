@@ -151,12 +151,3 @@ export function resolveFenceKind(body: string, label: string | null, settled: bo
   if (!settled && looksLikeGenuiInProgress(body)) return 'streaming-ui';
   return 'skip';
 }
-
-/** 转义文本容器的结构门:元素自身无块级/交互后代(inline span/strong/em/a/br
- * 不算)——宿主把裸 HTML 转义成段落级可见文本,textContent 即原始 HTML 的逐字
- * 双射;任何块级后代都意味着这不是纯转义文本,接管会丢结构。 */
-const BLOCK_LEVEL_DESCENDANT = 'pre, code, p, div, table, ul, ol, dl, h1, h2, h3, h4, h5, h6, blockquote, hr, img, figure, button, input, textarea, iframe, svg';
-
-export function isTextOnlyContainer(el: Element): boolean {
-  return el.querySelector(BLOCK_LEVEL_DESCENDANT) === null;
-}

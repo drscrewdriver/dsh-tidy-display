@@ -54,9 +54,11 @@ test('native fence channel mounts VCP segments through the shared face', () => {
   assert.match(channel, /createElement\(VcpHtmlSegments, \{/);
 });
 
-test('escaped-text fallback keeps the text-only gate and code-context exclusion', () => {
+test('escaped-text fallback keeps the prefix re-check and code-context exclusion', () => {
   assert.match(channel, /function findEscapedVcpContainers/);
-  assert.match(channel, /!isTextOnlyContainer\(block\) \|\| block\.closest\(CODE_CONTEXT\) !== null/);
+  // 内最过滤:包含其他命中者的祖先容器被丢弃(防吞整个滚动区)
+  assert.match(channel, /qualifying\.filter\(el => !qualifying\.some\(other => other !== el && el\.contains\(other\)\)\)/);
+  assert.match(channel, /!looksLikeVcpHtmlBlock\(rawOf\(block\)\) \|\| block\.closest\(CODE_CONTEXT\) !== null/);
   // 转义文本分支只认 vcp 前缀,不嗅探 JSON(判定在通道 decide,不在 discover)
   assert.match(channel, /if \(textCandidates\.has\(block\)\) return resolveFenceKind\(raw, null, settled\)/);
   const discover = readFileSync(resolve(root, 'src/client/native-fence/discover.ts'), 'utf8');

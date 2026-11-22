@@ -47,5 +47,4 @@ export type FenceKind = 'ui' | 'vcp' | 'streaming-ui' | 'streaming-vcp' | 'skip'
  *   形状;JSON 的严格内容识别需要守卫(非纯),留在通道层。
  */
 export declare function resolveFenceKind(body: string, label: string | null, settled: boolean): FenceKind;
-export declare function isTextOnlyContainer(el: Element): boolean;
 //# sourceMappingURL=discover.d.ts.map

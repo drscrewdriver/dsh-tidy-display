@@ -43,7 +43,6 @@ import { VcpHtmlSegments } from '../markdown/render.js'
 import {
   canonicalJson,
   fenceIdentity,
-  isTextOnlyContainer,
   labelVerdict,
   resolveFenceKind,
   type FenceKind,
@@ -282,33 +281,27 @@ function findFenceCandidates(scope: ParentNode, includeScope = false): HTMLEleme
   return out.sort((left, right) => left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
 }
 
-/** 转义文本容器发现:宿主把裸 HTML 转义成可见文本的块级宿主。便宜的文本前缀
- *  先行,结构门(text-only)与语境排除(非代码/非插件/非 Reader)随后;外层
- *  优先——父块也合格时子块不再入队。发现的容器即标记 textCandidates,drain
- *  与 decide 据此走 vcp 分支。 */
+/** 转义文本容器发现:宿主把裸 HTML 转义成可见文本(与尾随段落混在同一个
+ *  markdown 根 DIV 里,0.2.2-rc.5 活体实测)。目标 = 最内层的前缀命中容器:
+ *  挂载走 VcpHtmlSegments,splitVcpText 会把「卡 + 尾随 markdown」同容器分段
+ *  渲染,内容零丢失;内层过滤丢弃包含其他命中者的祖先容器(防止一路吞到
+ *  滚动区)。发现的容器标记 textCandidates,drain 与 decide 据此走 vcp 分支。 */
 function findEscapedVcpContainers(scope: ParentNode, includeScope = false): HTMLElement[] {
   const self = includeScope && scope instanceof Element ? scope : null
-  const out: HTMLElement[] = []
-  const seen = new Set<HTMLElement>()
+  const qualifying: HTMLElement[] = []
   const pool = [...scope.querySelectorAll<HTMLElement>(TEXT_CONTAINER_SELECTOR)]
   if (self !== null && self.matches(TEXT_CONTAINER_SELECTOR)) pool.unshift(self as HTMLElement)
   for (const el of pool) {
-    if (seen.has(el)) continue
+    if (qualifying.includes(el)) continue
     if (!looksLikeVcpHtmlBlock(el.textContent ?? '')) continue
     if (el.closest(SURFACE_EXCLUDES) !== null) continue
     if (el.closest(CODE_CONTEXT) !== null) continue
     if (closestCodeBlockSurface(el) !== null) continue
-    if (!isTextOnlyContainer(el)) continue
-    let dominated = false
-    for (let anc = el.parentElement; anc !== null; anc = anc.parentElement) {
-      if (seen.has(anc as HTMLElement)) { dominated = true; break }
-    }
-    if (dominated) continue
-    textCandidates.add(el)
-    out.push(el)
-    seen.add(el)
+    qualifying.push(el)
   }
-  return out.sort((left, right) => left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
+  const innermost = qualifying.filter(el => !qualifying.some(other => other !== el && el.contains(other)))
+  for (const el of innermost) textCandidates.add(el)
+  return innermost.sort((left, right) => left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
 }
 
 /** 从文本变更节点向外爬到最外层 text-only 容器(text-only 门天然止步于真正的
@@ -316,17 +309,15 @@ function findEscapedVcpContainers(scope: ParentNode, includeScope = false): HTML
 function nearestEscapedVcpHost(element: Element): HTMLElement | null {
   let host = element.closest(TEXT_CONTAINER_SELECTOR) as HTMLElement | null
   if (host === null) return null
-  for (let hops = 0; hops < 6; hops += 1) {
+  for (let hops = 0; host !== null && hops < 6; hops += 1) {
+    if (host.closest(SURFACE_EXCLUDES) !== null || host.closest(CODE_CONTEXT) !== null) return null
+    if (looksLikeVcpHtmlBlock(host.textContent ?? '')) return host
     const parent: Element | null = host.parentElement
     const next: HTMLElement | null = parent !== null ? (parent.closest(TEXT_CONTAINER_SELECTOR) as HTMLElement | null) : null
-    if (next === null || next === host) break
-    if (next.closest(SURFACE_EXCLUDES) !== null || next.closest(CODE_CONTEXT) !== null) break
-    if (!isTextOnlyContainer(next)) break
+    if (next === null || next === host) return null
     host = next
   }
-  if (host.closest(SURFACE_EXCLUDES) !== null || host.closest(CODE_CONTEXT) !== null) return null
-  if (!isTextOnlyContainer(host)) return null
-  return looksLikeVcpHtmlBlock(host.textContent ?? '') ? host : null
+  return null
 }
 
 /** The owning conversation row (stable per-message identity, fallback chain
@@ -722,9 +713,9 @@ export function installNativeFenceChannel(options: {
       if (block.closest(SURFACE_EXCLUDES) !== null) continue
       const isText = textCandidates.has(block)
       if (isText) {
-        // 转义文本容器:结构门复验(text-only + 非代码语境);失败即放弃,
+        // 转义文本容器:drain 复验(前缀仍在 + 非代码语境);失败即放弃,
         // 原文保持可见(issue #19 同款守卫)。
-        if (!isTextOnlyContainer(block) || block.closest(CODE_CONTEXT) !== null) {
+        if (!looksLikeVcpHtmlBlock(rawOf(block)) || block.closest(CODE_CONTEXT) !== null) {
           textCandidates.delete(block)
           continue
         }
