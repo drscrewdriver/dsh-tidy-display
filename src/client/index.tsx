@@ -23,7 +23,8 @@ import * as React from 'react';
 import { installOfficialSlots, officialChildren, type CompositionRegistry } from './official-slots.js';
 import { ensureGenuiPlateCss } from './genui-plate.js';
 import { setGenuiAssetBase } from '@changfenhuang/dsh-genui/embed';
-import { setSegmentPrefsSnapshot } from './segments/prefs-gate.js';
+import { setSegmentPrefsSnapshot, segmentPrefsSnapshot } from './segments/prefs-gate.js'
+import { installNativeFenceChannel } from './native-fence/channel.js';
 import { bootstrapVcpEngine } from './vcp/bootstrap.js';
 import { installRenderDock } from './dock/install.js';
 import type { DockPrefs } from './dock/RenderDock.js';
@@ -115,6 +116,20 @@ export function apply(ctx: Context): void {
   };
   mirrorSegmentPrefs();
   prefs.subscribe(mirrorSegmentPrefs);
+  // 原生「对话」视图的 dsh-ui 围栏接管通道:Reader 的 mdast 分发只覆盖阅读视图,
+  // 宿主原生渲染器没有官方 code-block 注入点——DOM 接管通道让双视图的卡片渲染一致。
+  // segmentCards 快照是同一总闸(翻转即全量卸载并恢复原代码块)。
+  if (typeof window !== 'undefined') {
+    ctx.effect(() => {
+      const channel = installNativeFenceChannel({ getEnabled: () => segmentPrefsSnapshot().segmentCards });
+      channel.setEnabled(segmentPrefsSnapshot().segmentCards);
+      const unsubscribe = prefs.subscribe(() => channel.setEnabled(segmentPrefsSnapshot().segmentCards));
+      return () => {
+        unsubscribe();
+        channel.dispose();
+      };
+    }, 'dsh-tidy-display: native fence channel');
+  }
   bootstrapVcpEngine();
   // GenUI 懒引擎资产(echarts/mermaid/three/maplibre IIFE)走本插件路由——
   // setGenuiAssetBase 后 window.__DSH_BOOT__ 完全不参与(node 半在 Phase 4 伺服)。

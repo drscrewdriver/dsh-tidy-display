@@ -156,7 +156,7 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
           {(coinstalled.rawHtmlV2 || coinstalled.genui || rawHtmlV2Missing) && (
             <p className={css.hint}>
               {mode === 'native' && (coinstalled.rawHtmlV2 || coinstalled.genui)
-                ? `检测到 ${[coinstalled.rawHtmlV2 ? 'raw-html-v2' : '', coinstalled.genui ? 'genui' : ''].filter(Boolean).join('、')}:原生分段已内置其能力,建议禁用原插件。`
+                ? `检测到 ${[coinstalled.rawHtmlV2 ? 'raw-html-v2' : '', coinstalled.genui ? 'genui' : ''].filter(Boolean).join('、')}:dsh-ui 围栏已由本插件双视图接管(genui 已接管的围栏自动让位),建议禁用原插件(教学统一、免双引擎)。`
                 : ''}
               {rawHtmlV2Missing ? '委托模式需要 raw-html-v2 已安装并启用。' : ''}
             </p>

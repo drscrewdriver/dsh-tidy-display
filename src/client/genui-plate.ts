@@ -23,7 +23,7 @@ export function ensureGenuiPlateCss(): void {
   injected = true;
   const style = document.createElement('style');
   style.textContent = `
-.genui-dom-fence {
+.genui-dom-fence, .tidy-dom-fence {
   box-sizing: border-box;
   background:
     linear-gradient(color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent), color-mix(in srgb, var(--dsw-alias-bg-base, #fff) 76%, transparent)),
@@ -34,7 +34,7 @@ export function ensureGenuiPlateCss(): void {
   padding: 10px 14px;
   margin: 8px 0;
 }
-[data-reader-answer] .genui-dom-fence {
+[data-reader-answer] .genui-dom-fence, [data-reader-answer] .tidy-dom-fence {
   background: none;
   background-color: transparent;
   border: none;

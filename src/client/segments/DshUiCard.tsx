@@ -20,6 +20,10 @@ export interface DshUiCardProps {
   streaming: boolean
   /** Stable per-message-position key; doubles as the GenuiBlock stateKey. */
   segKey: string
+  /** Render surface owning the card — namespaces the durable interaction
+   * stateKey so the Reader (`reader:`) and the native-view DOM channel
+   * (`native:`) never share persisted component state. Defaults to `reader`. */
+  channel?: string
 }
 
 function parseFenceJson(raw: string): { ok: true; value: unknown } | { ok: false; reason: string } {
@@ -34,7 +38,7 @@ function parseFenceJson(raw: string): { ok: true; value: unknown } | { ok: false
   }
 }
 
-export const DshUiCard = memo(function DshUiCard({ raw, streaming, segKey }: DshUiCardProps) {
+export const DshUiCard = memo(function DshUiCard({ raw, streaming, segKey, channel = 'reader' }: DshUiCardProps) {
   const collapseDefault = segmentPrefsSnapshot().cardCollapseDefault
 
   if (streaming) {
@@ -74,7 +78,7 @@ export const DshUiCard = memo(function DshUiCard({ raw, streaming, segKey }: Dsh
   return (
     <SegmentCard label="GenUI 组件" badge={`${items} 组件`}>
       <GenuiErrorBoundary>
-        <GenuiBlock spec={result.spec} stateKey={`reader:${segKey}`} />
+        <GenuiBlock spec={result.spec} stateKey={`${channel}:${segKey}`} />
       </GenuiErrorBoundary>
     </SegmentCard>
   )

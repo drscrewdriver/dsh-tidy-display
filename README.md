@@ -53,12 +53,12 @@
 ## 功能
 
 ### 分段卡片渲染（0.5.0 新增 · 吸收 dsh-genui × dsh-raw-html-v2）
-- **按段分发**：`​```dsh-ui` 组件围栏 → GenUI 交互组件（经 [`@changfenhuang/dsh-genui/embed`](https://github.com/omdsh-dev/dsh-genui) 官方嵌入入口，60+ 组件、交互状态按消息位置持久化）；行首 `<div id="vcp-root">` 裸 HTML → VCP 引擎视觉卡片（v1 引擎整体移植：流式增量 / 作用域化 / 字体锁权 / 自愈层）；`​```html` 围栏误包裹的卡同样容错渲染；`​```mcp-app` 沙箱通道不变
+- **双视图按段分发**：`​```dsh-ui` 组件围栏 → GenUI 交互组件（经 [`@changfenhuang/dsh-genui/embed`](https://github.com/omdsh-dev/dsh-genui) 官方嵌入入口，60+ 组件、交互状态按消息位置持久化）——阅读视图走 mdast 分发，原生「对话」视图走 DOM 接管通道（0.5.0-rc.2：宿主渲染器无官方 code-block 注入点，观测器 + 先挂后藏 + 修复手术，移植自 dsh-genui MIT 通道并精简）；行首 `<div id="vcp-root">` 裸 HTML → VCP 引擎视觉卡片（v1 引擎整体移植：流式增量 / 作用域化 / 字体锁权 / 自愈层；**阅读视图专属**——原生视图宿主对裸 HTML 消毒，无 DOM 可接管）；`​```html` 围栏误包裹的卡同样容错渲染；`​```mcp-app` 沙箱通道不变
 - **不裸撒**：解析失败 / 校验未过 / 引擎缺失的段一律折叠为标题卡 + 源码（可展开），JSON 花括号与标签乱撒从此绝迹
 - **沙箱承接**：含 `<script>` 的 VCP 卡自动改走沙箱 iframe 渲染——主页面上下文永不执行模型 JS（不移植原版"可信模式 eval"）
 - **统一协议教学**：单一 systemPrompt 段按「通道路由表」教模型选型（结构化数据 → dsh-ui / 自由视觉容器 → VCP / 复杂应用 → mcp-app），消解两套原教学的六域冲突（表格归属 / 工具纪律 / 交付全称等）；教学开关（dsh-ui / VCP）持久化于 `~/.dsh/dsh-tidy-display-protocol.json`，关闭 = 不教新卡、历史卡照常渲染
 - **右下角浮动控制簇**：渲染模式 / 分段 / 折叠三胶囊直切 + ⚙ 面板（协议教学开关、共存检测提示），双视图常驻、不碰输入框
-- **共存策略**：`renderMode=delegate` 恢复旧整节点委托；`native`（默认）下本插件原生分段，检测到 raw-html-v2 / genui 在场时建议禁用（教学统一、免双引擎）
+- **共存策略**：`renderMode=delegate` 恢复旧整节点委托；`native`（默认）下本插件双视图接管 dsh-ui 围栏，检测到 raw-html-v2 / genui 在场时建议禁用（教学统一、免双引擎；genui 已接管的围栏本插件自动让位）
 
 ### 阅读视图（来自 better-display）
 - 执行过程收拢为可展开的摘要，最终回答以**消息气泡**呈现（半透明底 + 可选毛玻璃，透出皮肤壁纸）

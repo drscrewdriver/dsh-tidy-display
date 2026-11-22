@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0-rc.2 — 2026-11-22(feature/segmented-rendering 分支)
+
+- **原生「对话」视图 dsh-ui 围栏接管通道**。rc.1 的分段渲染只覆盖阅读视图(mdast 分发);宿主原生渲染器没有官方 code-block 注入点,原生对话里 ` ```dsh-ui ` 围栏只能裸落代码块——genui/raw-html-v2 禁用后此缺口成为双视图回退。现移植 dsh-genui 的 DOM 接管通道(MIT,见 THIRD_PARTY_NOTICES)并精简:`MutationObserver`(body subtree + characterData)+ 1s 兜底轮询 + 行轮转网;发现走宿主稳定类 `.md-code-block` + `label+pre` 结构兜底;**先挂后藏**(issue #19 守卫,挂载失败绝不遮答案)+ 观察器微任务修复手术(容器重挂/隐藏重置/被清容器重建);身份 `dom:<anchor-key>:<ordinal>` 经 `native:` 前缀分键交互状态。渲染统一走自有 `DshUiCard`(SegmentCard 外观/校验失败折叠/折叠偏好与阅读视图同款)。无标签围栏在 settle 期经 embed 守卫**严格内容识别**(归一化前后不等即拒绝——普通 json 永不被劫持,genui #258 口径);流式期 spec 形状即换占位卡(与 Reader streaming 契约一致;不移植部分组件解析,单渲染路径,精简偏离记录在案)。`segmentCards` 为同一总闸,翻转即全量卸载并恢复原代码块;Reader 子树与 genui 自有通道(`data-genui-rendered`)共存让位。VCP 卡仍为阅读视图专属(原生视图宿主对裸 HTML 消毒,无 DOM 可接管,后置另立项)。
+- dock 共存提示文案随接管生效修订;`DshUiCard` stateKey 前缀参数化(`reader:`/`native:`);genui-plate CSS 扩展覆盖 `.tidy-dom-fence`。
+- 工程测试:discover 纯函数 5 例 + 通道契约 4 例(先挂后藏顺序/共存排除/状态分键/总闸接线)。
+
 ## 0.5.0 — 2026-11-22(feature/segmented-rendering 分支)
 
 - **分段分发渲染层(吸收 dsh-genui 与 dsh-raw-html-v2 的核心能力,本仓原生实现)**。此前两协议在同一份回复流里互相打架:raw-html-v2 开启时 dsh-ui 围栏以 JSON 花括号裸奔、关闭时 vcp-root 裸 HTML 标签乱撒。现阅读视图按段分发:md 走原管线、` ```dsh-ui ` 围栏走 GenUI 渲染、行首 `<div id="vcp-root">` 裸 HTML 与 ` ```html ` 围栏包裹卡走 VCP 引擎,`mcp-app` 通道不变。不可渲染段(解析失败/引擎缺失)一律折叠为标题卡+源码,绝不裸撒。
