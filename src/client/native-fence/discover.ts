@@ -4,11 +4,13 @@
  *
  * Ported (MIT; credited in THIRD_PARTY_NOTICES.md) from
  * `@changfenhuang/dsh-genui` `src/shared/fence-language.ts` and
- * `src/client/dom-fence.tsx`, slimmed to the dsh-ui-only channel this plugin
+ * `src/client/dom-fence.tsx`, slimmed to the dsh-ui/vcp channels this plugin
  * runs in the native conversation view. The DOM-walking half of discovery
  * lives in `channel.ts`; everything whose input is a string or number sits
  * here.
  */
+import { looksLikeVcpHtmlBlock } from '../segments/segment-decide.js'
+import { stripFenceWrapper } from '../vcp/segmentation.js'
 
 /** 围栏开头的 `dsh-ui` 标签可能被带上尾部标点(```dsh-ui> / ```dsh-ui` 这类手滑),
  * 也可能写成无连字符别名 `dshui`。这类标记在宿主 DOM/mdast 里原样保留,严格相等
@@ -107,4 +109,47 @@ export function canonicalJson(value: unknown): string {
     return `{${entries.join(',')}}`;
   }
   return JSON.stringify(value);
+}
+
+/** 通道接管面——kind 决定挂载组件与流式语义。 */
+export type FenceKind =
+  | 'ui'            // settled dsh-ui → DshUiCard(全量解析,失败走校验折叠)
+  | 'vcp'           // settled vcp 卡/页面 → VcpHtmlSegments(全量分段)
+  | 'streaming-ui'  // 流式 dsh-ui → 占位卡(与 Reader streaming 契约一致)
+  | 'streaming-vcp' // 流式 vcp → 流式分段(pending 卡)
+  | 'skip';
+
+/**
+ * 围栏接管判定——Reader(mdast 分发)与原生 DOM 通道共用同一语义来源。
+ *
+ * - 标签 `dsh-ui`(含 `dshui` 别名/尾部标点)→ dsh-ui 通道;
+ * - 标签 `html` → 围栏体剥壳后以 vcp-root 卡/整页文档开头才接管(普通
+ *   ```html 代码块绝不劫持);
+ * - 其他已知语言(json/python/…)→ skip:内容嗅探被标签短路(genui #258);
+ * - 无标签(宿主隐去未知语言/本地化通用横幅/转义文本容器)→ settle 期认
+ *   vcp 前缀,流式期认 vcp 前缀与 dsh-ui JSON 形状;JSON 的严格内容识别
+ *   需要守卫(非纯),留在通道层。
+ */
+export function resolveFenceKind(body: string, label: string | null, settled: boolean): FenceKind {
+  if (label !== null && label !== '') {
+    const norm = normalizeFenceLanguage(label).toLowerCase();
+    if (norm === 'dsh-ui' || norm === 'dshui') return settled ? 'ui' : 'streaming-ui';
+    if (norm === 'html') {
+      return looksLikeVcpHtmlBlock(stripFenceWrapper(body)) ? (settled ? 'vcp' : 'streaming-vcp') : 'skip';
+    }
+    return 'skip';
+  }
+  const text = body.trimStart();
+  if (looksLikeVcpHtmlBlock(text)) return settled ? 'vcp' : 'streaming-vcp';
+  if (!settled && looksLikeGenuiInProgress(body)) return 'streaming-ui';
+  return 'skip';
+}
+
+/** 转义文本容器的结构门:元素自身无块级/交互后代(inline span/strong/em/a/br
+ * 不算)——宿主把裸 HTML 转义成段落级可见文本,textContent 即原始 HTML 的逐字
+ * 双射;任何块级后代都意味着这不是纯转义文本,接管会丢结构。 */
+const BLOCK_LEVEL_DESCENDANT = 'pre, code, p, div, table, ul, ol, dl, h1, h2, h3, h4, h5, h6, blockquote, hr, img, figure, button, input, textarea, iframe, svg';
+
+export function isTextOnlyContainer(el: Element): boolean {
+  return el.querySelector(BLOCK_LEVEL_DESCENDANT) === null;
 }

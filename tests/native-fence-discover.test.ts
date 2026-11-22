@@ -7,6 +7,7 @@ import {
   labelVerdict,
   looksLikeGenuiInProgress,
   normalizeFenceLanguage,
+  resolveFenceKind,
 } from '../src/client/native-fence/discover.js';
 
 test('normalizeFenceLanguage canonicalizes the dsh-ui label', () => {
@@ -72,4 +73,36 @@ test('canonicalJson is key-order-insensitive but array-order-sensitive', () => {
   assert.notEqual(canonicalJson({ type: 'table', headers: ['a'] }), canonicalJson({ type: 'table', columns: ['a'] }));
   assert.notEqual(canonicalJson({ type: 'callout', content: 'x' }), canonicalJson({ type: 'callout', content: 'x', extra: 1 }));
   assert.equal(canonicalJson({ b: 1, a: { d: [2, { c: 1 }] } }), '{"a":{"d":[2,{"c":1}]},"b":1}');
+});
+
+test('resolveFenceKind: labeled dsh-ui routes to the ui channel', () => {
+  assert.equal(resolveFenceKind('{"items":[]}', 'dsh-ui', true), 'ui');
+  assert.equal(resolveFenceKind('{"items":[{"type":"tab', 'dsh-ui', false), 'streaming-ui');
+  assert.equal(resolveFenceKind('{"items":[]}', 'dsh-ui>', true), 'ui');
+  assert.equal(resolveFenceKind('{"items":[]}', 'dshui', true), 'ui');
+});
+
+test('resolveFenceKind: labeled html only for vcp-root cards/pages, never ordinary html', () => {
+  assert.equal(resolveFenceKind('<div id="vcp-root" style="x">…</div>', 'html', true), 'vcp');
+  assert.equal(resolveFenceKind('<div id="vcp-root" style="x">…</div>', 'html', false), 'streaming-vcp');
+  assert.equal(resolveFenceKind('<!doctype html><html><body>…', 'html', true), 'vcp');
+  // 普通 ```html 代码块绝不劫持
+  assert.equal(resolveFenceKind('<p>hello</p>', 'html', true), 'skip');
+  assert.equal(resolveFenceKind('const x = "<div>",', 'html', true), 'skip');
+});
+
+test('resolveFenceKind: other known languages are never content-sniffed', () => {
+  assert.equal(resolveFenceKind('<div id="vcp-root">…</div>', 'json', true), 'skip');
+  assert.equal(resolveFenceKind('{"items":[]}', 'python', true), 'skip');
+});
+
+test('resolveFenceKind: unlabeled settles via vcp prefix, streams via shape', () => {
+  assert.equal(resolveFenceKind('<div id="vcp-root" style="x">…</div>', null, true), 'vcp');
+  assert.equal(resolveFenceKind('<div id="vcp-root" style="x">…</div>', null, false), 'streaming-vcp');
+  assert.equal(resolveFenceKind('{"items":[{"type":"table"}', null, false), 'streaming-ui');
+  // JSON 严格内容识别在通道层(需守卫,非纯),无标签 settle 的 JSON 在此 skip
+  assert.equal(resolveFenceKind('{"items":[]}', null, true), 'skip');
+  assert.equal(resolveFenceKind('plain prose paragraph', null, true), 'skip');
+  // 流式半截 vcp 开标签未成型 → 不猜
+  assert.equal(resolveFenceKind('<div id="vcp-r', null, false), 'skip');
 });

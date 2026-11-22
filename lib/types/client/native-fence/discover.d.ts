@@ -1,14 +1,3 @@
-/**
- * Native-fence discovery helpers — pure functions, no DOM, so node tests
- * exercise them directly.
- *
- * Ported (MIT; credited in THIRD_PARTY_NOTICES.md) from
- * `@changfenhuang/dsh-genui` `src/shared/fence-language.ts` and
- * `src/client/dom-fence.tsx`, slimmed to the dsh-ui-only channel this plugin
- * runs in the native conversation view. The DOM-walking half of discovery
- * lives in `channel.ts`; everything whose input is a string or number sits
- * here.
- */
 /** Normalize a host fence-language label to the GenUI spelling. */
 export declare function normalizeFenceLanguage(lang: string): string;
 /** True when the normalized label names the dsh-ui fence. */
@@ -41,4 +30,19 @@ export declare function fenceIdentity(anchorKey: string, ordinal: number): strin
  * block because a callout carried `tone` before `content`).
  */
 export declare function canonicalJson(value: unknown): string;
+/** 通道接管面——kind 决定挂载组件与流式语义。 */
+export type FenceKind = 'ui' | 'vcp' | 'streaming-ui' | 'streaming-vcp' | 'skip';
+/**
+ * 围栏接管判定——Reader(mdast 分发)与原生 DOM 通道共用同一语义来源。
+ *
+ * - 标签 `dsh-ui`(含 `dshui` 别名/尾部标点)→ dsh-ui 通道;
+ * - 标签 `html` → 围栏体剥壳后以 vcp-root 卡/整页文档开头才接管(普通
+ *   ```html 代码块绝不劫持);
+ * - 其他已知语言(json/python/…)→ skip:内容嗅探被标签短路(genui #258);
+ * - 无标签(宿主隐去未知语言/本地化通用横幅/转义文本容器)→ settle 期认
+ *   vcp 前缀,流式期认 vcp 前缀与 dsh-ui JSON 形状;JSON 的严格内容识别
+ *   需要守卫(非纯),留在通道层。
+ */
+export declare function resolveFenceKind(body: string, label: string | null, settled: boolean): FenceKind;
+export declare function isTextOnlyContainer(el: Element): boolean;
 //# sourceMappingURL=discover.d.ts.map

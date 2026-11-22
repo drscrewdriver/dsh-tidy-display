@@ -358,8 +358,10 @@ function renderRemainderMarkdown(text: string): ReactNode {
   )
 }
 
-/** mdast html 块内的 vcp/page 分段:卡段进 VcpSegmentCard,余文走嵌套静态渲染。 */
-function VcpHtmlSegments(props: { value: string; baseKey: string; streaming: boolean }): ReactNode {
+/** mdast html 块内的 vcp/page 分段:卡段进 VcpSegmentCard,余文走嵌套静态渲染。
+ *  同时是原生对话视图 DOM 通道(native-fence/channel)的挂载面——围栏体/转义文本
+ *  从这里进同一份分段渲染,双视图共用一段代码。 */
+export function VcpHtmlSegments(props: { value: string; baseKey: string; streaming: boolean }): ReactNode {
   const { value, baseKey, streaming } = props
   const segs = splitVcpText(value)
   if (segs.length === 1 && segs[0].type === 'md') {

@@ -34,11 +34,20 @@
  * the model can only author fence text, and unrenderable bodies keep their
  * host form (labeled ones inside the fold's source view).
  */
-import { createElement } from 'react'
+import { createElement, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { processGenuiSpec } from '@changfenhuang/dsh-genui/embed'
 import { DshUiCard } from '../segments/DshUiCard.js'
-import { canonicalJson, fenceIdentity, labelVerdict, looksLikeGenuiInProgress } from './discover.js'
+import { looksLikeVcpHtmlBlock } from '../segments/segment-decide.js'
+import { VcpHtmlSegments } from '../markdown/render.js'
+import {
+  canonicalJson,
+  fenceIdentity,
+  isTextOnlyContainer,
+  labelVerdict,
+  resolveFenceKind,
+  type FenceKind,
+} from './discover.js'
 
 /** Marker attribute set on blocks this channel has taken over (own namespace —
  * never touch genui's marker, and vice versa). */
@@ -106,7 +115,16 @@ interface Mount {
   block: HTMLElement
   lastRaw: string
   lastSettled: boolean
+  kind: FenceKind
+  /** fence = 围栏代码块面(body 在 pre 内);text = 转义文本容器(textContent 双射)。 */
+  surface: 'fence' | 'text'
 }
+
+/** 转义文本容器候选标记——与围栏候选共用 pending 队列,门与判定分开。 */
+const textCandidates = new WeakSet<Element>()
+
+/** 转义文本容器的候选元素面(便宜的选择器;结构门在扫描期做)。 */
+const TEXT_CONTAINER_SELECTOR = 'p, div, li, td, th, span'
 
 export interface NativeFenceChannel {
   setEnabled(on: boolean): void
@@ -166,10 +184,24 @@ function infostringOf(block: Element): boolean {
   return false
 }
 
-/** 读取宿主代码块中的围栏正文(pre 内全部文本)。 */
+/** The banner label's raw text — the first leaf element outside the code body
+ * (banners always lead with the language; '' when the host hides it or
+ * localizes it to a generic word). */
+function bannerLabelOf(block: Element): string {
+  const pre = block.querySelector('pre')
+  for (const el of block.querySelectorAll('*')) {
+    if (el.childElementCount !== 0) continue
+    if (pre !== null && pre.contains(el)) continue
+    return el.textContent?.trim() ?? ''
+  }
+  return ''
+}
+
+/** 读取宿主代码块中的围栏正文(pre 内全部文本);转义文本容器(无 pre)读
+ *  textContent——React 转义在 textContent 层对原始 HTML 逐字双射。 */
 function rawOf(block: Element): string {
   const pre = block.querySelector('pre')
-  if (pre === null) return ''
+  if (pre === null) return block.textContent ?? ''
   let text = ''
   for (const node of pre.childNodes) {
     text += node.textContent ?? ''
@@ -248,6 +280,53 @@ function findFenceCandidates(scope: ParentNode, includeScope = false): HTMLEleme
     seen.add(surface)
   }
   return out.sort((left, right) => left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
+}
+
+/** 转义文本容器发现:宿主把裸 HTML 转义成可见文本的块级宿主。便宜的文本前缀
+ *  先行,结构门(text-only)与语境排除(非代码/非插件/非 Reader)随后;外层
+ *  优先——父块也合格时子块不再入队。发现的容器即标记 textCandidates,drain
+ *  与 decide 据此走 vcp 分支。 */
+function findEscapedVcpContainers(scope: ParentNode, includeScope = false): HTMLElement[] {
+  const self = includeScope && scope instanceof Element ? scope : null
+  const out: HTMLElement[] = []
+  const seen = new Set<HTMLElement>()
+  const pool = [...scope.querySelectorAll<HTMLElement>(TEXT_CONTAINER_SELECTOR)]
+  if (self !== null && self.matches(TEXT_CONTAINER_SELECTOR)) pool.unshift(self as HTMLElement)
+  for (const el of pool) {
+    if (seen.has(el)) continue
+    if (!looksLikeVcpHtmlBlock(el.textContent ?? '')) continue
+    if (el.closest(SURFACE_EXCLUDES) !== null) continue
+    if (el.closest(CODE_CONTEXT) !== null) continue
+    if (closestCodeBlockSurface(el) !== null) continue
+    if (!isTextOnlyContainer(el)) continue
+    let dominated = false
+    for (let anc = el.parentElement; anc !== null; anc = anc.parentElement) {
+      if (seen.has(anc as HTMLElement)) { dominated = true; break }
+    }
+    if (dominated) continue
+    textCandidates.add(el)
+    out.push(el)
+    seen.add(el)
+  }
+  return out.sort((left, right) => left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
+}
+
+/** 从文本变更节点向外爬到最外层 text-only 容器(text-only 门天然止步于真正的
+ *  文本宿主——含块级后代的包装层过不了门),前缀命中才返回。 */
+function nearestEscapedVcpHost(element: Element): HTMLElement | null {
+  let host = element.closest(TEXT_CONTAINER_SELECTOR) as HTMLElement | null
+  if (host === null) return null
+  for (let hops = 0; hops < 6; hops += 1) {
+    const parent: Element | null = host.parentElement
+    const next: HTMLElement | null = parent !== null ? (parent.closest(TEXT_CONTAINER_SELECTOR) as HTMLElement | null) : null
+    if (next === null || next === host) break
+    if (next.closest(SURFACE_EXCLUDES) !== null || next.closest(CODE_CONTEXT) !== null) break
+    if (!isTextOnlyContainer(next)) break
+    host = next
+  }
+  if (host.closest(SURFACE_EXCLUDES) !== null || host.closest(CODE_CONTEXT) !== null) return null
+  if (!isTextOnlyContainer(host)) return null
+  return looksLikeVcpHtmlBlock(host.textContent ?? '') ? host : null
 }
 
 /** The owning conversation row (stable per-message identity, fallback chain
@@ -329,22 +408,33 @@ export function installNativeFenceChannel(options: {
     console.warn(`[dsh-tidy-display] ${message}`)
   }
 
-  /** Takeover decision for one candidate. */
-  function decide(block: Element, raw: string, settled: boolean): 'card' | 'streaming' | 'skip' {
+  /** Takeover decision for one candidate. Surface comes from the discovery
+   * feed: fence surfaces resolve through banner labels / content recognition,
+   * escaped-text containers through the vcp prefix only (their textContent is
+   * not fence semantics — a JSON card escaped into prose is not taken over). */
+  function decide(block: Element, raw: string, settled: boolean): FenceKind | 'skip' {
     if (raw.trim() === '') return 'skip'
-    if (infostringOf(block)) return settled ? 'card' : 'streaming'
-    // Unlabeled (host hid the language or localized the banner): content
-    // decides — spec shape during streaming, strict recognition at settle.
-    if (!settled) return looksLikeGenuiInProgress(raw) ? 'streaming' : 'skip'
-    return contentRecognized(raw) ? 'card' : 'skip'
+    if (textCandidates.has(block)) return resolveFenceKind(raw, null, settled)
+    const label = bannerLabelOf(block)
+    if (label !== '') return resolveFenceKind(raw, label, settled)
+    // 无标签围栏(宿主隐去未知语言/本地化横幅):settle 先认 vcp 前缀,再走
+    // dsh-ui 严格内容识别;流式期认 vcp 前缀与 JSON 形状。
+    const prefixed = resolveFenceKind(raw, null, settled)
+    if (prefixed !== 'skip') return prefixed
+    if (settled) return contentRecognized(raw) ? 'ui' : 'skip'
+    return 'skip'
   }
 
-  /** Stable one-based ordinal among settled dsh-ui fences in this row. */
+  /** Stable one-based ordinal among settled takeover-eligible segments in
+   * this row — dsh-ui fences, vcp fences and escaped-text cards share one
+   * ordinal space so interaction identities never collide. */
   function ordinalInRow(row: Element, block: Element): number {
     let index = 0
-    for (const candidate of findFenceCandidates(row)) {
+    const rows = [...findFenceCandidates(row), ...findEscapedVcpContainers(row)]
+      .sort((left, right) => left.compareDocumentPosition(right) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
+    for (const candidate of rows) {
       if (!isSettled(candidate)) continue
-      if (!infostringOf(candidate) && !contentRecognized(rawOf(candidate))) continue
+      if (decide(candidate, rawOf(candidate), true) === 'skip') continue
       index += 1
       if (candidate === block) return index
     }
@@ -374,21 +464,33 @@ export function installNativeFenceChannel(options: {
   }
 
   /** Render (or refresh) one takeover. `mount` present = re-render in place. */
-  function renderMount(block: HTMLElement, mount: Mount, raw: string, settled: boolean): void {
-    const node = createElement(DshUiCard, {
-      raw,
-      streaming: !settled,
-      segKey: identityOf(block),
-      channel: 'native',
-    })
+  function renderMount(block: HTMLElement, mount: Mount, raw: string, settled: boolean, kind: FenceKind): void {
+    let node: ReactNode
+    if (kind === 'ui' || kind === 'streaming-ui') {
+      node = createElement(DshUiCard, {
+        raw,
+        streaming: !settled,
+        segKey: identityOf(block),
+        channel: 'native',
+      })
+    } else {
+      // 'vcp' | 'streaming-vcp':围栏体与转义文本都交给同一份分段渲染
+      // (splitVcpText 对裸卡/围栏包裹卡/pending 半截卡均有既定语义)。
+      node = createElement(VcpHtmlSegments, {
+        value: raw,
+        baseKey: identityOf(block),
+        streaming: !settled,
+      })
+    }
     mount.root.render(node)
     mount.lastRaw = raw
     mount.lastSettled = settled
+    mount.kind = kind
   }
 
   /** Fresh container + fresh root for a mount whose container the host wiped
    * (the old root's fiber bookkeeping points at removed nodes). */
-  function rebuildMount(block: HTMLElement, mount: Mount, raw: string, settled: boolean): void {
+  function rebuildMount(block: HTMLElement, mount: Mount, raw: string, settled: boolean, kind: FenceKind): void {
     try {
       mount.root.unmount()
     } catch {
@@ -405,7 +507,7 @@ export function installNativeFenceChannel(options: {
       mount.root = freshRoot
       mount.container = fresh
       containerBlocks.set(fresh, block)
-      renderMount(block, mount, raw, settled)
+      renderMount(block, mount, raw, settled, kind)
     } catch (error) {
       fresh.remove()
       block.style.display = ''
@@ -419,8 +521,8 @@ export function installNativeFenceChannel(options: {
     if (block.hasAttribute(PROCESSED)) return
     const settled = isSettled(block)
     const raw = rawOf(block)
-    const decision = decide(block, raw, settled)
-    if (decision === 'skip') return
+    const kind = decide(block, raw, settled)
+    if (kind === 'skip') return
     // Mount FIRST, hide AFTER (issue #19): the stock block is only ever
     // hidden once a successfully mounted replacement stands next to it.
     const container = document.createElement('div')
@@ -431,12 +533,20 @@ export function installNativeFenceChannel(options: {
       root = createRoot(container)
     } catch (error) {
       container.remove()
-      warnOnce(block, `failed to create a React root for a dsh-ui fence (${error instanceof Error ? error.message : String(error)}); keeping the stock code block visible`)
+      warnOnce(block, `failed to create a React root for a fence segment (${error instanceof Error ? error.message : String(error)}); keeping the stock code block visible`)
       return
     }
-    const mount: Mount = { root, container, block, lastRaw: raw, lastSettled: settled }
+    const mount: Mount = {
+      root,
+      container,
+      block,
+      lastRaw: raw,
+      lastSettled: settled,
+      kind,
+      surface: textCandidates.has(block) ? 'text' : 'fence',
+    }
     try {
-      renderMount(block, mount, raw, settled)
+      renderMount(block, mount, raw, settled, kind)
     } catch (error) {
       try {
         root.unmount()
@@ -444,7 +554,7 @@ export function installNativeFenceChannel(options: {
         // Best-effort cleanup; removing the container below restores the DOM.
       }
       container.remove()
-      warnOnce(block, `failed to mount a dsh-ui fence (${error instanceof Error ? error.message : String(error)}); keeping the stock code block visible`)
+      warnOnce(block, `failed to mount a fence segment (${error instanceof Error ? error.message : String(error)}); keeping the stock code block visible`)
       return
     }
     block.style.display = 'none'
@@ -512,20 +622,20 @@ export function installNativeFenceChannel(options: {
       // Re-decide with the current body: settle can promote a streaming
       // placeholder to a card, or RESTORE an unlabeled block that turned out
       // not to be a spec (never an error fold for content we guessed at).
-      const decision = decide(block, raw, settled)
-      if (decision === 'skip') {
+      const kind = decide(block, raw, settled)
+      if (kind === 'skip') {
         unmountBlock(block)
         continue
       }
       if (contentWiped) {
-        rebuildMount(block, mount, raw, settled)
+        rebuildMount(block, mount, raw, settled, kind)
         continue
       }
       try {
-        renderMount(block, mount, raw, settled)
+        renderMount(block, mount, raw, settled, kind)
       } catch (error) {
         unmountBlock(block)
-        warnOnce(block, `failed to re-render a dsh-ui fence (${error instanceof Error ? error.message : String(error)}); restoring the stock code block`)
+        warnOnce(block, `failed to re-render a fence segment (${error instanceof Error ? error.message : String(error)}); restoring the stock code block`)
       }
     }
     // 2. Pre-paint surgery for mounts the host dislodged this frame.
@@ -543,6 +653,12 @@ export function installNativeFenceChannel(options: {
     if (block.hasAttribute(PROCESSED) || queuedCandidates.has(block)) return
     queuedCandidates.add(block)
     pendingCandidates.add(block)
+  }
+
+  /** 转义文本容器入队:标记 surface 并走同一 pending 队列。 */
+  function enqueueTextCandidate(block: Element): void {
+    textCandidates.add(block)
+    enqueueCandidate(block)
   }
 
   /** Turn one changed node into fence candidates, scoped to the change. */
@@ -579,6 +695,7 @@ export function installNativeFenceChannel(options: {
     // Newest first: a transcript-sized target queues the whole conversation
     // at once, and the tail in view has to mount before the scrollback.
     for (let index = candidates.length - 1; index >= 0; index -= 1) enqueueCandidate(candidates[index])
+    for (const container of findEscapedVcpContainers(element, true).reverse()) enqueueTextCandidate(container)
   }
 
   function resolveDirtyTargets(deadline: number): void {
@@ -600,7 +717,18 @@ export function installNativeFenceChannel(options: {
       // Discovery is not a lease: reapply the same local gates immediately
       // before first takeover.
       if (!(block instanceof HTMLElement)) continue
-      if (surfaceRejection(block) !== null) continue
+      if (block.closest(SURFACE_EXCLUDES) !== null) continue
+      const isText = textCandidates.has(block)
+      if (isText) {
+        // 转义文本容器:结构门复验(text-only + 非代码语境);失败即放弃,
+        // 原文保持可见(issue #19 同款守卫)。
+        if (!isTextOnlyContainer(block) || block.closest(CODE_CONTEXT) !== null) {
+          textCandidates.delete(block)
+          continue
+        }
+      } else if (surfaceRejection(block) !== null) {
+        continue
+      }
       mountBlock(block)
     }
   }
@@ -669,6 +797,8 @@ export function installNativeFenceChannel(options: {
     if (scope.closest(IGNORED_MUTATION_SCOPE) !== null) return
     const candidates = findFenceCandidates(scope, true)
     for (let index = candidates.length - 1; index >= 0; index -= 1) enqueueCandidate(candidates[index])
+    const escaped = findEscapedVcpContainers(scope, true)
+    for (let index = escaped.length - 1; index >= 0; index -= 1) enqueueTextCandidate(escaped[index])
   }
 
   function start(): void {
@@ -695,10 +825,18 @@ export function installNativeFenceChannel(options: {
           continue
         }
         markOwnedAncestors(record.target)
-        if (record.type === 'characterData') {
-          markDirty(record.target, false)
-          continue
+      if (record.type === 'characterData') {
+        markDirty(record.target, false)
+        // 转义文本容器:非代码语境的文本增长,最近的块级文本宿主逐字重组——
+        // 便宜前置(textContent 前缀)不过则一次 closest 都不花。
+        const textElement = record.target instanceof Element ? record.target : record.target.parentElement
+        if (textElement !== null && textElement.closest(CODE_CONTEXT) === null
+          && textElement.closest(IGNORED_MUTATION_SCOPE) === null) {
+          const host = nearestEscapedVcpHost(textElement)
+          if (host !== null) enqueueTextCandidate(host)
         }
+        continue
+      }
         if (record.type === 'childList') {
           if (element !== null && (element.tagName === 'SPAN' || element.closest(CODE_CONTEXT) !== null)) {
             markDirty(record.target, false)
@@ -737,6 +875,8 @@ export function installNativeFenceChannel(options: {
     // fire for it. Newest first, so what is in view mounts first.
     const initial = findFenceCandidates(document.body)
     for (let index = initial.length - 1; index >= 0; index -= 1) enqueueCandidate(initial[index])
+    const escaped = findEscapedVcpContainers(document.body)
+    for (let index = escaped.length - 1; index >= 0; index -= 1) enqueueTextCandidate(escaped[index])
     sweep()
   }
 

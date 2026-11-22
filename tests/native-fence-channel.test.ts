@@ -14,7 +14,7 @@ test('native fence channel mounts the replacement BEFORE hiding the stock block'
   const mountIdx = channel.indexOf('function mountBlock(block: HTMLElement): void {');
   assert.ok(mountIdx > 0, 'mountBlock exists');
   const body = channel.slice(mountIdx, channel.indexOf('\n  }\n', mountIdx));
-  const renderIdx = body.indexOf('renderMount(block, mount, raw, settled)');
+  const renderIdx = body.indexOf('renderMount(block, mount, raw, settled');
   const hideIdx = body.indexOf("block.style.display = 'none'");
   assert.ok(renderIdx > 0 && hideIdx > renderIdx, 'render precedes hide inside mountBlock');
 });
@@ -42,4 +42,23 @@ test('native fence channel gates on segmentCards through the install seam', () =
   assert.match(index, /installNativeFenceChannel\(\{ getEnabled: \(\) => segmentPrefsSnapshot\(\)\.segmentCards \}\)/);
   assert.match(index, /channel\.setEnabled\(segmentPrefsSnapshot\(\)\.segmentCards\)/);
   assert.match(channel, /disposed \|\| !running \|\| !getEnabled\(\)/);
+});
+
+test('native fence channel mounts VCP segments through the shared face', () => {
+  // 双视图同一份分段渲染: Reader 的 VcpHtmlSegments 被 native 通道复用
+  const render = readFileSync(resolve(root, 'src/client/markdown/render.tsx'), 'utf8');
+  assert.match(render, /export function VcpHtmlSegments/);
+  assert.match(channel, /import \{ VcpHtmlSegments \} from '\.\.\/markdown\/render\.js'/);
+  // kind 分支:ui/streaming-ui 走 DshUiCard,vcp/streaming-vcp 走 VcpHtmlSegments
+  assert.match(channel, /kind === 'ui' \|\| kind === 'streaming-ui'/);
+  assert.match(channel, /createElement\(VcpHtmlSegments, \{/);
+});
+
+test('escaped-text fallback keeps the text-only gate and code-context exclusion', () => {
+  assert.match(channel, /function findEscapedVcpContainers/);
+  assert.match(channel, /!isTextOnlyContainer\(block\) \|\| block\.closest\(CODE_CONTEXT\) !== null/);
+  // 转义文本分支只认 vcp 前缀,不嗅探 JSON(判定在通道 decide,不在 discover)
+  assert.match(channel, /if \(textCandidates\.has\(block\)\) return resolveFenceKind\(raw, null, settled\)/);
+  const discover = readFileSync(resolve(root, 'src/client/native-fence/discover.ts'), 'utf8');
+  assert.match(discover, /export function resolveFenceKind\(body: string, label: string \| null, settled: boolean\)/);
 });

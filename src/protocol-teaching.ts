@@ -38,7 +38,7 @@ const DSH_UI_CHANNEL = `【dsh-ui 组件通道】(结构化数据与交互)
 - 不索取密码/API Key/Token/恢复码。`
 
 const VCP_CHANNEL = `【VCP 视觉卡片通道】(仅自由视觉容器:装帧封面/杂志排版/情绪卡片/终端风/数据大屏美化)
-- 视觉内容直接输出裸 HTML 到正文;根容器 <div id="vcp-root">(id 非 class——渲染层按 id 作用域化);严禁 \`\`\`html 围栏包裹、严禁缩进成代码块;严禁写 .html 文件交付。
+- 视觉内容输出为 \`\`\`html 围栏,围栏体内以根容器 <div id="vcp-root"> 开头(id 非 class——渲染层剥壳按 id 作用域化);裸 HTML 直写正文会被宿主原生视图转义成文字,严禁;严禁缩进成代码块;严禁写 .html 文件交付。
 - 开标签只放短关键值:背景色/字色/字号,font-family 必须内联在根开标签;长样式(渐变/圆角/布局/行高)全部进 <style> 的 #vcp-root 前缀规则;选择器一律以 #vcp-root 前缀书写。
 - 卡内无空行(\\n\\n),<style> 内无空行;无 backdrop-filter;禁 flex-wrap:wrap 与 margin:0 auto(流式防抖);CSS ≤200 行、类选择器 ≤12;入场动画只用 opacity 淡入;SVG 必带 width/height+viewBox;HTML 语境用 <img>,不解析 Markdown;代码展示用 <pre><code> 且尖括号必须转义(&lt; &gt;)。
 - 交互仅限 onclick="input('…')"(回填输入框,由用户手动发送,不自动发送);禁 <script>/外链脚本(带脚本的卡会整体转沙箱渲染,主上下文不执行)。
@@ -63,7 +63,7 @@ export function buildSegmentTeaching(
   }
   const router: string[] = []
   router.push('- 结构化数据与交互(表格/对比/筛选/表单/quiz/步骤/图表/面板)→ ```dsh-ui JSON 围栏——数据表格一律走这里,不要手写 HTML 表格。')
-  if (vcp) router.push('- 自由视觉容器(装帧封面/杂志排版/情绪卡片/终端风/大屏美化)→ 正文直出 VCP 裸 HTML 卡(见 VCP 通道)。')
+  if (vcp) router.push('- 自由视觉容器(装帧封面/杂志排版/情绪卡片/终端风/大屏美化)→ ```html 围栏包裹的 VCP 卡(见 VCP 通道)。')
   router.push('- 完整交互应用/原型(复杂 JS 逻辑的多步应用)→ ```mcp-app 围栏(沙箱渲染)。')
   router.push('- 一两句能说清的小事 → 纯 Markdown。就近选择即可;选得不够精确也会被正确渲染,不要为选择写论证。')
   const skillNote = options.hasSkillTool === true

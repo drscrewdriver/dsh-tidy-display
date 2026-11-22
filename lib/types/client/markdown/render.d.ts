@@ -110,6 +110,14 @@ export declare function renderBlocks(blocks: readonly PositionedBlock[], context
  * @returns The interleaved children.
  */
 export declare function wrapBlockChildren(elements: readonly ReactNode[], edges: boolean): ReactNode[];
+/** mdast html 块内的 vcp/page 分段:卡段进 VcpSegmentCard,余文走嵌套静态渲染。
+ *  同时是原生对话视图 DOM 通道(native-fence/channel)的挂载面——围栏体/转义文本
+ *  从这里进同一份分段渲染,双视图共用一段代码。 */
+export declare function VcpHtmlSegments(props: {
+    value: string;
+    baseKey: string;
+    streaming: boolean;
+}): ReactNode;
 /**
  * Render the trailing footnote section for every footnote referenced during
  * the pass, in first-reference order, with one plain-text back-reference
