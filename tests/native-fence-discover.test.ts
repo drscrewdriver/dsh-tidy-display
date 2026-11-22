@@ -96,6 +96,18 @@ test('resolveFenceKind: other known languages are never content-sniffed', () => 
   assert.equal(resolveFenceKind('{"items":[]}', 'python', true), 'skip');
 });
 
+test('resolveFenceKind: localized generic banners fall through to content (#258 实测踩实)', () => {
+  // 0.2.2-rc.5 宿主对未知语言渲染「代码块」横幅——呈现文案不是语义,
+  // 必须落回内容判定:这曾让整条通道 12 个候选全部 skip(marked=0)
+  assert.equal(resolveFenceKind('<div id="vcp-root" style="x">…</div>', '代码块', true), 'vcp');
+  assert.equal(resolveFenceKind('<div id="vcp-root" style="x">…</div>', 'Code', false), 'streaming-vcp');
+  assert.equal(resolveFenceKind('{"items":[{"type":"table"}', '代码块', false), 'streaming-ui');
+  // JSON 严格识别仍在通道;判定层对 generic+settle+JSON 保持 skip
+  assert.equal(resolveFenceKind('{"items":[]}', '代码块', true), 'skip');
+  // known 真语言照旧短路
+  assert.equal(resolveFenceKind('<div id="vcp-root">…</div>', 'json', true), 'skip');
+});
+
 test('resolveFenceKind: unlabeled settles via vcp prefix, streams via shape', () => {
   assert.equal(resolveFenceKind('<div id="vcp-root" style="x">…</div>', null, true), 'vcp');
   assert.equal(resolveFenceKind('<div id="vcp-root" style="x">…</div>', null, false), 'streaming-vcp');

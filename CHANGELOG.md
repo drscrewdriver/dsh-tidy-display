@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.2 — 2026-11-23(main)
+
+- **修复:本地化通用横幅词让原生通道全军覆没(0.5.1 实测,marked=0 的根因)**。宿主 0.2.2-rc.5 对不认识的语言(dsh-ui/html 围栏、裸 HTML 转义块)渲染本地化横幅「代码块」——判定链把非空横幅一律当真语言走标签路径,`代码块` 既非 dsh-ui 亦非 html → 12 个候选全部 skip,原生视图 dsh-ui 与 VCP 一起停止接管(genui #258 同款,移植时带了判定集却没接进决策链)。现 `resolveFenceKind` 内置横幅裁决:generic 词(代码块/Code/«Код»…)落回内容识别(vcp 前缀 / JSON 严格识别),known 真语言照旧短路且绝不嗅探;contentRecognized 兜底同步收紧为仅 generic/无标签横幅可进(`​```json` 块不被劫持)。宿主横幅词是无界集合,白名单反转判定是唯一稳态。
+
 ## 0.5.1 — 2026-11-23(main)
 
 - **原生「对话」视图 VCP 卡覆盖(补齐 0.5.0 的文档化边界)**。0.5.0 的分段渲染在原生视图只接管了 dsh-ui 围栏;裸 HTML 的 vcp-root 卡在原生视图被宿主渲染器转义成可见文本(无卡 DOM 可接管)。三条路补齐:①**协议教学翻转**——VCP 通道改为 ` ```html ` 围栏交付(围栏体内以 `<div id="vcp-root">` 开头;裸 HTML 直写正文会被原生视图转义成文字,严禁),承重铁律逐字保留;Reader 对裸 HTML 直出与围栏两种形态双向容错,历史裸卡零回归。②**原生通道 VCP 分支**——html 标签围栏(剥壳后 vcp 前缀)与无标签围栏的 vcp 前缀兜底,挂载复用 Reader 同一份 `VcpHtmlSegments`(多卡/页面/流式 pending 分段与 Reader 同代码);dsh-ui/vcp 在同一行共享 ordinal 空间,交互身份不冲突。③**转义文本容错**——模型漏围栏直出裸 HTML 时,宿主转义文本的块级宿主(text-only 结构门 + 非代码语境)以 textContent 逐字重建出卡;失败即维持文本,绝不空藏(issue #19 同款守卫)。判定抽纯 `resolveFenceKind`(discover),判定表 + 通道契约测试入列。

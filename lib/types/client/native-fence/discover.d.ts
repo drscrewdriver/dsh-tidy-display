@@ -35,13 +35,16 @@ export type FenceKind = 'ui' | 'vcp' | 'streaming-ui' | 'streaming-vcp' | 'skip'
 /**
  * 围栏接管判定——Reader(mdast 分发)与原生 DOM 通道共用同一语义来源。
  *
- * - 标签 `dsh-ui`(含 `dshui` 别名/尾部标点)→ dsh-ui 通道;
- * - 标签 `html` → 围栏体剥壳后以 vcp-root 卡/整页文档开头才接管(普通
- *   ```html 代码块绝不劫持);
- * - 其他已知语言(json/python/…)→ skip:内容嗅探被标签短路(genui #258);
- * - 无标签(宿主隐去未知语言/本地化通用横幅/转义文本容器)→ settle 期认
- *   vcp 前缀,流式期认 vcp 前缀与 dsh-ui JSON 形状;JSON 的严格内容识别
- *   需要守卫(非纯),留在通道层。
+ * 横幅裁决先行(genui #258 口径,0.5.2 实测踩实):宿主对不认识的语言渲染
+ * 本地化通用横幅(`代码块`/`Code`/«Код»…),这是呈现文案不是语义——generic
+ * 判定落回内容识别;已知真语言(json/python/…)才短路不嗅探。
+ *
+ * - `dsh-ui`(含 `dshui` 别名/尾部标点)→ dsh-ui 通道;
+ * - `html` → 围栏体剥壳后以 vcp-root 卡/整页文档开头才接管(普通 ```html
+ *   代码块绝不劫持);
+ * - 其他已知语言 → skip;
+ * - generic/无标签 → settle 期认 vcp 前缀,流式期认 vcp 前缀与 dsh-ui JSON
+ *   形状;JSON 的严格内容识别需要守卫(非纯),留在通道层。
  */
 export declare function resolveFenceKind(body: string, label: string | null, settled: boolean): FenceKind;
 export declare function isTextOnlyContainer(el: Element): boolean;

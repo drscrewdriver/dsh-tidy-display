@@ -409,19 +409,21 @@ export function installNativeFenceChannel(options: {
   }
 
   /** Takeover decision for one candidate. Surface comes from the discovery
-   * feed: fence surfaces resolve through banner labels / content recognition,
-   * escaped-text containers through the vcp prefix only (their textContent is
-   * not fence semantics — a JSON card escaped into prose is not taken over). */
+   * feed: fence surfaces resolve through banner verdicts / content
+   * recognition, escaped-text containers through the vcp prefix only (their
+   * textContent is not fence semantics — a JSON card escaped into prose is
+   * not taken over). 横幅裁决在 resolveFenceKind 内置:generic 横幅词(宿主
+   * 对未知语言的本地化「代码块」)落回内容识别——0.2.2-rc.5 实测这曾让全部
+   * 候选 skip(genui #258 同款)。 */
   function decide(block: Element, raw: string, settled: boolean): FenceKind | 'skip' {
     if (raw.trim() === '') return 'skip'
     if (textCandidates.has(block)) return resolveFenceKind(raw, null, settled)
     const label = bannerLabelOf(block)
-    if (label !== '') return resolveFenceKind(raw, label, settled)
-    // 无标签围栏(宿主隐去未知语言/本地化横幅):settle 先认 vcp 前缀,再走
-    // dsh-ui 严格内容识别;流式期认 vcp 前缀与 JSON 形状。
-    const prefixed = resolveFenceKind(raw, null, settled)
-    if (prefixed !== 'skip') return prefixed
-    if (settled) return contentRecognized(raw) ? 'ui' : 'skip'
+    const kind = resolveFenceKind(raw, label, settled)
+    if (kind !== 'skip') return kind
+    // 未命中 vcp 前缀的围栏:settle 期 dsh-ui 严格内容识别——仅 generic/无标签
+    // 横幅可进(known 真语言绝不嗅探,#258);流式期不猜。
+    if (settled && labelVerdict(label) !== 'known') return contentRecognized(raw) ? 'ui' : 'skip'
     return 'skip'
   }
 
