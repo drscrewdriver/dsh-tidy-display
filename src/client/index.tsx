@@ -22,6 +22,7 @@ import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import * as React from 'react';
 import { installOfficialSlots, officialChildren, type CompositionRegistry } from './official-slots.js';
 import { ensureGenuiPlateCss } from './genui-plate.js';
+import { setGenuiAssetBase } from '@changfenhuang/dsh-genui/embed';
 import { setSegmentPrefsSnapshot } from './segments/prefs-gate.js';
 import { bootstrapVcpEngine } from './vcp/bootstrap.js';
 import { NS, dictionaries, installTranslate, t } from './locales.js';
@@ -113,6 +114,9 @@ export function apply(ctx: Context): void {
   mirrorSegmentPrefs();
   prefs.subscribe(mirrorSegmentPrefs);
   bootstrapVcpEngine();
+  // GenUI 懒引擎资产(echarts/mermaid/three/maplibre IIFE)走本插件路由——
+  // setGenuiAssetBase 后 window.__DSH_BOOT__ 完全不参与(node 半在 Phase 4 伺服)。
+  setGenuiAssetBase('/tidy-display/assets/genui/');
   installBetterDisplaySettings(ctx, prefs);
   installConfigBridge(ctx, prefs as unknown as Parameters<typeof installConfigBridge>[1]);
   installRailColors({
