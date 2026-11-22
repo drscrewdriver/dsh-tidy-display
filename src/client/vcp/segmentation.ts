@@ -70,7 +70,7 @@ function scanVcpDiv(html: string, openEnd: number): { start: number; end: number
 function findVcpOpen(text: string, from: number): { start: number; end: number } | null {
   const re = /<div\b[^>]*?\bid\s*=\s*["']vcp-root["'][^>]*>/gi
   re.lastIndex = from
-  let m: RegExpExecArray | null = null
+  let m: RegExpExecArray | null
   while ((m = re.exec(text))) {
     const lineStart = text.lastIndexOf('\n', m.index - 1) + 1
     if (/^[ \t]*$/.test(text.slice(lineStart, m.index))) {
@@ -114,7 +114,7 @@ function scanPageEnd(text: string, after: number): number {
 /** 页面样式脱敏:style 内独立 html/body 选择器 → .vcp-page-host(防全局污染)。 */
 export function scopePageCss(html: string): string {
   return String(html || '').replace(/<style\b[^>]*>([\s\S]*?)(?:<\/style>|$)/gi, (all, css: string) => {
-    const fixed = css.replace(/(^|[,}\s>])(html|body)(?=[\s,.#:>\[{])/gi, '$1.vcp-page-host')
+    const fixed = css.replace(/(^|[,}\s>])(html|body)(?=[\s,.#:>{[])/gi, '$1.vcp-page-host')
     return fixed === css ? all : all.replace(css, fixed)
   })
 }
@@ -126,7 +126,7 @@ export function splitMermaidFence(md: string): Array<{ type: 'md'; text: string 
   const t = String(md || '')
   const re = /(^|\n)[ \t]*```[ \t]*mermaid[ \t]*\n([\s\S]*?)\n[ \t]*```[ \t]*(?=\n|$)/gi
   let last = 0
-  let m: RegExpExecArray | null = null
+  let m: RegExpExecArray | null
   while ((m = re.exec(t))) {
     const start = m.index + m[1].length
     if (start > last) out.push({ type: 'md', text: t.slice(last, start) })

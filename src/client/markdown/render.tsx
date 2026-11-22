@@ -27,6 +27,11 @@ import { CodeBlock } from '@deepseek-ai/dsh-client-ui-primitives'
 import { renderTexToReact } from './katex.js'
 import { McpAppCodeBlock, StreamingMcpAppPlaceholder } from '../McpAppFrame.js'
 import { isMcpAppCodeBlock, extractMcpAppTitle, extractMcpAppHeight } from '../mcp-app.js'
+import { DshUiCard } from '../segments/DshUiCard.js'
+import { VcpSegmentCard } from '../segments/VcpSegmentCard.js'
+import { segmentPrefsSnapshot } from '../segments/prefs-gate.js'
+import { splitVcpText, stripFenceWrapper } from '../vcp/segmentation.js'
+import { parseGfmWithMath } from './parse.js'
 import type { MarkdownPathImages } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PositionedBlock } from './incremental.js'
 import css from './MarkdownText.module.css'
@@ -280,9 +285,19 @@ function renderNode(node: Md.RootContent, key: Key, context: MarkdownRenderConte
       }
       return <code key={key}>{content}</code>
     }
-    case 'html':
-      // No HTML parser enters the pipeline: raw HTML stays literal text.
+    case 'html': {
+      // No HTML parser enters the pipeline: raw HTML stays literal text — with
+      // the segmented-rendering exception: a line-start (column 1) vcp-root
+      // card or page document routes to the VCP segment card; inline mentions
+      // and indented blocks keep the literal-text behavior.
+      if (segmentPrefsSnapshot().segmentCards && (node.position?.start.column ?? 2) === 1) {
+        const trimmed = node.value.trimStart()
+        if (VCP_ROOT_OPEN_RE.test(trimmed) || PAGE_OPEN_TRIM_RE.test(trimmed)) {
+          return <VcpHtmlSegments value={node.value} baseKey={`hn:${String(key)}`} streaming={context.streaming === true} />
+        }
+      }
       return context.renderText ? context.renderText(node.value, (context.sourceOffset ?? 0) + (node.position?.start.offset ?? 0)) : node.value
+    }
     case 'code': {
       const code = renderCode(node, key, context)
       return context.renderAtom ? <Fragment key={key}>{context.renderAtom(code, (context.sourceOffset ?? 0) + (node.position?.start.offset ?? 0))}</Fragment> : code
@@ -321,6 +336,59 @@ function renderNode(node: Md.RootContent, key: Key, context: MarkdownRenderConte
   }
 }
 
+/** 分段围栏语言归一:小写 + 剥非字母/连字符(dsh-ui> → dshui、HTML: → html)。 */
+function normalizeSegmentLang(lang: string | null | undefined): string {
+  return String(lang ?? '').trim().toLowerCase().replace(/[^a-z-]/g, '')
+}
+
+const VCP_ROOT_OPEN_RE = /^\s*<div\b[^>]*\bid\s*=\s*["']?vcp-root["']?[^>]*>/i
+const PAGE_OPEN_TRIM_RE = /^\s*(?:<!doctype\s+html\b|<html[\s>])/i
+
+/** 卡后余文的嵌套静态渲染:无空行分隔被吞进同一 html 块的 md 尾部。无 motion
+ *  原子(余文不在源序门内),引用脚注目标独立收集。 */
+function renderRemainderMarkdown(text: string): ReactNode {
+  const root = parseGfmWithMath(text)
+  const targets = createReferenceTargets()
+  collectReferenceTargets(root.children, targets)
+  const context: MarkdownRenderContext = {
+    streaming: false,
+    targets,
+    footnoteOrder: [],
+    footnoteCounts: new Map(),
+    codeLabels: undefined,
+    fileMentions: undefined,
+  }
+  return wrapBlockChildren(
+    renderBlocks(root.children.map((node, index) => ({ node, key: node.position?.start.offset ?? -(index + 1) })), context),
+    false,
+  )
+}
+
+/** mdast html 块内的 vcp/page 分段:卡段进 VcpSegmentCard,余文走嵌套静态渲染。 */
+function VcpHtmlSegments(props: { value: string; baseKey: string; streaming: boolean }): ReactNode {
+  const { value, baseKey, streaming } = props
+  const segs = splitVcpText(value)
+  if (segs.length === 1 && segs[0].type === 'md') {
+    // 识别失败兜底:维持字面文本(调用方已做前缀判定,正常不会到达)
+    return <Fragment key={baseKey}>{value}</Fragment>
+  }
+  return <Fragment key={baseKey}>{segs.map((seg, i) => {
+    const segKey = `${baseKey}:${i}`
+    switch (seg.type) {
+      case 'md':
+        return <Fragment key={segKey}>{renderRemainderMarkdown(seg.text)}</Fragment>
+      case 'vcp':
+        return <VcpSegmentCard key={segKey} html={seg.html} streaming={streaming} segKey={segKey} />
+      case 'pending':
+        return <VcpSegmentCard key={segKey} html={seg.text} streaming segKey={segKey} />
+      case 'page':
+        return <VcpSegmentCard key={segKey} html={seg.html ?? seg.text ?? ''} streaming={streaming} segKey={segKey} page />
+      default:
+        return null
+    }
+  })}</Fragment>
+}
+
 function renderCode(node: Md.Code, key: Key, context: MarkdownRenderContext): ReactNode {
   const language = node.lang ?? undefined
   if (node.value === '') {
@@ -342,6 +410,22 @@ function renderCode(node: Md.Code, key: Key, context: MarkdownRenderContext): Re
       return <StreamingMcpAppPlaceholder key={key} title={title} />
     }
     return <McpAppCodeBlock key={key} html={node.value} title={title} initialHeight={initialHeight} />
+  }
+
+  // 分段分发(开关关 = 现有渲染,回退到下方 math/CodeBlock):
+  // A. dsh-ui 围栏(别名容错:dshui / 尾随标点) → GenUI 卡
+  // B. ```html 围栏包裹的 vcp-root 卡 / 整页(围栏容错,协议教学仍禁止) → VCP 卡
+  if (segmentPrefsSnapshot().segmentCards) {
+    const norm = normalizeSegmentLang(language)
+    if (norm === 'dsh-ui' || norm === 'dshui') {
+      return <DshUiCard raw={node.value} streaming={context.streaming === true} segKey={`ui:${String(key)}`} />
+    }
+    if (norm === 'html') {
+      const inner = stripFenceWrapper(node.value)
+      if (VCP_ROOT_OPEN_RE.test(inner) || PAGE_OPEN_TRIM_RE.test(inner)) {
+        return <VcpHtmlSegments value={inner} baseKey={`vh:${String(key)}`} streaming={context.streaming === true} />
+      }
+    }
   }
 
   if (!context.streaming && lang === 'math') {

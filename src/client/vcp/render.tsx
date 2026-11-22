@@ -32,16 +32,18 @@ interface VcpEngineWindow extends Window {
 export function VcpRootFontGuard(props: { children?: ReactNode }): ReactNode {
   return createElement('div', {
     style: { display: 'contents' },
-    ref: (el: HTMLDivElement | null) => {
+    ref: (el: HTMLDivElement | null): void => {
       if (!el || !el.querySelector) return
       try {
-        const root = el.querySelector('[id^="vcp-msg-"], [id="vcp-root"]')
+        const root = el.querySelector('[id^="vcp-msg-"], [id="vcp-root"]') as HTMLElement | null
         if (!root || !root.style) return
         const fam = root.style.fontFamily
         if (fam && fam.indexOf('!important') === -1 && fam.indexOf('important') === -1) {
           root.style.setProperty('font-family', fam, 'important')
         }
-      } catch {}
+      } catch {
+        // DOM 字体锁权失败不致命:引擎侧 !important 规则仍在
+      }
     },
   }, props.children)
 }
@@ -80,7 +82,7 @@ export function vcpEngineRender(html: string, streaming: boolean, key?: string |
   try {
     // 与 v1 宿主一致的前处理:fixBlank 压缩 vcp-root 内空行 + 前置空行兜底
     if (typeof w.__vcpStable.fixBlank === 'function') {
-      try { rawHtml = w.__vcpStable.fixBlank(rawHtml) } catch {}
+      try { rawHtml = w.__vcpStable.fixBlank(rawHtml) } catch { /* fixBlank 失败按原文渲染 */ }
     }
     el = w.__vcpStable.render(rawHtml, streaming === true)
   } catch (e) {
@@ -92,7 +94,7 @@ export function vcpEngineRender(html: string, streaming: boolean, key?: string |
     vcpDbgLast = nowDbg
     try {
       console.debug('[vcp-tidy-frame] len=' + rawHtml.length + ' streaming=' + (streaming === true) + ' el=' + (el === null || el === undefined ? 'NULL' : 'OK') + ' head=' + rawHtml.slice(0, 60).replace(/\s+/g, ' '))
-    } catch {}
+    } catch { /* 诊断日志失败不影响渲染 */ }
   }
   if (el === null || el === undefined) return null
   if (memoKey) {
@@ -102,7 +104,7 @@ export function vcpEngineRender(html: string, streaming: boolean, key?: string |
         const it = vcpSettleMemo.keys().next()
         if (!it.done) vcpSettleMemo.delete(it.value)
       }
-    } catch {}
+    } catch { /* memo 写入失败只损失零闪优化 */ }
   }
   return createElement(VcpRootFontGuard, { key: key as never }, el as ReactNode)
 }

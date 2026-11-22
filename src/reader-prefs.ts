@@ -10,6 +10,12 @@ export interface ReaderConfig {
 	foldIntensity: 0 | 1 | 2;
 	frostedGlass: boolean;
 	bubbles: boolean;
+	/** 分段分发渲染总开关：dsh-ui 围栏 / vcp-root 卡 / 围栏包裹 vcp 卡在阅读视图渲染为卡片。 */
+	segmentCards: boolean;
+	/** 不可渲染段（解析失败/引擎缺失/校验未过）默认折叠展示源码，不裸撒。 */
+	cardCollapseDefault: boolean;
+	/** 阅读视图渲染模式：native = 原生分段；delegate = 委托外部 shadow 渲染器（raw-html-v2 等）。 */
+	renderMode: 'native' | 'delegate';
 	deliverableOpenMode: 'external' | 'sidebar';
 	railEnabled: boolean;
 	railSide: 'left' | 'right';
@@ -30,6 +36,9 @@ export const READER_CONFIG_FIELDS = [
 	'foldIntensity',
 	'frostedGlass',
 	'bubbles',
+	'segmentCards',
+	'cardCollapseDefault',
+	'renderMode',
 	'deliverableOpenMode',
 	'railEnabled',
 	'railSide',
@@ -52,6 +61,9 @@ export const READER_CONFIG_DEFAULTS: Record<ReaderConfigField, unknown> = {
 	foldIntensity: 1,
 	frostedGlass: false,
 	bubbles: true,
+	segmentCards: true,
+	cardCollapseDefault: true,
+	renderMode: 'native',
 	deliverableOpenMode: 'external',
 	railEnabled: true,
 	railSide: 'left',

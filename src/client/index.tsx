@@ -22,6 +22,8 @@ import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import * as React from 'react';
 import { installOfficialSlots, officialChildren, type CompositionRegistry } from './official-slots.js';
 import { ensureGenuiPlateCss } from './genui-plate.js';
+import { setSegmentPrefsSnapshot } from './segments/prefs-gate.js';
+import { bootstrapVcpEngine } from './vcp/bootstrap.js';
 import { NS, dictionaries, installTranslate, t } from './locales.js';
 import { softSvc, safeSeat } from './soft-svc.js';
 
@@ -99,6 +101,18 @@ export function apply(ctx: Context): void {
   // `dsh.reader.v1.<sessionId>`. One root instance keeps glass, fold
   // intensity, and open-mode on the unsuffixed `dsh.reader.v1` key.
   const prefs = store.create();
+  // 分段渲染层:把三个分段相关偏好镜像进模块级快照(mdast 渲染层无 props 通路,
+  // 卡组件同步读快照;响应性由本组件的 store 订阅重渲染保证——见 segments/prefs-gate)。
+  const mirrorSegmentPrefs = (): void => {
+    const s = prefs.getSnapshot();
+    setSegmentPrefsSnapshot({
+      segmentCards: s.segmentCards !== false,
+      cardCollapseDefault: s.cardCollapseDefault !== false,
+    });
+  };
+  mirrorSegmentPrefs();
+  prefs.subscribe(mirrorSegmentPrefs);
+  bootstrapVcpEngine();
   installBetterDisplaySettings(ctx, prefs);
   installConfigBridge(ctx, prefs as unknown as Parameters<typeof installConfigBridge>[1]);
   installRailColors({

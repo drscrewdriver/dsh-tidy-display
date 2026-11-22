@@ -10,6 +10,9 @@ export interface ReaderPrefsSnapshot {
   deliverableOpenMode?: DeliverableOpenMode;
   frostedGlass?: boolean;
   bubbles?: boolean;
+  segmentCards?: boolean;
+  cardCollapseDefault?: boolean;
+  renderMode?: 'native' | 'delegate';
   pinReasoningBottom?: boolean;
   foldIntensity?: FoldIntensity;
   autoFold?: boolean;
@@ -34,6 +37,9 @@ export interface OpenPrefs {
     setDeliverableOpenMode: (value: DeliverableOpenMode) => void;
     setFrostedGlass: (value: boolean) => void;
     setBubbles?: (value: boolean) => void;
+    setSegmentCards?: (value: boolean) => void;
+    setCardCollapseDefault?: (value: boolean) => void;
+    setRenderMode?: (value: 'native' | 'delegate') => void;
     setPinReasoningBottom?: (value: boolean) => void;
     setFoldIntensity?: (value: FoldIntensity) => void;
     setAutoFold?: (value: boolean) => void;
@@ -164,6 +170,9 @@ export function SettingsSection(props: SettingsProps) {
   const railStyle = snap.railStyle === 'dot' ? 'dot' : 'bar';
   const railRing = snap.railRing === true;
   const takeover = snap.hideOfficialNav !== false;
+  const segmentCards = snap.segmentCards !== false;
+  const cardCollapse = snap.cardCollapseDefault !== false;
+  const renderMode: 'native' | 'delegate' = snap.renderMode === 'delegate' ? 'delegate' : 'native';
   const setMode = (value: DeliverableOpenMode) => {
     props.prefs.actions.setDeliverableOpenMode(value);
   };
@@ -238,6 +247,55 @@ export function SettingsSection(props: SettingsProps) {
           data-tidy-display-bubbles={bubbles ? 'on' : 'off'}
           onClick={() => { props.prefs.actions.setBubbles?.(!bubbles); }}
         />
+      </div>
+
+      <div className={css.row}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'segmentTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'segmentDescription')}</div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={segmentCards}
+          className={css.switch}
+          data-on={segmentCards || undefined}
+          data-tidy-display-segment-cards={segmentCards ? 'on' : 'off'}
+          onClick={() => { props.prefs.actions.setSegmentCards?.(!segmentCards); }}
+        />
+      </div>
+
+      <div className={css.row} data-tidy-display-segment-dependency={segmentCards ? undefined : 'off'}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'segmentCollapseTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'segmentCollapseDescription')}</div>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={cardCollapse}
+          className={css.switch}
+          data-on={cardCollapse || undefined}
+          data-tidy-display-card-collapse={cardCollapse ? 'on' : 'off'}
+          onClick={() => { props.prefs.actions.setCardCollapseDefault?.(!cardCollapse); }}
+        />
+      </div>
+
+      <div className={css.row} data-tidy-display-segment-dependency={segmentCards ? undefined : 'off'}>
+        <div className={css.rowText}>
+          <div className={css.title}>{text(props, copy, 'renderModeTitle')}</div>
+          <div className={css.desc}>{text(props, copy, 'renderModeDescription')}</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+            <Chip
+              on={renderMode === 'native'}
+              onClick={() => { props.prefs.actions.setRenderMode?.('native'); }}
+            >{text(props, copy, 'renderModeNative')}</Chip>
+            <Chip
+              on={renderMode === 'delegate'}
+              onClick={() => { props.prefs.actions.setRenderMode?.('delegate'); }}
+            >{text(props, copy, 'renderModeDelegate')}</Chip>
+          </div>
+        </div>
       </div>
 
       <div className={css.row}>
