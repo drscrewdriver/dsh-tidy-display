@@ -67,6 +67,7 @@
     "react": "^18.2.0"
   },
   "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.4",
     "@deepseek-ai/dsh-api-remotes": "0.2.1-rc.3",
     "@deepseek-ai/dsh-api-session-controller": "0.2.1-rc.3",
     "@deepseek-ai/dsh-attachment": "0.2.1-rc.3",
@@ -96,6 +97,7 @@
     "typescript-eslint": "^8.70.1"
   },
   "dependencies": {
+    "@changfenhuang/dsh-genui": "^0.17.0",
     "clsx": "^2.0.0",
     "katex": "^0.16.47",
     "mdast-util-from-markdown": "^2.0.3",
