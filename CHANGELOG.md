@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.5 — 2026-11-23(main)
+
+- **修复:教学词汇表只写 `steps(steps)`,模型把 steps 写成字符串数组后整条围栏退回代码块(0.5.4 遗留)**。活体事故(用户截图):一条 `callout`+`table`+`steps` 的围栏仍是「代码块」——callout 已用 `content`、table 已用二维数组,唯一的错在 `"steps":["Phase 0…","Phase 1…"]`:genui 的 `steps` 规范是**对象数组** `[{title,desc}]`,守卫 `repairSteps` 丢弃所有字符串项 → `steps:[]` → `canonicalJson(守卫结果) !== canonicalJson(原文)` → `contentRecognized` 判否 → 整条围栏(连同同围栏 callout/table)一起退回代码块。与 0.5.4 的 callout 别名同类根因,只是这次缺的是**结构**而非字段名。
+  - 词汇表 `steps(steps)` → `steps(steps:[{title,desc}])`,给出对象结构。
+  - 别名禁令条款补一句:steps 的 `steps` 是对象数组 `[{title,desc}]`,每阶段必须是带 title 的对象,**不是字符串数组**;说明错误结构同样触发「守卫丢弃→逐字不等→整条围栏退回」。
+  - 最小正确示例追加一个规范 steps 节点(`[{"title":"第一步","desc":"说明"},{"title":"第二步"}]`),可直接照抄。
+  - 实测:按修正后教学重写该围栏 → `processGenuiSpec` 零错误零告警、内容识别逐字相等、3 节点全部可渲染。
+- 工程:`tests/protocol-teaching-fields.test.ts` 加 2 组断言——示例中的 steps 每项必须是带字符串 title 的对象;教学文案必须明令 steps 用对象数组、点名禁止字符串数组。全量门禁 202 例全绿。
+
 ## 0.5.4 — 2026-11-23(main)
 
 - **修复:协议教学词汇表缺正文字段名,导致模型写别名后整条围栏退回代码块**。`protocol-teaching.ts` 的 dsh-ui 词汇表只给了 `callout(tone: …)`——正文字段名完全没写,模型只能凭直觉填 `text`。而 genui 的 `text`/`body`/`desc` 是 `content` 的**别名**,守卫会把它们改名;原生对话视图的 `contentRecognized` 要求 `canonicalJson(守卫结果) === canonicalJson(原文)`,任何改写即判否 → `resolveFenceKind` 返回 `skip` → **整条围栏连同同围栏内的表格一起退回普通代码块**(不做局部降级)。活体事故:一条 `callout` 用了 `text`,同围栏 16 行表格一并变成「代码块」。

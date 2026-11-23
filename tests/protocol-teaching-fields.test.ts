@@ -56,7 +56,20 @@ test('教学段含一条可直接照抄的最小正确示例', () => {
         assert.ok(Array.isArray(row), 'table.rows 必须是二维数组')
       }
     }
+    if (type === 'steps') {
+      assert.ok(Array.isArray(node.steps), 'steps 示例必须有 steps 数组')
+      for (const step of node.steps as unknown[]) {
+        assert.ok(typeof step === 'object' && step !== null && !Array.isArray(step), 'steps 每项必须是对象')
+        assert.equal(typeof (step as Record<string, unknown>).title, 'string', 'steps 每项必须有字符串 title')
+      }
+    }
   }
+})
+
+test('教学段明令 steps 用对象数组而非字符串数组', () => {
+  assert.match(flat, /steps\(steps:\[\{title,desc\}\]\)/, '词汇表须给出 steps 对象结构')
+  assert.match(flat, /steps 的 `steps` 是\*\*对象数组\*\*/, '须写明 steps 是对象数组')
+  assert.match(flat, /不是字符串数组/, '须点名禁止字符串数组写法')
 })
 
 test('字段名带别名禁令说明后果(整条围栏退回代码块)', () => {
