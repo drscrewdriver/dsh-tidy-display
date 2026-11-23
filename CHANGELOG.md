@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.4 — 2026-11-23(main)
+
+- **修复:协议教学词汇表缺正文字段名,导致模型写别名后整条围栏退回代码块**。`protocol-teaching.ts` 的 dsh-ui 词汇表只给了 `callout(tone: …)`——正文字段名完全没写,模型只能凭直觉填 `text`。而 genui 的 `text`/`body`/`desc` 是 `content` 的**别名**,守卫会把它们改名;原生对话视图的 `contentRecognized` 要求 `canonicalJson(守卫结果) === canonicalJson(原文)`,任何改写即判否 → `resolveFenceKind` 返回 `skip` → **整条围栏连同同围栏内的表格一起退回普通代码块**(不做局部降级)。活体事故:一条 `callout` 用了 `text`,同围栏 16 行表格一并变成「代码块」。
+  - 词汇表改为**括号内即规范字段名**:`callout(content, tone: …)`、`text(content)`、`badge(label)`、`steps(steps)`、`diff(diffs)`、`keyvalue(pairs)`、`table(columns+rows)` 等,与 `@changfenhuang/dsh-genui` 的 `schema.ts` 逐项对齐。
+  - 新增**别名禁令**条款,点名 `callout` 用 `content`(不是 text/body/desc)、`table` 用 `columns`+`rows`(不是 headers/data,rows 是二维数组不是对象数组)、`keyvalue` 用 `pairs`(不是 items)、`badge` 用 `label`(不是 text),并写明后果。
+  - 新增**最小正确示例**(callout + table),可直接照抄字段名。
+- 工程:新增 `tests/protocol-teaching-fields.test.ts`(5 例)把教学文案锁在规范字段名上——示例段会真正 `JSON.parse` 并逐节点校验;谁把 `content` 改回 `text` 立刻红。
+
 ## 0.5.3 — 2026-11-23(main)
 
 - **修复:转义文本容错的目标选择(0.5.1/0.5.2 活体实测,转义卡零接管的根因)**。宿主把裸 HTML 转义后与尾随段落**混在同一个 markdown 根容器**(DIV 内裸文本节点 + `<p>` 兄弟并存)——0.5.2 的 text-only 结构门要求容器无块级后代,被自己的 `<p>` 兄弟否决;`<p>` 们又不含 vcp 前缀——两头落空零接管。现改为**最内层前缀命中容器**目标:挂载走 `VcpHtmlSegments`,`splitVcpText` 把「卡 + 尾随 markdown」从同一容器的 textContent 分段渲染(内容零丢失);内层过滤丢弃包含其他命中者的祖先容器(防吞整个滚动区)。text-only 结构门移除(其防误伤职责由「代码语境排除 + 内最过滤 + drain 前缀复验」接管)。

@@ -31,7 +31,9 @@ export const PROTOCOL_DEFAULTS: ProtocolSwitches = { dshUi: true, vcp: true }
 const DSH_UI_CHANNEL = `【dsh-ui 组件通道】(结构化数据与交互)
 - 正文内 \`\`\`dsh-ui 围栏,内含严格合法 JSON:{"items":[{"type":"…"}]};规模 ≤200 节点、嵌套 ≤8 层(超出被截断)。
 - 什么时候用:按共同维度比较 → table/choices;数值趋势/占比 → chart(kind: bars|line|donut, data:[{label,value}])/table;步骤/分支 → steps;需要筛选/输入/计算 → input/select/choices + 结果组件;单个数字无需强行出组件。普通解释和短清单默认正文,无组件数量配额。
-- 组件字段以 genui skill 为准(可用时 MUST 先加载);无 skill 工具时用词汇表:text/row/col/grid/card/callout(tone: info|success|warning|error)/stat(label+value)/badge/progress/list/table(columns+rows)/keyvalue(pairs)/steps([{title}])/compare/diff/json/code/file-tree(button/choices 需带 action)。
+- 组件字段以 genui skill 为准(可用时 MUST 先加载);无 skill 工具时用词汇表(括号内即**规范字段名**):text(content)/row(items)/col(items)/grid(cols+items)/card(title+items)/callout(content, tone: info|success|warning|error)/stat(label+value)/badge(label)/progress(value)/list(items)/table(columns+rows)/keyvalue(pairs)/steps(steps)/compare(before+after)/diff(diffs)/json(value)/code(code)/file-tree(items)/button/choices(需带 action)。
+- **字段名一律用规范名,严禁别名**:callout 正文是 \`content\`(不是 text/body/desc);text 正文是 \`content\`;table 是 \`columns\`+\`rows\`(不是 headers/data),rows 是**二维数组**不是对象数组;keyvalue 是 \`pairs\`(不是 items);badge 是 \`label\`(不是 text)。别名虽能在阅读视图被自动修正,但原生对话视图的内容识别要求「守卫前后逐字相等」,一旦需要改写即判否——**整条围栏连同同围栏内其他组件一起退回普通代码块**,不做局部降级。
+- 最小正确示例(照抄字段名):{"items":[{"type":"callout","tone":"info","content":"结论一句话"},{"type":"table","columns":["包","下载","变化"],"rows":[["dsh-a","1,234","+5.2%"]]}]}
 - JSON 严格合法;≥3 节点或含 table 时 MUST 调 validate_dsh_ui,按诊断修改重验,通过后 MUST 逐字复制其 JSON 结果(工具可用时)。
 - 交互组件必须带 action;点击后以 [genui-action] name + 数据回流(自动排队发送)。UI 能本地完成的状态变化(排序/判卷/显隐)不回流。
 - 围栏只写在回答正文(思考块里不渲染);"panel":true 进会话面板原地更新。
