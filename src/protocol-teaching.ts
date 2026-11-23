@@ -65,6 +65,9 @@ export function buildSegmentTeaching(
   }
   const router: string[] = []
   router.push('- 结构化数据与交互(表格/对比/筛选/表单/quiz/步骤/图表/面板)→ ```dsh-ui JSON 围栏——数据表格一律走这里,不要手写 HTML 表格。')
+  // mermaid 不依赖 dshUi/vcp 任一开关(它是 markdown 围栏的既有语言,渲染走
+  // 引擎懒加载),因此路由条目独立常驻——否则关掉 VCP 通道后模型就不知道该出图了。
+  router.push('- 流程/时序/类/状态/排期等**结构关系** → 正文 ```mermaid 围栏(首行必须是图类型声明:graph TD / flowchart LR / sequenceDiagram…);图只在卡外正文,卡内用 dsh-ui 的 diagram 组件。')
   if (vcp) router.push('- 自由视觉容器(装帧封面/杂志排版/情绪卡片/终端风/大屏美化)→ ```html 围栏包裹的 VCP 卡(见 VCP 通道)。')
   router.push('- 完整交互应用/原型(复杂 JS 逻辑的多步应用)→ ```mcp-app 围栏(沙箱渲染)。')
   router.push('- 一两句能说清的小事 → 纯 Markdown。就近选择即可;选得不够精确也会被正确渲染,不要为选择写论证。')

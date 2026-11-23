@@ -9,10 +9,10 @@ export declare function isDshUiLanguage(lang: string | null | undefined): boolea
  * - `'generic'` — empty or a localized banner word → content recognition decides.
  */
 export declare function labelVerdict(label: string): 'dsh-ui' | 'known' | 'generic';
-/** Streaming placeholder gate: the body is a dsh-ui spec still arriving.
- * Requires the shape of a spec (an object carrying items/type/title/panel) so
- * a streaming ```json code block never gets taken over. */
+/** 流式占位门:围栏体还是半张 dsh-ui spec。要求 spec 形状(带 items/type/title/panel
+ *  的对象),流式中的 ```json 代码块不会被误接管。 */
 export declare function looksLikeGenuiInProgress(raw: string): boolean;
+export declare function looksLikeMermaidSource(raw: string): boolean;
 /**
  * Stable source identity for a settled fence — genui's scheme
  * (`dom:<anchor>:<ordinal>`) kept verbatim so identities stay stable if a
@@ -31,7 +31,7 @@ export declare function fenceIdentity(anchorKey: string, ordinal: number): strin
  */
 export declare function canonicalJson(value: unknown): string;
 /** 通道接管面——kind 决定挂载组件与流式语义。 */
-export type FenceKind = 'ui' | 'vcp' | 'streaming-ui' | 'streaming-vcp' | 'skip';
+export type FenceKind = 'ui' | 'vcp' | 'mermaid' | 'streaming-ui' | 'streaming-vcp' | 'skip';
 /**
  * 围栏接管判定——Reader(mdast 分发)与原生 DOM 通道共用同一语义来源。
  *
@@ -42,6 +42,7 @@ export type FenceKind = 'ui' | 'vcp' | 'streaming-ui' | 'streaming-vcp' | 'skip'
  * - `dsh-ui`(含 `dshui` 别名/尾部标点)→ dsh-ui 通道;
  * - `html` → 围栏体剥壳后以 vcp-root 卡/整页文档开头才接管(普通 ```html
  *   代码块绝不劫持);
+ * - `mermaid` → settle 后出图;流式期让位源码块(引擎每帧重渲 SVG 既贵又抖);
  * - 其他已知语言 → skip;
  * - generic/无标签 → settle 期认 vcp 前缀,流式期认 vcp 前缀与 dsh-ui JSON
  *   形状;JSON 的严格内容识别需要守卫(非纯),留在通道层。

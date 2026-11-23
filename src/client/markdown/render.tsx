@@ -28,9 +28,10 @@ import { renderTexToReact } from './katex.js'
 import { McpAppCodeBlock, StreamingMcpAppPlaceholder } from '../McpAppFrame.js'
 import { isMcpAppCodeBlock, extractMcpAppTitle, extractMcpAppHeight } from '../mcp-app.js'
 import { DshUiCard } from '../segments/DshUiCard.js'
+import { MermaidCard } from '../segments/MermaidCard.js'
 import { VcpSegmentCard } from '../segments/VcpSegmentCard.js'
 import { segmentPrefsSnapshot } from '../segments/prefs-gate.js'
-import { isBlockLevelLineStart, isDshUiFence, looksLikeVcpHtmlBlock, normalizeSegmentLang } from '../segments/segment-decide.js'
+import { isBlockLevelLineStart, isDshUiFence, isMermaidFence, looksLikeVcpHtmlBlock, normalizeSegmentLang } from '../segments/segment-decide.js'
 import { splitVcpText, stripFenceWrapper } from '../vcp/segmentation.js'
 import { parseGfmWithMath } from './parse.js'
 import type { MarkdownPathImages } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -411,6 +412,7 @@ function renderCode(node: Md.Code, key: Key, context: MarkdownRenderContext): Re
   // 分段分发(开关关 = 现有渲染,回退到下方 math/CodeBlock):
   // A. dsh-ui 围栏(别名容错:dshui / 尾随标点) → GenUI 卡
   // B. ```html 围栏包裹的 vcp-root 卡 / 整页(围栏容错,协议教学仍禁止) → VCP 卡
+  // C. ```mermaid 围栏 → 引擎懒加载出图(settle 后;流式期仍是源码块)
   if (segmentPrefsSnapshot().segmentCards) {
     if (isDshUiFence(language)) {
       return <DshUiCard raw={node.value} streaming={context.streaming === true} segKey={`ui:${String(key)}`} />
@@ -420,6 +422,10 @@ function renderCode(node: Md.Code, key: Key, context: MarkdownRenderContext): Re
       if (looksLikeVcpHtmlBlock(inner)) {
         return <VcpHtmlSegments value={inner} baseKey={`vh:${String(key)}`} streaming={context.streaming === true} />
       }
+    }
+    // 流式期不换图:引擎每帧重渲一次 SVG 既贵又抖,源码块先顶住,settle 才出图。
+    if (!context.streaming && isMermaidFence(language)) {
+      return <MermaidCard key={key} code={node.value} segKey={`mm:${String(key)}`} />
     }
   }
 

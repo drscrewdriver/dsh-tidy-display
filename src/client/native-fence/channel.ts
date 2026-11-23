@@ -38,12 +38,14 @@ import { createElement, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { processGenuiSpec } from '@changfenhuang/dsh-genui/embed'
 import { DshUiCard } from '../segments/DshUiCard.js'
+import { MermaidCard } from '../segments/MermaidCard.js'
 import { looksLikeVcpHtmlBlock } from '../segments/segment-decide.js'
 import { VcpHtmlSegments } from '../markdown/render.js'
 import {
   canonicalJson,
   fenceIdentity,
   labelVerdict,
+  looksLikeMermaidSource,
   resolveFenceKind,
   type FenceKind,
 } from './discover.js'
@@ -414,8 +416,12 @@ export function installNativeFenceChannel(options: {
     if (kind !== 'skip') return kind
     // 未命中 vcp 前缀的围栏:settle 期 dsh-ui 严格内容识别——仅 generic/无标签
     // 横幅可进(known 真语言绝不嗅探,#258);流式期不猜。
-    if (settled && labelVerdict(label) !== 'known') return contentRecognized(raw) ? 'ui' : 'skip'
-    return 'skip'
+    if (!settled || labelVerdict(label) === 'known') return 'skip'
+    // mermaid 先判:宿主给不认识的 mermaid 横幅换通用词(«代码块»),标签路径
+    // 认不出来,只能靠第一行的图类型声明。顺序要紧——dsh-ui 的严格内容是
+    // JSON 形状,与图源互斥,先图后 JSON 只为省一次解析。
+    if (looksLikeMermaidSource(raw)) return 'mermaid'
+    return contentRecognized(raw) ? 'ui' : 'skip'
   }
 
   /** Stable one-based ordinal among settled takeover-eligible segments in
@@ -463,6 +469,14 @@ export function installNativeFenceChannel(options: {
       node = createElement(DshUiCard, {
         raw,
         streaming: !settled,
+        segKey: identityOf(block),
+        channel: 'native',
+      })
+    } else if (kind === 'mermaid') {
+      // 图源即围栏原文(宿主 pre 的 textContent 与围栏体双射);流式期
+      // resolveFenceKind 已 skip,这里只接 settled 的挂载。
+      node = createElement(MermaidCard, {
+        code: raw,
         segKey: identityOf(block),
         channel: 'native',
       })

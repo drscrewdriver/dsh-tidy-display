@@ -75,3 +75,14 @@ test('教学段明令 steps 用对象数组而非字符串数组', () => {
 test('字段名带别名禁令说明后果(整条围栏退回代码块)', () => {
   assert.match(flat, /整条围栏连同同围栏内其他组件一起退回普通代码块/)
 })
+
+test('路由表常驻 mermaid 入口(不随 dshUi/vcp 开关消失)', () => {
+  // 渲染走 markdown 围栏 + genui 懒引擎,与两条卡片通道的开关无关;
+  // 条目若挂在 VCP_CHANNEL 里,关掉 VCP 后模型就不知道还能出图。
+  assert.match(flat, /正文 ```mermaid 围栏/, '路由表须有 mermaid 条目')
+  assert.match(flat, /首行必须是图类型声明/, '须点明首行是图类型声明')
+  const onlyDshUi = buildSegmentTeaching({ dshUi: true, vcp: false }, { hasSkillTool: false }).replace(/\s+/g, ' ')
+  assert.match(onlyDshUi, /正文 ```mermaid 围栏/, 'vcp 关闭时 mermaid 条目仍在')
+  const onlyVcp = buildSegmentTeaching({ dshUi: false, vcp: true }, { hasSkillTool: false }).replace(/\s+/g, ' ')
+  assert.match(onlyVcp, /正文 ```mermaid 围栏/, 'dshUi 关闭时 mermaid 条目仍在')
+})

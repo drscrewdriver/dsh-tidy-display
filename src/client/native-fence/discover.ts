@@ -70,13 +70,52 @@ export function labelVerdict(label: string): 'dsh-ui' | 'known' | 'generic' {
   return 'generic';
 }
 
-/** Streaming placeholder gate: the body is a dsh-ui spec still arriving.
- * Requires the shape of a spec (an object carrying items/type/title/panel) so
- * a streaming ```json code block never gets taken over. */
+/** 流式占位门:围栏体还是半张 dsh-ui spec。要求 spec 形状(带 items/type/title/panel
+ *  的对象),流式中的 ```json 代码块不会被误接管。 */
 export function looksLikeGenuiInProgress(raw: string): boolean {
   const text = raw.trimStart();
   if (text.length < 8 || !text.startsWith('{')) return false;
   return /"(items|type|title|panel)"\s*:/.test(text);
+}
+
+/**
+ * Mermaid 图源识别——只用于**无标签/通用横幅**的块。
+ *
+ * 宿主对没有语法高亮的语言把横幅文字换成通用词(实测 `supportsHighlighting`
+ * 为假的 mermaid 横幅显示 «代码块»/«Code»,原始 lang 不进 DOM),所以原生通道
+ * 拿不到 `mermaid` 这个标签,只能认图源。第一行是图类型声明——这是 mermaid
+ * 的语法硬约束,不是启发式猜测:
+ *
+ * - `graph`/`flowchart` 必须带方向(TB/TD/BT/RL/LR),单独一个 `graph` 不算;
+ * - 其余关键字是各图类型的唯一入口(`sequenceDiagram`/`erDiagram`/`gantt`…);
+ * - 允许开头的 YAML frontmatter(`---` 到闭合 `---`)与 `%%{init}%%` 指令行;
+ * - 最短长度 12,单行 `pie` 这种碎片不进图。
+ *
+ * 已知真语言的围栏在 `resolveFenceKind` 里早就短路了,永远到不了这里——
+ * 所以 `python`/`sh` 里出现 `graph` 也绝不被劫持。
+ */
+const MERMAID_HEAD = /^(?:graph|flowchart)\s+(?:TB|TD|BT|RL|LR)\b|^(?:sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|journey|gantt|pie|quadrantChart|xychart-beta|requirementDiagram|gitGraph|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|mindmap|timeline|zenuml|sankey-beta|packet-beta|block-beta|architecture-beta|kanban|radar-beta|treemap-beta)\b/;
+
+export function looksLikeMermaidSource(raw: string): boolean {
+  let text = String(raw ?? '').trim();
+  if (text.length < 12) return false;
+  // 前置 frontmatter / init 指令:逐段剥掉再认第一行。
+  for (let guard = 0; guard < 4; guard += 1) {
+    if (text.startsWith('%%{')) {
+      const close = text.indexOf('}%%');
+      if (close === -1) return false;
+      text = text.slice(close + 3).trim();
+      continue;
+    }
+    if (text.startsWith('---')) {
+      const close = text.indexOf('\n---', 3);
+      if (close === -1) return false;
+      text = text.slice(close + 4).trim();
+      continue;
+    }
+    break;
+  }
+  return MERMAID_HEAD.test(text);
 }
 
 /**
@@ -115,9 +154,18 @@ export function canonicalJson(value: unknown): string {
 export type FenceKind =
   | 'ui'            // settled dsh-ui → DshUiCard(全量解析,失败走校验折叠)
   | 'vcp'           // settled vcp 卡/页面 → VcpHtmlSegments(全量分段)
+  | 'mermaid'       // settled ```mermaid → 引擎懒加载出图(失败退源码框)
   | 'streaming-ui'  // 流式 dsh-ui → 占位卡(与 Reader streaming 契约一致)
   | 'streaming-vcp' // 流式 vcp → 流式分段(pending 卡)
   | 'skip';
+
+/** ```mermaid 横幅判定(大小写 + 尾部标点容错,与 dsh-ui 的别名口径同源)。
+ *  只认显式标签:图源内容和普通代码没有互斥特征(`graph`/`class` 都是合法
+ *  标识符),对无标签块做内容嗅探会把真代码劫持成报错图。 */
+function isMermaidLabel(label: string): boolean {
+  const stripped = label.trim().replace(GENUI_TRAILING_PUNCTUATION, '').trim().toLowerCase();
+  return stripped === 'mermaid';
+}
 
 /**
  * 围栏接管判定——Reader(mdast 分发)与原生 DOM 通道共用同一语义来源。
@@ -129,6 +177,7 @@ export type FenceKind =
  * - `dsh-ui`(含 `dshui` 别名/尾部标点)→ dsh-ui 通道;
  * - `html` → 围栏体剥壳后以 vcp-root 卡/整页文档开头才接管(普通 ```html
  *   代码块绝不劫持);
+ * - `mermaid` → settle 后出图;流式期让位源码块(引擎每帧重渲 SVG 既贵又抖);
  * - 其他已知语言 → skip;
  * - generic/无标签 → settle 期认 vcp 前缀,流式期认 vcp 前缀与 dsh-ui JSON
  *   形状;JSON 的严格内容识别需要守卫(非纯),留在通道层。
@@ -139,10 +188,12 @@ export function resolveFenceKind(body: string, label: string | null, settled: bo
     const norm = normalizeFenceLanguage(label).toLowerCase();
     if (norm === 'dsh-ui' || norm === 'dshui') effective = 'dsh-ui';
     else if (norm === 'html') effective = 'html';
+    else if (isMermaidLabel(label)) effective = 'mermaid';
     else if (labelVerdict(label) === 'known') return 'skip';
     // generic 横幅词 → effective 保持 null,内容判定接管决策
   }
   if (effective === 'dsh-ui') return settled ? 'ui' : 'streaming-ui';
+  if (effective === 'mermaid') return settled ? 'mermaid' : 'skip';
   if (effective === 'html') {
     return looksLikeVcpHtmlBlock(stripFenceWrapper(body)) ? (settled ? 'vcp' : 'streaming-vcp') : 'skip';
   }

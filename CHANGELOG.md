@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.6 — 2026-11-23(main)
+
+- **补齐:` ```mermaid ` 围栏此前只是死代码,两个视图都渲染成普通代码块(用户活体截图实证)**。`vcp/segmentation.ts` 里的 `splitMermaidFence` 导出了、也有测试,但**没有任何调用方**——它本该在 VCP 引擎接线时被调用,移植时漏接,于是 `graph LR` 这类围栏在阅读视图和原生对话视图都退回「代码块」;而协议教学(`VCP_CHANNEL`)一直写着「` ```mermaid ` 围栏可直接用」,教学与渲染事实脱节。
+  - 新增 `segments/MermaidCard.tsx`:围栏正文拼成单节点 spec(`{items:[{type:'mermaid',code}]}`)走官方 embed 入口 `processGenuiSpec` → `<GenuiBlock>`(即 genui 的 `MermaidNode`)。不自研渲染是因为它已覆盖整条契约——懒加载 IIFE(经本插件 `/tidy-display/assets/genui/` 路由)、视口门控渲染、主题令牌变更重绘、图类型白名单、`assertSafeSvg` 消毒、放大弹层、10 语本地化;一条围栏与 dsh-ui 卡因此共用同一渲染路径与外观,主包零引擎内联。
+  - 退化链三层,永不空框:守卫拒绝(空/超长正文)→ 源码 `<pre>`;引擎资产缺失/404/图类型不在白名单 → genui 自带的源码框 + 提示;组件抛错 → 与 `DshUiCard` 同一个 `ErrorBoundary`。
+  - **阅读视图**:`markdown/render.tsx` 的 `renderCode` 在 dsh-ui / vcp 之后加第三条分发,`segmentCards` 总闸同步管辖;流式期不换图(引擎每帧重渲 SVG 既贵又抖),settle 才出图。
+  - **原生对话视图**:`resolveFenceKind` 新增 `mermaid` kind(横幅为 `mermaid`,大小写与尾部标点容错),通道 `renderMount` 挂 `MermaidCard`(`channel: 'native'` 分键交互状态)。**关键坑**:宿主对不支持高亮的语言把横幅换成通用词(`supportsHighlighting` 为假的 mermaid 显示「代码块」,原始 lang 不进 DOM),标签路径认不出来——所以补 `looksLikeMermaidSource` 内容识别,只对 generic/无标签且 settle 的块生效。判定锚在图类型声明(第一行 `graph TD`/`flowchart LR`/`sequenceDiagram`/`erDiagram`…,允许前置 frontmatter 与 `%%{init}%%`),不是启发式猜词:`graph` 单独出现必须带方向才算,短于 12 字符不算。
+  - **不影响既有判定**:known 真语言(`python`/`js`/`json`/`sh`…)在 `resolveFenceKind` 里早已短路,永不因图源形状被劫持;mermaid 图源与 dsh-ui 的 JSON 形状、vcp 的 `<div id="vcp-root">` 前缀三者互斥,判定顺序改动对 dsh-ui/vcp 通道零影响(原 202 例断言全绿)。
+  - 教学:路由表新增常驻条目「流程/时序/类/状态/排期等结构关系 → 正文 ` ```mermaid ` 围栏,首行必须是图类型声明;图只在卡外正文,卡内用 dsh-ui 的 `diagram` 组件」。该条**不随 dshUi/vcp 开关消失**——渲染走 markdown 围栏与引擎,与两条卡片通道的开关无关;此前它只写在 `VCP_CHANNEL` 里,关掉 VCP 后模型就不知道该出图了。
+- 工程:新增 `tests/mermaid-fence.test.ts`(8 例)锁住两套判定——各图类型首行、frontmatter/init 剥离、普通代码与碎片不误判、known 语言永不劫持、与 dsh-ui JSON 形状互斥、流式期让位源码块;`tests/protocol-teaching-fields.test.ts` 加 1 例断言 mermaid 路由条目在三种开关组合下都在。全量门禁 211 例全绿(typecheck + eslint + test)。
+
 ## 0.5.5 — 2026-11-23(main)
 
 - **修复:教学词汇表只写 `steps(steps)`,模型把 steps 写成字符串数组后整条围栏退回代码块(0.5.4 遗留)**。活体事故(用户截图):一条 `callout`+`table`+`steps` 的围栏仍是「代码块」——callout 已用 `content`、table 已用二维数组,唯一的错在 `"steps":["Phase 0…","Phase 1…"]`:genui 的 `steps` 规范是**对象数组** `[{title,desc}]`,守卫 `repairSteps` 丢弃所有字符串项 → `steps:[]` → `canonicalJson(守卫结果) !== canonicalJson(原文)` → `contentRecognized` 判否 → 整条围栏(连同同围栏 callout/table)一起退回代码块。与 0.5.4 的 callout 别名同类根因,只是这次缺的是**结构**而非字段名。

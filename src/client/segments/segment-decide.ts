@@ -15,6 +15,13 @@ export function isDshUiFence(lang: string | null | undefined): boolean {
   return norm === 'dsh-ui' || norm === 'dshui'
 }
 
+/** 归一后的围栏语言是否走 Mermaid 图(引擎懒加载渲染,失败退源码框)。
+ *  与 `resolveFenceKind` 的 mermaid 分支同口径——Reader 的 mdast 分发与原生
+ *  DOM 通道必须对同一条围栏同判,否则同一回复在两个视图里一图一源码。 */
+export function isMermaidFence(lang: string | null | undefined): boolean {
+  return normalizeSegmentLang(lang) === 'mermaid'
+}
+
 /** 围栏内容(html 围栏剥壳后)是否以 vcp-root 卡或整页文档开头。 */
 const VCP_ROOT_OPEN_RE = /^\s*<div\b[^>]*\bid\s*=\s*["']?vcp-root["']?[^>]*>/i
 const PAGE_OPEN_TRIM_RE = /^\s*(?:<!doctype\s+html\b|<html[\s>])/i
