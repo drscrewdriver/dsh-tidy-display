@@ -4,6 +4,8 @@ import { bubblesOf, frostedGlassOf, type FoldIntensity } from './fold-intensity.
 import { deliverableOpenModeOf, type DeliverableOpenMode } from './open-file.js';
 import { settingsCopyFor, type SettingsCopy, type SettingsCopyKey } from './settings-copy.js';
 import { CONVENTIONAL_SKILL_ROOTS, detectGenerativeMcpappsSkill, shortestInstallCommand, type SkillStatusProbe, type SkillStatusSnapshot } from './skill-status.js';
+import { GuidePanel, GuideRestartButton, guideSteps, isGuideSkipped } from './guide.tsx';
+import { TIDY_DISPLAY_GUIDE_STEPS } from './guide-steps.ts';
 import css from './SettingsSection.module.css';
 
 export interface ReaderPrefsSnapshot {
@@ -69,6 +71,9 @@ type SettingsProps = BetterDisplaySettingsInjected & {
   close?: () => void;
   t?: (key: SettingsCopyKey) => string;
 };
+
+/** 引导的 localStorage 标记命名空间（插件 entry id）。 */
+const GUIDE_NS = 'tidy-display';
 
 function text(props: SettingsProps, copy: SettingsCopy, key: keyof SettingsCopy): string {
   if (typeof props.t === 'function') {
@@ -179,6 +184,8 @@ export function SettingsSection(props: SettingsProps) {
   const on = mode === 'sidebar';
   const [skill, setSkill] = useState<SkillStatusSnapshot | undefined>();
   const [checking, setChecking] = useState(false);
+  // 首次使用引导：初值懒读 localStorage 标记（跳过后再进来不再弹）。
+  const [guideOpen, setGuideOpen] = useState(() => !isGuideSkipped(GUIDE_NS));
   // 共存检测(一次性):window.__DSH_BOOT__.entries 含已加载插件 id
   // (genui asset-loader 自身即依赖该表)。协议教学统一后建议禁用原插件。
   const coinstalled = useState(() => {
@@ -215,6 +222,14 @@ export function SettingsSection(props: SettingsProps) {
 
   return (
     <div className={css.section} data-tidy-display-settings>
+      {guideOpen && (
+        <GuidePanel
+          ns={GUIDE_NS}
+          steps={guideSteps(TIDY_DISPLAY_GUIDE_STEPS)}
+          onClose={() => { setGuideOpen(false); }}
+        />
+      )}
+
       <div className={css.row}>
         <div className={css.rowText}>
           <div className={css.title}>{text(props, copy, 'openTitle')}</div>
@@ -489,6 +504,12 @@ export function SettingsSection(props: SettingsProps) {
           </button>
         </div>
       </section>
+
+      {!guideOpen && (
+        <div className={css.actions} data-tidy-display-guide-restart>
+          <GuideRestartButton ns={GUIDE_NS} onOpen={() => { setGuideOpen(true); }} />
+        </div>
+      )}
     </div>
   );
 }
