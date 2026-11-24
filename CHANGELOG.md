@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1 (2026-11-25)
+
+- feat(guide): 「重新查看引导」入口（`data-tidy-display-guide-restart`）从分节底部移到顶部、`GuidePanel` 之前，并改为恒定渲染（原为收起后才出现）。跳过标记与三步正文逐字未动（`dsh.guide.tidy-display.skipped`）。
+
 ## 0.6.0 (2026-11-24)
 
 - **新增首次使用引导（3 步）**：设置分节顶部三步——阅读视图入口（视图切换选「阅读」）、过程折叠（工具栏「自动折叠开/关」与设置里「自动折叠过程」是同一份状态）、围栏渲染（dsh-ui / mermaid / mcp-app / vcp-root 按段分发，渲染失败折叠为标题栏可看源码）。底部恒定重开入口；Skip 与「开始使用」都写 `dsh.guide.tidy-display.skipped`。

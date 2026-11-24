@@ -222,6 +222,10 @@ export function SettingsSection(props: SettingsProps) {
 
   return (
     <div className={css.section} data-tidy-display-settings>
+      {/* 引导重启入口放在设置面上方：贴士也渲染在同一位置，跳过之后一眼就能重开。 */}
+      <div className={css.actions} data-tidy-display-guide-restart>
+        <GuideRestartButton ns={GUIDE_NS} onOpen={() => { setGuideOpen(true); }} />
+      </div>
       {guideOpen && (
         <GuidePanel
           ns={GUIDE_NS}
@@ -504,12 +508,6 @@ export function SettingsSection(props: SettingsProps) {
           </button>
         </div>
       </section>
-
-      {!guideOpen && (
-        <div className={css.actions} data-tidy-display-guide-restart>
-          <GuideRestartButton ns={GUIDE_NS} onOpen={() => { setGuideOpen(true); }} />
-        </div>
-      )}
     </div>
   );
 }
