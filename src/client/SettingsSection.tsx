@@ -7,6 +7,7 @@ import { CONVENTIONAL_SKILL_ROOTS, detectGenerativeMcpappsSkill, shortestInstall
 import { GuidePanel, GuideRestartButton, guideSteps, isGuideSkipped } from './guide.tsx';
 import { TIDY_DISPLAY_GUIDE_STEPS } from './guide-steps.ts';
 import css from './SettingsSection.module.css';
+import { mountStarRow } from './star-row-copy.js'
 
 export interface ReaderPrefsSnapshot {
   deliverableOpenMode?: DeliverableOpenMode;
@@ -508,6 +509,11 @@ export function SettingsSection(props: SettingsProps) {
           </button>
         </div>
       </section>
+      <span
+        ref={(node) => {
+          if (node && !node.firstChild) node.appendChild(mountStarRow());
+        }}
+      />
     </div>
   );
 }
