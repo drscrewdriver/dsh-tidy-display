@@ -12,6 +12,14 @@
   gap: 8px;
   font-family: inherit;
   transform: translateY(var(--dock-drag-y, 0px));
+  transition: transform .16s ease-out;
+}
+
+/* 拖动中跟手（关掉过渡），松手才回到限位/静止位做平滑收敛 */
+.root[data-dock-dragging],
+.root[data-dock-dragging] .capsuleHandle {
+  transition: none;
+  cursor: grabbing;
 }
 
 .cluster {
@@ -46,10 +54,6 @@
 .capsuleHandle {
   cursor: grab;
   touch-action: none;
-}
-
-.capsuleDragging {
-  cursor: grabbing;
 }
 
 .panel {
@@ -136,6 +140,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .root,
   .switch::after {
     transition: none;
   }

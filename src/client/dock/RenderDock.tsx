@@ -51,12 +51,13 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
   const [protocols, setProtocols] = useState<ProtocolState | null>(null)
   const coinstalled = useMemo(detectCoinstalled, [])
 
-  // Drag state: the whole capsule row follows the pointer, but only the three
-  // text capsules are handles (the gear stays a pure settings opener). State
-  // lives in this component (the dock is its own React root) and is never
-  // persisted — a refresh resets the row to its shipped position.
+  // Drag state: the whole capsule row follows the pointer in both directions,
+  // but only the three text capsules are handles (the gear stays a pure settings
+  // opener). State lives in this component (the dock is its own React root) and
+  // is never persisted — a refresh resets the row to its shipped position.
   const clusterRef = useRef<HTMLDivElement>(null)
   const [dragY, setDragY] = useState(0)
+  const [dragging, setDragging] = useState(false)
   const draggedRef = useRef(false)
 
   /** Consume (and clear) the "did drag" flag so the following click can be swallowed. */
@@ -71,6 +72,12 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
    * tracking after the pointer leaves the tiny capsule; setPointerCapture makes
    * the origin element receive the events too. The dragged flag survives until
    * click (which fires after pointerup) consumes it, preventing toggle misfires.
+   *
+   * Travel is bidirectional: {@link clampDockOffset} applies the 1.5x upward
+   * ceiling and a measured downward floor (the row may slide down until it
+   * touches the viewport bottom, so it can never be dragged out of sight). The
+   * floor is an absolute offset, so a lifted row can be dragged all the way back
+   * down past its shipped position in one gesture.
    */
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0) return
@@ -78,8 +85,12 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
     if (cluster === null) return
     const startY = e.clientY
     const startOffset = dragY
-    const rowHeight = cluster.getBoundingClientRect().height
+    const rect = cluster.getBoundingClientRect()
+    const rowHeight = rect.height
     if (!(rowHeight > 0)) return
+    // rect already carries the current translateY; undo it to get the resting
+    // bottom edge, then measure the room left between it and the viewport end.
+    const maxDownOffset = Math.max(0, window.innerHeight - (rect.bottom - startOffset))
     try { e.currentTarget.setPointerCapture?.(e.pointerId) } catch { /* capture optional */ }
     let moved = false
 
@@ -88,18 +99,18 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
       if (!moved && Math.abs(dy) > DRAG_THRESHOLD_PX) {
         moved = true
         draggedRef.current = true
-        cluster.classList.add('dsh-dock-dragging')
+        setDragging(true)
       }
       if (moved) {
         ev.preventDefault()
-        setDragY(clampDockOffset(startOffset + dy, rowHeight))
+        setDragY(clampDockOffset(startOffset + dy, rowHeight, maxDownOffset))
       }
     }
     const onEnd = (): void => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onEnd)
       window.removeEventListener('pointercancel', onEnd)
-      cluster.classList.remove('dsh-dock-dragging')
+      setDragging(false)
       // draggedRef is intentionally left set: the click that follows pointerup
       // consumes it. If no click comes, the next press resets it implicitly.
     }
@@ -172,6 +183,7 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
       className={css.root}
       data-tidy-render-dock
       data-dock-lifted={lifted || undefined}
+      data-dock-dragging={dragging || undefined}
       style={{ '--dock-drag-y': `${dragY}px` } as React.CSSProperties}
     >
       {open && (
