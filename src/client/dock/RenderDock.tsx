@@ -51,10 +51,12 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
   const [protocols, setProtocols] = useState<ProtocolState | null>(null)
   const coinstalled = useMemo(detectCoinstalled, [])
 
-  // Drag state: the whole capsule row follows the pointer in both directions,
-  // but only the three text capsules are handles (the gear stays a pure settings
-  // opener). State lives in this component (the dock is its own React root) and
-  // is never persisted — a refresh resets the row to its shipped position.
+  // Drag state: the whole capsule row follows the pointer in both directions.
+  // ALL four capsules — including the gear — are handles, so a press anywhere
+  // on the row drags it; the gear keeps its panel-toggle click (swallowed by
+  // consumeDrag after a real drag). State lives in this component (the dock is
+  // its own React root) and is never persisted — a refresh resets the row to
+  // its shipped position.
   const clusterRef = useRef<HTMLDivElement>(null)
   const [dragY, setDragY] = useState(0)
   const [dragging, setDragging] = useState(false)
@@ -265,8 +267,9 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
         >{collapse ? '折叠' : '展开'}</button>
         <button
           type="button"
-          className={css.capsule}
-          onClick={() => setOpen(o => !o)}
+          className={`${css.capsule} ${css.capsuleHandle}`}
+          onPointerDown={handlePointerDown}
+          onClick={() => { if (consumeDrag()) return; setOpen(o => !o) }}
           aria-expanded={open}
           aria-label="渲染设置面板"
           title="渲染设置面板"

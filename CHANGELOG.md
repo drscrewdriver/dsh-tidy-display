@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.8 (2026-11-27)
+
+**修：胶囊排只有三颗文字按钮能起拖，齿轮（⚙）不在拖动区里。**
+
+- 根因：0.6.6 把齿轮**特意**排除在把手之外（`⚙ 不参与拖动，保留纯开面板语义`），于是整排看起来是一个拖动面，实际只有「分段/卡片/折叠」三颗能按下起拖，体感就是「一截能抓一截不能抓」。
+- 修法：齿轮也绑 `onPointerDown={handlePointerDown}` 并加 `css.capsuleHandle`（grab 光标 + `touch-action: none`）；它的 click 改为 `if (consumeDrag()) return; setOpen(...)`，真拖动后那次 click 被吞掉，不误开面板——开面板语义没丢，只是让位给拖动。
+- 新增 `tests/dock-handles.test.ts`（5 例，源码扫描）：四颗按钮都在、都绑 handle、都带 `capsuleHandle`、click 都消费 `consumeDrag()`、齿轮仍是面板开关。**做过破坏自证**：把齿轮退回 0.6.6 形态（去 handle + 不消费拖动），该测试精确红 4 条；还原后复绿。
+- 全量门禁 227 tests / 227 pass。
+
 ## 0.6.7 (2026-11-27)
 
 **修：胶囊排拖动只能向上（下来回不去）→ 改为上下限内双向拖动。**
