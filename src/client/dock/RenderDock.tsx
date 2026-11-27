@@ -8,9 +8,10 @@
  * Prototype lineage: raw-html-v2's trusted badge (position, pill styling) and
  * its "VCP 渲染设置" panel (theme tokens, ESC/outside close).
  */
-import { memo, useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import css from './RenderDock.module.css'
 import type { OpenPrefs, ReaderPrefsSnapshot } from '../SettingsSection.js'
+import { clampDockOffset, DRAG_THRESHOLD_PX } from './drag.ts'
 
 export type DockPrefs = OpenPrefs
 
@@ -49,6 +50,63 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
   const [lifted, setLifted] = useState(false)
   const [protocols, setProtocols] = useState<ProtocolState | null>(null)
   const coinstalled = useMemo(detectCoinstalled, [])
+
+  // Drag state: the whole capsule row follows the pointer, but only the three
+  // text capsules are handles (the gear stays a pure settings opener). State
+  // lives in this component (the dock is its own React root) and is never
+  // persisted — a refresh resets the row to its shipped position.
+  const clusterRef = useRef<HTMLDivElement>(null)
+  const [dragY, setDragY] = useState(0)
+  const draggedRef = useRef(false)
+
+  /** Consume (and clear) the "did drag" flag so the following click can be swallowed. */
+  const consumeDrag = useCallback((): boolean => {
+    const dragged = draggedRef.current
+    draggedRef.current = false
+    return dragged
+  }, [])
+
+  /**
+   * Pointer-drag handle shared by the three text capsules. Window listeners keep
+   * tracking after the pointer leaves the tiny capsule; setPointerCapture makes
+   * the origin element receive the events too. The dragged flag survives until
+   * click (which fires after pointerup) consumes it, preventing toggle misfires.
+   */
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return
+    const cluster = clusterRef.current
+    if (cluster === null) return
+    const startY = e.clientY
+    const startOffset = dragY
+    const rowHeight = cluster.getBoundingClientRect().height
+    if (!(rowHeight > 0)) return
+    try { e.currentTarget.setPointerCapture?.(e.pointerId) } catch { /* capture optional */ }
+    let moved = false
+
+    const onMove = (ev: PointerEvent): void => {
+      const dy = ev.clientY - startY
+      if (!moved && Math.abs(dy) > DRAG_THRESHOLD_PX) {
+        moved = true
+        draggedRef.current = true
+        cluster.classList.add('dsh-dock-dragging')
+      }
+      if (moved) {
+        ev.preventDefault()
+        setDragY(clampDockOffset(startOffset + dy, rowHeight))
+      }
+    }
+    const onEnd = (): void => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onEnd)
+      window.removeEventListener('pointercancel', onEnd)
+      cluster.classList.remove('dsh-dock-dragging')
+      // draggedRef is intentionally left set: the click that follows pointerup
+      // consumes it. If no click comes, the next press resets it implicitly.
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onEnd)
+    window.addEventListener('pointercancel', onEnd)
+  }, [dragY])
 
   const segmentCards = snap.segmentCards !== false;
   const collapse = snap.cardCollapseDefault !== false;
@@ -110,7 +168,12 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
   const rawHtmlV2Missing = mode === 'delegate' && !coinstalled.rawHtmlV2
 
   return (
-    <div className={css.root} data-tidy-render-dock data-dock-lifted={lifted || undefined}>
+    <div
+      className={css.root}
+      data-tidy-render-dock
+      data-dock-lifted={lifted || undefined}
+      style={{ '--dock-drag-y': `${dragY}px` } as React.CSSProperties}
+    >
       {open && (
         <div className={css.panel} role="dialog" aria-label="整洁显示渲染设置">
           <p className={css.panelTitle}>渲染设置 · 整洁显示</p>
@@ -163,25 +226,28 @@ export const RenderDock = memo(function RenderDock({ prefs }: { prefs: DockPrefs
           )}
         </div>
       )}
-      <div className={css.cluster}>
+      <div className={css.cluster} ref={clusterRef}>
         <button
           type="button"
-          className={`${css.capsule} ${mode === 'native' ? css.capsuleOn : ''}`}
-          onClick={() => prefs.actions.setRenderMode?.(mode === 'native' ? 'delegate' : 'native')}
+          className={`${css.capsule} ${mode === 'native' ? css.capsuleOn : ''} ${css.capsuleHandle}`}
+          onPointerDown={handlePointerDown}
+          onClick={() => { if (consumeDrag()) return; prefs.actions.setRenderMode?.(mode === 'native' ? 'delegate' : 'native') }}
           aria-pressed={mode === 'native'}
           title="渲染模式:原生分段 / 委托外部"
         >{mode === 'native' ? '分段' : '委托'}</button>
         <button
           type="button"
-          className={`${css.capsule} ${segmentCards ? css.capsuleOn : ''}`}
-          onClick={() => prefs.actions.setSegmentCards?.(!segmentCards)}
+          className={`${css.capsule} ${segmentCards ? css.capsuleOn : ''} ${css.capsuleHandle}`}
+          onPointerDown={handlePointerDown}
+          onClick={() => { if (consumeDrag()) return; prefs.actions.setSegmentCards?.(!segmentCards) }}
           aria-pressed={segmentCards}
           title="分段卡片渲染开关"
         >{segmentCards ? '卡片' : '卡片关'}</button>
         <button
           type="button"
-          className={`${css.capsule} ${collapse ? css.capsuleOn : ''}`}
-          onClick={() => prefs.actions.setCardCollapseDefault?.(!collapse)}
+          className={`${css.capsule} ${collapse ? css.capsuleOn : ''} ${css.capsuleHandle}`}
+          onPointerDown={handlePointerDown}
+          onClick={() => { if (consumeDrag()) return; prefs.actions.setCardCollapseDefault?.(!collapse) }}
           aria-pressed={collapse}
           title="不可渲染卡源码默认折叠"
         >{collapse ? '折叠' : '展开'}</button>

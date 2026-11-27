@@ -11,6 +11,7 @@
   align-items: flex-end;
   gap: 8px;
   font-family: inherit;
+  transform: translateY(var(--dock-drag-y, 0px));
 }
 
 .cluster {
@@ -40,6 +41,15 @@
 
 .capsule:hover {
   filter: brightness(1.08);
+}
+
+.capsuleHandle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.capsuleDragging {
+  cursor: grabbing;
 }
 
 .panel {

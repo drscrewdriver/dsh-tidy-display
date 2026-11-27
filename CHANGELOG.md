@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.6 (2026-11-27)
+
+**渲染胶囊排拖动限位：整排随动，最多上移 1.5×排高，刷新复位。**
+
+- 新增 `src/client/dock/drag.ts`：纯函数 `clampDockOffset` + 4px 点击/拖动阈值，独立可测。
+- 三个文案胶囊（分段/卡片/折叠）作为把手绑定 Pointer Events，整排 `translateY(var(--dock-drag-y))` 随动；⚙ 不参与拖动，保留纯开面板语义。
+- 超过阈值后 `consumeDrag()` 吞掉首次 click，拖动不误触开关；与 `data-dock-lifted` 共存互不覆盖。
+- 不持久化、不新增 Config 字段；`tests/dock-drag.test.ts` 覆盖上溢/下溢/负高/阈值。
+
 ## 0.6.3 (2026-11-26)
 
 **设置卡底栏 Star 快车道：★ 直接打开仓库页（不再只静默收起），隐藏独立成 ×。**
