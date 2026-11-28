@@ -17,6 +17,9 @@ export const NS = 'dsh-tidy-display'
 
 /** Simplified Chinese dictionary — the key-set source of truth. */
 export const zh = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Mermaid 渲染计时",
+
   // Shared atoms
   'common.copy': '复制',
   'common.copied': '已复制',
@@ -298,6 +301,9 @@ export type TidyKey = keyof typeof zh
 
 /** English dictionary, checked complete against the zh key set. */
 export const en: Record<TidyKey, string> = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Mermaid render timing",
+
   'common.copy': 'Copy',
   'common.copied': 'Copied',
   'common.collapse': 'Collapse',
@@ -558,6 +564,9 @@ export const en: Record<TidyKey, string> = {
 
 /** Japanese dictionary, checked complete against the zh key set. */
 export const ja: Record<TidyKey, string> = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Mermaid 描画タイミング",
+
   'common.copy': 'コピー',
   'common.copied': 'コピーしました',
   'common.collapse': '折りたたむ',
@@ -818,6 +827,9 @@ export const ja: Record<TidyKey, string> = {
 
 /** Korean dictionary, checked complete against the zh key set. */
 export const ko: Record<TidyKey, string> = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Mermaid 렌더링 타이밍",
+
   'common.copy': '복사',
   'common.copied': '복사됨',
   'common.collapse': '접기',
@@ -1078,6 +1090,9 @@ export const ko: Record<TidyKey, string> = {
 
 /** French dictionary, checked complete against the zh key set. */
 export const fr: Record<TidyKey, string> = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Chronométrage du rendu Mermaid",
+
   'common.copy': 'Copier',
   'common.copied': 'Copié',
   'common.collapse': 'Réduire',
@@ -1338,6 +1353,9 @@ export const fr: Record<TidyKey, string> = {
 
 /** German dictionary, checked complete against the zh key set. */
 export const de: Record<TidyKey, string> = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Mermaid-Render-Timing",
+
   'common.copy': 'Kopieren',
   'common.copied': 'Kopiert',
   'common.collapse': 'Einklappen',
@@ -1598,6 +1616,9 @@ export const de: Record<TidyKey, string> = {
 
 /** Italian dictionary, checked complete against the zh key set. */
 export const it: Record<TidyKey, string> = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Tempi di rendering Mermaid",
+
   'common.copy': 'Copia',
   'common.copied': 'Copiato',
   'common.collapse': 'Comprimi',
@@ -1858,6 +1879,9 @@ export const it: Record<TidyKey, string> = {
 
 /** Russian dictionary, checked complete against the zh key set. */
 export const ru: Record<TidyKey, string> = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Тайминг рендеринга Mermaid",
+
   'common.copy': 'Копировать',
   'common.copied': 'Скопировано',
   'common.collapse': 'Свернуть',
@@ -2118,6 +2142,9 @@ export const ru: Record<TidyKey, string> = {
 
 /** Spanish dictionary, checked complete against the zh key set. */
 export const es: Record<TidyKey, string> = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Tiempos de render de Mermaid",
+
   'common.copy': 'Copiar',
   'common.copied': 'Copiado',
   'common.collapse': 'Contraer',
@@ -2377,6 +2404,9 @@ export const es: Record<TidyKey, string> = {
 }
 
 export const pt: Record<TidyKey, string> = {
+  // Mermaid render timing (diagnostics)
+  'timing.title': "Tempo de renderização do Mermaid",
+
 
   // Shared atoms
   'common.copy': 'Copiar',
