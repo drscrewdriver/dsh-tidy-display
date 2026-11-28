@@ -18,6 +18,7 @@ export interface ReaderPrefsSnapshot {
     railStyle?: 'bar' | 'dot';
     railRing?: boolean;
     hideOfficialNav?: boolean;
+    renderTimingProbe?: boolean;
     railColor?: string;
     railColorCustom?: string;
     railColorLight?: string;
@@ -43,6 +44,7 @@ export interface OpenPrefs {
         setRailStyle?: (value: 'bar' | 'dot') => void;
         setRailRing?: (value: boolean) => void;
         setHideOfficialNav?: (value: boolean) => void;
+        setRenderTimingProbe?: (value: boolean) => void;
         setRailColor?: (value: string) => void;
         setRailColorCustom?: (value: string) => void;
         setRailColorLight?: (value: string) => void;

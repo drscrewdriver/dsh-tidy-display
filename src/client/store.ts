@@ -50,6 +50,12 @@ export interface ReaderState {
    * resurfaced next to ours.
    */
   hideOfficialNav: boolean;
+  /**
+   * Mermaid render timing probe. Diagnostic only: on, it writes User Timing
+   * marks and registers a long-task observer for every diagram render.
+   * Default off so nobody pays for a measurement they did not ask for.
+   */
+  renderTimingProbe: boolean;
   /** Rail palette (ported from dsh-tidychat): auto / hue×lightness / custom. */
   railColor: string;
   railColorCustom: string;
@@ -76,6 +82,7 @@ type ReaderActions = {
   setRailStyle: (draft: ReaderState, value: 'bar' | 'dot') => void;
   setRailRing: (draft: ReaderState, value: boolean) => void;
   setHideOfficialNav: (draft: ReaderState, value: boolean) => void;
+  setRenderTimingProbe: (draft: ReaderState, value: boolean) => void;
   setRailColor: (draft: ReaderState, value: string) => void;
   setRailColorCustom: (draft: ReaderState, value: string) => void;
   setRailColorLight: (draft: ReaderState, value: string) => void;
@@ -112,6 +119,7 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       // (the user-facing requirement was "selectable AND visible").
       railRing: true,
       hideOfficialNav: true,
+      renderTimingProbe: false,
       railColor: 'auto',
       railColorCustom: '',
       railColorLight: 'l3',
@@ -142,6 +150,7 @@ export function createReaderStore(): EngineStoreHandle<ReaderState, ReaderAction
       setRailStyle: (draft, value: 'bar' | 'dot') => { draft.railStyle = value; },
       setRailRing: (draft, value: boolean) => { draft.railRing = value; },
       setHideOfficialNav: (draft, value: boolean) => { draft.hideOfficialNav = value; },
+      setRenderTimingProbe: (draft, value: boolean) => { draft.renderTimingProbe = value; },
       setRailColor: (draft, value: string) => { draft.railColor = value; },
       setRailColorCustom: (draft, value: string) => { draft.railColorCustom = value; },
       setRailColorLight: (draft, value: string) => { draft.railColorLight = value; },

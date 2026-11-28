@@ -43,6 +43,12 @@ export interface ReaderState {
      * resurfaced next to ours.
      */
     hideOfficialNav: boolean;
+    /**
+     * Mermaid render timing probe. Diagnostic only: on, it writes User Timing
+     * marks and registers a long-task observer for every diagram render.
+     * Default off so nobody pays for a measurement they did not ask for.
+     */
+    renderTimingProbe: boolean;
     /** Rail palette (ported from dsh-tidychat): auto / hue×lightness / custom. */
     railColor: string;
     railColorCustom: string;
@@ -69,6 +75,7 @@ type ReaderActions = {
     setRailStyle: (draft: ReaderState, value: 'bar' | 'dot') => void;
     setRailRing: (draft: ReaderState, value: boolean) => void;
     setHideOfficialNav: (draft: ReaderState, value: boolean) => void;
+    setRenderTimingProbe: (draft: ReaderState, value: boolean) => void;
     setRailColor: (draft: ReaderState, value: string) => void;
     setRailColorCustom: (draft: ReaderState, value: string) => void;
     setRailColorLight: (draft: ReaderState, value: string) => void;
