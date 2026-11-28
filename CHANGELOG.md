@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.9.0 (2026-11-28)
+
+**新：Mermaid 渲染计时探针（设置卡「Mermaid 渲染计时」分节，默认关闭）。**
+
+- 开关 `renderTimingProbe` 默认 **false**。关闭时零开销：不写 User Timing 打点、不注册 observer、不打 measure。
+- 打开后每张图渲染前后各打一个 `performance.mark` 并 `measure`，面板实时显示「次数 / p50 / p95 / 最大」。关闭态显示「未启用」。
+- 同时用 `PerformanceObserver({entryTypes:['longtask']})` 记录主线程长任务（>50ms），**带能力探测**：宿主不支持该 entryType 时静默降级为只记 mark/measure，不抛错。
+- 记录「同一 `segKey` 的重复渲染次数」（`repeats`），对应 raw-html-v2 #7 的「mermaid 图自己无限展开」重入信号——重入会变成一个数字，而不是一条用户反馈。
+- 5 个新键（`timing.title` / `timing.probe` / `timing.probeHint` / `timing.metrics` / `timing.disabled`）10 份字典齐全；设置卡 4 个新键同样 10 语齐全。
+
 ## 0.8.0 (2026-11-28)
 
 **用户无可见变化 —— 这是度量前置。**
