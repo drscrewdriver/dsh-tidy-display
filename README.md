@@ -25,6 +25,7 @@
 1. **消息与思考没有底框**——最终回答与思考文字直接铺在页面背景上，换肤、壁纸、深色主题下可读性差。→ fork 为回答加上了官方 `--dsw-alias-bg-layer-1` 半透明气泡底，思考卡加同款衬底（fork 提交 `fa3a795`、`94d59c7`）。
 2. **阅读视图丢弃宿主行级锚点**——`data-chat-anchor-key` / `data-chat-flow-kind` 不随消息行输出，以该契约为事实源的第三方插件（如 tidychat 消息轨）在阅读视图下解析出 0 行、**静默失效**。→ 已向上游提交修复 PR [aa2246740/dsh-better-display#41](https://github.com/aa2246740/dsh-better-display/pull/41)；合并项目内同样自带该修复。
 3. 自带 TimelineRail 只有官方大纲一轨——无鱼眼摘要、无点击跳转、无配色能力。
+4. **阅读视图里的图片一律加载失败**——图片加载调 `session.readAttachment(attachmentId)` 传裸 id，而 0.2.2 起宿主契约改成收整个 `ImageAttachmentRef`（要校验 id / 媒体类型 / 字节数 / 宽高），传字符串必抛 `INVALID_ATTACHMENT_REF`，界面只剩「图片未能加载」四个字。→ 0.7.0 改为**双契约探测**：先传引用，遇 `INVALID_ATTACHMENT_REF` 回退裸 id，结果按会话缓存（老线 0.1.x–0.2.1 只认 id，新线只认引用，两条都活）；失败时把真实原因显示出来，不再吞掉。
 
 ### 原版 dsh-tidychat 的不足，与合并的动机
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0 (2026-11-28)
+
+**修：阅读视图里图片 100% 加载失败（"图片未能加载"），点「重试」无限失败。**
+
+- 根因：`loadImage` 调 `session().readAttachment(attachment.attachmentId)` 传的是**裸 id 字符串**。宿主 0.2.2 起契约改成收整个 `ImageAttachmentRef`，服务端要校验 id / 媒体类型 / 字节数 / 宽高；传字符串时 `ensureReference` 拿到的是 `undefined`，正则不匹配，必抛 `INVALID_ATTACHMENT_REF`。
+- 而 `hosts.mjs` 声明支持 0.1.0-rc.2 起——**声明支持但图片功能全线不可用**。
+- 修法（新增 `src/client/attachment-read.ts`）：**双契约探测**。先传引用（当前契约），只有遇到 `INVALID_ATTACHMENT_REF` 才回退裸 id（老线 0.1.x–0.2.1 只认 id）；命中的形态按会话缓存，一次探测之后每张图只花一次往返。传输错误 / 其它业务错误**不重试**，避免把真实原因掩盖成契约不匹配。
+- 失败原因不再被吞：`ImageBlock` 现在显示 `code: message`（截断 160 字符），一眼能看出是引用无效还是文件缺失。
+- 新增 `tests/attachment-read.test.ts`（7 例）：引用形态断言传的是对象而非字符串、老线回退并缓存、缓存后单次往返、非契约错误不重试、抛异常不误判、两种形态都失败时报引用错误、详情格式。
+
 ## 0.6.8 (2026-11-27)
 
 **修：胶囊排只有三颗文字按钮能起拖，齿轮（⚙）不在拖动区里。**
