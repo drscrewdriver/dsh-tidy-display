@@ -22,7 +22,8 @@
  * "Mermaid 图" title bar would only add a header over every chart. The source
  * stays one fold away through the engine's own fallback.
  */
-import { memo } from 'react'
+import { memo, useEffect } from 'react'
+import { timeMermaidRender } from './render-timing.js'
 import { ErrorBoundary as GenuiErrorBoundary, GenuiBlock, processGenuiSpec } from '@changfenhuang/dsh-genui/embed'
 
 export interface MermaidCardProps {
@@ -45,6 +46,21 @@ function MermaidSource({ code }: { code: string }) {
 }
 
 export const MermaidCard = memo(function MermaidCard({ code, segKey, channel = 'reader' }: MermaidCardProps) {
+  // Observation only (probe off by default → the call is a no-op and returns
+  // before touching `performance`). Measures commit → next paint around the
+  // GenuiBlock mount; the long-task observer in render-timing.ts carries the
+  // actual main-thread blocking figure upstream #443 reports.
+  useEffect(() => {
+    const stop = timeMermaidRender(channel, segKey)
+    let frame = 0
+    const settle = () => { frame = 0; stop() }
+    if (typeof requestAnimationFrame === 'function') frame = requestAnimationFrame(() => { frame = requestAnimationFrame(settle) })
+    else settle()
+    return () => {
+      if (frame !== 0 && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frame)
+      stop()
+    }
+  }, [channel, segKey])
   const source = String(code ?? '')
   if (source.trim() === '') return null
   const built = processGenuiSpec({ items: [{ type: 'mermaid', code: source }] })
