@@ -17,6 +17,9 @@ export const NS = 'dsh-tidy-display'
 
 /** Simplified Chinese dictionary — the key-set source of truth. */
 export const zh = {
+  'timing.metrics': "已记录 {n} 次 · p50 {p50} · p95 {p95} · 最大 {max}",
+  'timing.disabled': "未启用",
+
   'timing.probe': "开启计时探针",
   'timing.probeHint': "诊断用，日常关闭。开启后会为每张图记录耗时并监听主线程长任务。",
 
@@ -304,6 +307,9 @@ export type TidyKey = keyof typeof zh
 
 /** English dictionary, checked complete against the zh key set. */
 export const en: Record<TidyKey, string> = {
+  'timing.metrics': "{n} renders · p50 {p50} · p95 {p95} · max {max}",
+  'timing.disabled': "Not enabled",
+
   'timing.probe': "Enable timing probe",
   'timing.probeHint': "Diagnostic only — leave it off in daily use. When on, every diagram render is timed and long main-thread tasks are observed.",
 
@@ -570,6 +576,9 @@ export const en: Record<TidyKey, string> = {
 
 /** Japanese dictionary, checked complete against the zh key set. */
 export const ja: Record<TidyKey, string> = {
+  'timing.metrics': "{n} 回 · p50 {p50} · p95 {p95} · 最大 {max}",
+  'timing.disabled': "未有効",
+
   'timing.probe': "タイミング計測を有効化",
   'timing.probeHint': "診断用です。通常はオフのままにしてください。オンにすると図ごとの描画時間を記録し、メインスレッドの長いタスクを監視します。",
 
@@ -836,6 +845,9 @@ export const ja: Record<TidyKey, string> = {
 
 /** Korean dictionary, checked complete against the zh key set. */
 export const ko: Record<TidyKey, string> = {
+  'timing.metrics': "{n}회 · p50 {p50} · p95 {p95} · 최대 {max}",
+  'timing.disabled': "사용 안 함",
+
   'timing.probe': "타이밍 프로브 사용",
   'timing.probeHint': "진단용입니다. 평소에는 꺼 두세요. 켜면 다이어그램마다 렌더링 시간을 기록하고 메인 스레드 장기 작업을 감시합니다.",
 
@@ -1102,6 +1114,9 @@ export const ko: Record<TidyKey, string> = {
 
 /** French dictionary, checked complete against the zh key set. */
 export const fr: Record<TidyKey, string> = {
+  'timing.metrics': "{n} rendus · p50 {p50} · p95 {p95} · max {max}",
+  'timing.disabled': "Non activé",
+
   'timing.probe': "Activer la sonde de chronométrage",
   'timing.probeHint': "Diagnostic uniquement — laissez-la désactivée au quotidien. Activée, chaque rendu de diagramme est chronométré et les tâches longues du thread principal sont observées.",
 
@@ -1368,6 +1383,9 @@ export const fr: Record<TidyKey, string> = {
 
 /** German dictionary, checked complete against the zh key set. */
 export const de: Record<TidyKey, string> = {
+  'timing.metrics': "{n} Render · p50 {p50} · p95 {p95} · max {max}",
+  'timing.disabled': "Nicht aktiviert",
+
   'timing.probe': "Timing-Sonde aktivieren",
   'timing.probeHint': "Nur zur Diagnose — im Alltag ausgeschaltet lassen. Aktiviert wird jeder Diagramm-Render gemessen und lange Hauptthread-Aufgaben werden beobachtet.",
 
@@ -1634,6 +1652,9 @@ export const de: Record<TidyKey, string> = {
 
 /** Italian dictionary, checked complete against the zh key set. */
 export const it: Record<TidyKey, string> = {
+  'timing.metrics': "{n} rendering · p50 {p50} · p95 {p95} · max {max}",
+  'timing.disabled': "Non attivo",
+
   'timing.probe': "Attiva la sonda di cronometraggio",
   'timing.probeHint': "Solo diagnostica: lasciala disattivata nell uso quotidiano. Attiva, ogni rendering di diagramma viene cronometrato e le attività lunghe del thread principale vengono osservate.",
 
@@ -1900,6 +1921,9 @@ export const it: Record<TidyKey, string> = {
 
 /** Russian dictionary, checked complete against the zh key set. */
 export const ru: Record<TidyKey, string> = {
+  'timing.metrics': "{n} отрисовок · p50 {p50} · p95 {p95} · макс {max}",
+  'timing.disabled': "Не включено",
+
   'timing.probe': "Включить тайминг-зонд",
   'timing.probeHint': "Только для диагностики — в повседневной работе держите выключенным. При включении замеряется время каждой отрисовки диаграммы и отслеживаются длительные задачи основного потока.",
 
@@ -2166,6 +2190,9 @@ export const ru: Record<TidyKey, string> = {
 
 /** Spanish dictionary, checked complete against the zh key set. */
 export const es: Record<TidyKey, string> = {
+  'timing.metrics': "{n} renders · p50 {p50} · p95 {p95} · máx {max}",
+  'timing.disabled': "No activado",
+
   'timing.probe': "Activar la sonda de tiempos",
   'timing.probeHint': "Solo diagnóstico: déjala desactivada en el uso diario. Activada, se mide cada render de diagrama y se observan las tareas largas del hilo principal.",
 
@@ -2431,6 +2458,9 @@ export const es: Record<TidyKey, string> = {
 }
 
 export const pt: Record<TidyKey, string> = {
+  'timing.metrics': "{n} renders · p50 {p50} · p95 {p95} · máx {max}",
+  'timing.disabled': "Não ativado",
+
   'timing.probe': "Ativar a sonda de medição",
   'timing.probeHint': "Apenas diagnóstico — deixe desativada no uso diário. Ativada, cada render de diagrama é medido e as tarefas longas da thread principal são observadas.",
 

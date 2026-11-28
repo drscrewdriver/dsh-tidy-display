@@ -15,6 +15,8 @@
 export declare const NS = "dsh-tidy-display";
 /** Simplified Chinese dictionary — the key-set source of truth. */
 export declare const zh: {
+    'timing.metrics': string;
+    'timing.disabled': string;
     'timing.probe': string;
     'timing.probeHint': string;
     'timing.title': string;
