@@ -31,6 +31,7 @@ import type { DockPrefs } from './dock/RenderDock.js';
 import { NS, dictionaries, installTranslate, t } from './locales.js';
 import { softSvc, safeSeat } from './soft-svc.js';
 import { attachmentErrorDetail, readAttachmentCompat, type AttachmentReceipt } from './attachment-read.js';
+import { setRenderTimingProbe } from './segments/render-timing.js';
 
 /** Structural face of the host locale service (optional on every line). */
 interface LocaleLike {
@@ -114,6 +115,10 @@ export function apply(ctx: Context): void {
       segmentCards: s.segmentCards !== false,
       cardCollapseDefault: s.cardCollapseDefault !== false,
     });
+    // Mermaid render probe: the mdast/native render paths have no props route
+    // to the settings store, so the flag is mirrored into the timing module
+    // (off → no marks, no observer; on → observation starts immediately).
+    setRenderTimingProbe(s.renderTimingProbe === true);
   };
   mirrorSegmentPrefs();
   prefs.subscribe(mirrorSegmentPrefs);

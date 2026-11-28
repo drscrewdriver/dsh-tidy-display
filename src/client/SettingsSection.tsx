@@ -8,6 +8,8 @@ import { GuidePanel, GuideRestartButton, guideSteps, isGuideSkipped } from './gu
 import { TIDY_DISPLAY_GUIDE_STEPS } from './guide-steps.ts';
 import css from './SettingsSection.module.css';
 import { mountStarRow } from './star-row-copy.js'
+import { renderTimingSnapshot } from './segments/render-timing.js'
+import { t } from './locales.js'
 
 export interface ReaderPrefsSnapshot {
   deliverableOpenMode?: DeliverableOpenMode;
@@ -178,6 +180,23 @@ export function SettingsSection(props: SettingsProps) {
   const railStyle = snap.railStyle === 'dot' ? 'dot' : 'bar';
   const railRing = snap.railRing === true;
   const takeover = snap.hideOfficialNav !== false;
+  const probe = snap.renderTimingProbe === true;
+  // The diagnostics line is a snapshot, not a subscription: poll only while the
+  // probe is on (off → one string, zero timers).
+  const [timing, setTiming] = useState(() => renderTimingSnapshot());
+  useEffect(() => {
+    if (!probe) return;
+    setTiming(renderTimingSnapshot());
+    const timer = setInterval(() => { setTiming(renderTimingSnapshot()); }, 1000);
+    return () => { clearInterval(timer); };
+  }, [probe]);
+  const ms = (value: number) => (value < 10 ? value.toFixed(1) : String(Math.round(value))) + ' ms';
+  const metricsText = t('timing.metrics', {
+    n: timing.count,
+    p50: ms(timing.p50),
+    p95: ms(timing.p95),
+    max: ms(timing.maxMs),
+  });
   const segmentCards = snap.segmentCards !== false;
   const cardCollapse = snap.cardCollapseDefault !== false;
   const renderMode: 'native' | 'delegate' = snap.renderMode === 'delegate' ? 'delegate' : 'native';
@@ -484,6 +503,28 @@ export function SettingsSection(props: SettingsProps) {
           onClick={() => { props.prefs.actions.setHideOfficialNav?.(!takeover); }}
         />
       </div>
+
+      <section className={css.block} data-tidy-display-timing={probe ? 'on' : 'off'}>
+        <div className={css.title}>{text(props, copy, 'timingTitle')}</div>
+        <div className={css.row}>
+          <div className={css.rowText}>
+            <div className={css.title}>{text(props, copy, 'timingProbe')}</div>
+            <div className={css.desc}>{text(props, copy, 'timingProbeHint')}</div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={probe}
+            className={css.switch}
+            data-on={probe || undefined}
+            data-tidy-display-timing-probe={probe ? 'on' : 'off'}
+            onClick={() => { props.prefs.actions.setRenderTimingProbe?.(!probe); }}
+          />
+        </div>
+        <div className={css.desc} data-tidy-display-timing-metrics>
+          {probe ? metricsText : text(props, copy, 'timingDisabled')}
+        </div>
+      </section>
 
       <section className={css.block} data-tidy-display-skill={skill?.installed ? 'installed' : 'missing'}>
         <div className={css.title}>{text(props, copy, 'skillTitle')}</div>

@@ -25,7 +25,7 @@
     "keysFrom": "client/src/locales/keys.json"
   },
   "dsh-tidy-display": {
-    "cUi": 485,
+    "cUi": 399,
     "aPair": 0,
     "bLog": 4,
     "keys": {
@@ -46,6 +46,10 @@
       {
         "file": "src/client/star-row-copy.ts",
         "reason": "star-row 生成副本，10 语文案自含（非插件字典，同 guide.tsx 口径）"
+      },
+      {
+        "file": "src/client/settings-copy.ts",
+        "reason": "设置卡 10 语字典正文（与 locales.ts 同性质；文件名未命中守卫的字典跳过规则，故整文件豁免）"
       }
     ]
   },

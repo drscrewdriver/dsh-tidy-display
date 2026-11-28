@@ -1,4 +1,8 @@
 export type SettingsCopyKey =
+  | 'timingTitle'
+  | 'timingProbe'
+  | 'timingProbeHint'
+  | 'timingDisabled'
   | 'nav'
   | 'openTitle'
   | 'openDescription'
@@ -97,6 +101,10 @@ export const en: SettingsCopy = {
   skillRecheck: 'Re-check',
   skillChecking: 'Checking…',
   skillUnavailable: 'Could not query the host skill catalog. Copy into .dsh/skills or .agents/skills (home or project), then Re-check.',
+  timingTitle: 'Mermaid render timing',
+  timingProbe: 'Enable timing probe',
+  timingProbeHint: 'Diagnostic only — leave it off in daily use. When on, each diagram render is timed and long main-thread tasks are observed.',
+  timingDisabled: 'Not enabled',
 };
 
 export const zh: SettingsCopy = {
@@ -147,6 +155,10 @@ export const zh: SettingsCopy = {
   skillRecheck: '重新检测',
   skillChecking: '正在检测…',
   skillUnavailable: '无法查询宿主技能目录。请复制到 .dsh/skills 或 .agents/skills（家目录或项目），再重新检测。',
+  timingTitle: "Mermaid 渲染计时",
+  timingProbe: "开启计时探针",
+  timingProbeHint: "诊断用，日常关闭。开启后每张图记录耗时，并监听主线程长任务。",
+  timingDisabled: "未启用",
 };
 
 export const fr: SettingsCopy = {
@@ -197,6 +209,10 @@ export const fr: SettingsCopy = {
   skillRecheck: 'Revérifier',
   skillChecking: 'Vérification…',
   skillUnavailable: 'Impossible d’interroger le catalogue de compétences de l’hôte. Copiez dans .dsh/skills ou .agents/skills (home ou projet), puis revérifiez.',
+  timingTitle: "Chronométrage du rendu Mermaid",
+  timingProbe: "Activer la sonde de chronométrage",
+  timingProbeHint: "Diagnostic uniquement — laissez-la désactivée au quotidien. Activée, chaque rendu de diagramme est chronométré et les tâches longues du thread principal sont observées.",
+  timingDisabled: "Non activé",
 };
 
 export const de: SettingsCopy = {
@@ -247,6 +263,10 @@ export const de: SettingsCopy = {
   skillRecheck: 'Neu prüfen',
   skillChecking: 'Wird geprüft…',
   skillUnavailable: 'Der Skill-Katalog des Hosts ließ sich nicht abfragen. Kopieren Sie den Ordner nach .dsh/skills oder .agents/skills (Home oder Projekt) und prüfen Sie neu.',
+  timingTitle: "Mermaid-Render-Timing",
+  timingProbe: "Timing-Sonde aktivieren",
+  timingProbeHint: "Nur zur Diagnose — im Alltag ausgeschaltet lassen. Aktiviert wird jeder Diagramm-Render gemessen und lange Hauptthread-Aufgaben werden beobachtet.",
+  timingDisabled: "Nicht aktiviert",
 };
 
 export const it: SettingsCopy = {
@@ -297,6 +317,10 @@ export const it: SettingsCopy = {
   skillRecheck: 'Riverifica',
   skillChecking: 'Verifica in corso…',
   skillUnavailable: 'Impossibile interrogare il catalogo skill dell’host. Copia in .dsh/skills o .agents/skills (home o progetto), poi riverifica.',
+  timingTitle: "Tempi di rendering Mermaid",
+  timingProbe: "Attiva la sonda di cronometraggio",
+  timingProbeHint: "Solo diagnostica: lasciala disattivata nell uso quotidiano. Attiva, ogni rendering di diagramma viene cronometrato e le attività lunghe del thread principale vengono osservate.",
+  timingDisabled: "Non attivo",
 };
 
 export const ru: SettingsCopy = {
@@ -347,6 +371,10 @@ export const ru: SettingsCopy = {
   skillRecheck: 'Проверить снова',
   skillChecking: 'Проверяем…',
   skillUnavailable: 'Не удалось опросить каталог навыков хоста. Скопируйте папку в .dsh/skills или .agents/skills (домашний каталог или проект) и проверьте снова.',
+  timingTitle: "Тайминг рендеринга Mermaid",
+  timingProbe: "Включить тайминг-зонд",
+  timingProbeHint: "Только для диагностики — в повседневной работе держите выключенным. При включении замеряется время каждой отрисовки диаграммы и отслеживаются длительные задачи основного потока.",
+  timingDisabled: "Не включено",
 };
 
 export const es: SettingsCopy = {
@@ -397,6 +425,10 @@ export const es: SettingsCopy = {
   skillRecheck: 'Revisar de nuevo',
   skillChecking: 'Comprobando…',
   skillUnavailable: 'No se pudo consultar el catálogo de habilidades del host. Copia en .dsh/skills o .agents/skills (home o proyecto) y vuelve a comprobar.',
+  timingTitle: "Tiempos de render de Mermaid",
+  timingProbe: "Activar la sonda de tiempos",
+  timingProbeHint: "Solo diagnóstico: déjala desactivada en el uso diario. Activada, se mide cada render de diagrama y se observan las tareas largas del hilo principal.",
+  timingDisabled: "No activado",
 };
 
 export const ja: SettingsCopy = {
@@ -447,6 +479,10 @@ export const ja: SettingsCopy = {
   skillRecheck: '再検出',
   skillChecking: '検出中…',
   skillUnavailable: 'ホストのスキルカタログを照会できませんでした。.dsh/skills または .agents/skills（ホームまたはプロジェクト）へコピーして、もう一度検出してください。',
+  timingTitle: "Mermaid 描画タイミング",
+  timingProbe: "タイミング計測を有効化",
+  timingProbeHint: "診断用です。通常はオフのままに。オンにすると図ごとの描画時間を記録し、メインスレッドの長いタスクを監視します。",
+  timingDisabled: "未有効",
 };
 
 export const ko: SettingsCopy = {
@@ -497,6 +533,10 @@ export const ko: SettingsCopy = {
   skillRecheck: '다시 감지',
   skillChecking: '감지 중…',
   skillUnavailable: '호스트 스킬 카탈로그를 조회할 수 없습니다. .dsh/skills 또는 .agents/skills(홈 또는 프로젝트)에 복사한 뒤 다시 감지하세요.',
+  timingTitle: "Mermaid 렌더링 타이밍",
+  timingProbe: "타이밍 프로브 사용",
+  timingProbeHint: "진단용입니다. 평소에는 꺼 두세요. 켜면 다이어그램마다 렌더링 시간을 기록하고 메인 스레드 장기 작업을 감시합니다.",
+  timingDisabled: "사용 안 함",
 };
 
 export const pt: SettingsCopy = {
@@ -547,6 +587,10 @@ export const pt: SettingsCopy = {
   skillRecheck: 'Detectar novamente',
   skillChecking: 'Detectando…',
   skillUnavailable: 'Não foi possível consultar o catálogo de habilidades do host. Copie para .dsh/skills ou .agents/skills (home ou projeto) e detecte novamente.',
+  timingTitle: "Tempo de renderização do Mermaid",
+  timingProbe: "Ativar a sonda de medição",
+  timingProbeHint: "Apenas diagnóstico — deixe desativada no uso diário. Ativada, cada render de diagrama é medido e as tarefas longas da thread principal são observadas.",
+  timingDisabled: "Não ativado",
 };
 
 export type SettingsLanguage = 'zh' | 'en' | 'ja' | 'ko' | 'fr' | 'de' | 'it' | 'ru' | 'es' | 'pt';
