@@ -30,6 +30,7 @@ import { installRenderDock } from './dock/install.js';
 import type { DockPrefs } from './dock/RenderDock.js';
 import { NS, dictionaries, installTranslate, t } from './locales.js';
 import { softSvc, safeSeat } from './soft-svc.js';
+import { attachmentErrorDetail, readAttachmentCompat, type AttachmentReceipt } from './attachment-read.js';
 
 /** Structural face of the host locale service (optional on every line). */
 interface LocaleLike {
@@ -256,8 +257,14 @@ export function apply(ctx: Context): void {
         },
         loadOlder: async () => { await session().loadOlder(); },
         loadImage: async attachment => {
-          const receipt = await session().readAttachment(attachment.attachmentId);
-          if (!receipt.ok) throw new Error(receipt.error.message);
+          // 0.2.2+ take the whole reference; 0.1.x–0.2.1 take the bare id. Probe
+          // once per session and remember the shape (see attachment-read.ts).
+          const receipt = await readAttachmentCompat(
+            sessionId,
+            attachment,
+            argument => session().readAttachment(argument as never) as Promise<AttachmentReceipt>,
+          );
+          if (!receipt.ok) throw new Error(attachmentErrorDetail(receipt.error));
           return { data: Uint8Array.from(receipt.value.data), mediaType: receipt.value.attachment.mediaType };
         },
         openFile: async (path, options) => {
