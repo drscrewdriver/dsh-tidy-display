@@ -34,6 +34,7 @@ export const ImageBlock = memo(function ImageBlock({ attachment, loadImage }: {
   const [attempt, setAttempt] = useState(0);
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [detail, setDetail] = useState('');
   const [decoded, setDecoded] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLButtonElement>(null);
@@ -41,7 +42,7 @@ export const ImageBlock = memo(function ImageBlock({ attachment, loadImage }: {
     let active = true;
     let owned: string | null = null;
     const timeout = setTimeout(() => { if (active) { setError(true); active = false; } }, 20000);
-    setError(false); setDecoded(false); setUrl(null);
+    setError(false); setDecoded(false); setUrl(null); setDetail('');
     void loadImage(attachment).then(result => {
       if (!active) return;
       clearTimeout(timeout);
@@ -49,7 +50,14 @@ export const ImageBlock = memo(function ImageBlock({ attachment, loadImage }: {
       const bytes = Uint8Array.from(result.data);
       owned = URL.createObjectURL(new Blob([bytes.buffer], { type: result.mediaType }));
       setUrl(owned);
-    }).catch(() => { clearTimeout(timeout); if (active) setError(true); });
+    }).catch((reason: unknown) => {
+      clearTimeout(timeout);
+      if (!active) return;
+      setError(true);
+      // The reason used to be swallowed; without it a failed image was
+      // indistinguishable from a slow one and "retry" looped forever.
+      setDetail(String((reason as { message?: unknown } | undefined)?.message ?? reason).slice(0, 160));
+    });
     return () => { active = false; clearTimeout(timeout); if (owned) URL.revokeObjectURL(owned); };
   }, [attachment.attachmentId, attempt, loadImage]);
   const width = Number.isFinite(attachment.width) && attachment.width > 0 ? attachment.width : 4;
@@ -61,6 +69,7 @@ export const ImageBlock = memo(function ImageBlock({ attachment, loadImage }: {
       </button>}
       {(!decoded || error) && <div className={css.imagePlaceholder}>
         <span>{error ? '图片未能加载' : '正在加载图片'}</span>
+        {error && detail && <span className={css.imageDetail} data-reader-image-error>{detail}</span>}
         {error && <button type="button" className={css.textButton} onClick={() => setAttempt(value => value + 1)}>重试</button>}
       </div>}
     </div>
