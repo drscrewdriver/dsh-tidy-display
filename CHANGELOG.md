@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0 (2026-11-28)
+
+**用户无可见变化 —— 这是度量前置。**
+
+- 新增 `src/client/segments/render-timing.ts`：`timeMermaidRender(label, segKey)` + `renderTimingSnapshot()`，纯 `performance` API，零新增依赖。
+- 上游 `omdsh-dev/dsh-genui#443` 报单张 mermaid 图阻塞主线程 4615ms，根因是「241 张样式表下的强制同步布局」。我们只注入一份 `genui-plate.ts` 样式，大概率不中——所以**先观测不先优化**，拿到真实数据再决定是否缓解。
+- `MermaidCard` 组件体零改动：只在 `useEffect` 里包一层计时（组件渲染逻辑、降级链、GenuiBlock 参数全部原样）。
+
 ## 0.7.0 (2026-11-28)
 
 **修：阅读视图里图片 100% 加载失败（"图片未能加载"），点「重试」无限失败。**
